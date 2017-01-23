@@ -212,21 +212,6 @@ protocol~\cite{cachin2001secure} may suite our needs more, but further
 investigation is needed. The advantage of these two protocols over PBFT is that
 they work in the asynchronous environment.
 
-The Swirlds~\cite{baird2016swirlds} algorithm is a departure from the classical
-BFT algorithms. Nodes use ``gossip about gossip'' to determine whether a
-majority of the population has heard about a particular transaction. So
-agreement is achieved not after one execution of the algorithm but after the
-nodes have eventually exchanged enough messages---we call this ``eventual
-consensus''. The downside of Swirlds is that they assume static membership, thus
-it is not permissionless. Swirlds may be applicable to our design where we can
-use our group formation technique to select the validators and run Swirlds on
-top (assuming Swirlds scales well). This eleminates the need for the recursive
-(bottom-up) phase.
-
-% TODO Swirlds need good scalability and convergence properties to be useful for
-% us. With our bootstrapping, perhaps we can infer the member count in Swirlds
-% from its history!
-
 \section{Limitations, Discussion and Questions}
 \begin{itemize}
 \item What's the mechanisms for publishing double-spends?
@@ -345,6 +330,18 @@ nail in the coffin for the current algorithm.
 
 \subsection{How to set the initial validator group size?}
 This can be modelled as the occupancy problem.
+
+\section{Is the traditional Byzantine Agreement too strict?}
+If nodes are in agreement, they share the same state machine. But is this too
+strict for our use case?
+
+Suppose there is set of transactions $A \rightarrow B \rightarrow C \rightarrow
+D$ that depend on each other. Then half of the nodes agree on a subset of those
+transactions, i.e. $\{A, B, C\}$. Another half agree on all four transactions.
+This is not Byzantine agreement in the traditional sense, because there does not
+exist a majority that share the same state machine. But indirectly they all
+agree on the set intersection. Can we build a model that support this type of
+consensus?
 
 %  LocalWords:  BFT Merkle checkpointing permissionless setup
 
