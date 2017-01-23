@@ -79,10 +79,10 @@ detail next.
 \subsection{Setup phase}
 
 To prepare a chain on node $x$ for validation in consensus run $n$, $x$ first
-communicates to the validators of consensus run $n-1$ for the valid set of
-blocks (recall that we assume every node knows the validators), and then
-generates a new checkpoint block (\cref{fig:protocol-setup}). This completes
-the setup phase.
+communicates to the validators of consensus run $n-1$ for the Merkle hash of the
+valid set of blocks (recall that we assume every node knows the validators), and
+then generates a new checkpoint block (\cref{fig:protocol-setup}). This
+completes the setup phase.
 
 \begin{figure}[htb]
 	\centering
@@ -347,3 +347,8 @@ nail in the coffin for the current algorithm.
 This can be modelled as the occupancy problem.
 
 %  LocalWords:  BFT Merkle checkpointing permissionless setup
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../thesis"
+%%% End:
