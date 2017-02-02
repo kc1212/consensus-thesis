@@ -1,0 +1,133 @@
+\section{Preliminaries}
+
+\subsection{Requirements}
+\begin{itemize}
+\item Permissionless
+\item Byzantine fault tolerant
+\item No PoW
+\item Works under churn
+\item Underlying data structure is TrustChain
+\item Detects forks or double-spends
+\item No step in the protocol blocks transactions
+\item Application independent
+\end{itemize}
+
+\subsection{Assumptions}
+\begin{itemize}
+\item We elect $N$ consensus promoters in every round, we assume the number of
+  faulty promoters is $f$ and $N = 3f + 1$.
+\item Promoters have the complete history of the previously agreed set of
+  transactions.
+% \item Single connected component for TrustChain.
+% \item No sybil attack % 
+\end{itemize}
+
+\subsection{Notations}
+\begin{itemize}
+
+\item $y = H(x)$ is a cryptographically secure hash function (random oracle),
+  the domain $x$ is infinite and the range is $y \in \{0, 2^{256}-1\}$.
+
+\item Every node in the system has an identifier $i$ and a blockchain
+  $$B_i = \{b_{i,j} : j \in \{1 \dots h\} \},$$
+  where $h$ is the height of the chain. Note that $h = |B_i|$
+
+\item Each block $b_{i,j}$ has a type $t \in \{ \tau, \gamma \}$, denoted by
+  $b^t_{i,j}$. Blocks without the superscript can be of any type.
+
+\item $T(b_{i, j}) = \{ \tau, \gamma \}$ is the type function, where its domain
+  is a block and outputs the corresponding type of the block.
+
+\item A block of type $\tau$ is a \emph{transaction block}. It is a six-tuple,
+  i.e. $$b^\tau_{i,j} = (H(b_{i,j-1}), h_s, h_r, s_s, s_r, m).$$ $h_s$ and $h_r$
+  denote the height (the sequence number for when the transaction is made) of
+  the sender and receiver respectively. $s_s$ and $s_r$ denote the signature of
+  the sender and the receiver respectively.
+
+\item A block of type $\gamma$ is a \emph{checkpoint block}. It is a
+  three-tuple, i.e.
+  $$b^\gamma_{i,j} = (H(b_{i,j}), H(\mathcal{C}_r), p)$$
+  where $\mathcal{C}_r$ is the consensus result in round $r$ and $p \in {0,1}$
+  which indicates whether $i$ wish to become a promoter in the following
+  consensus round.
+
+\item Given the input $b^\tau_{i,j}$, we define the
+  \emph{get-neighbouring-checkpoints function}
+  $$C(b^\tau_{i,j}) = (b^\gamma_{i,a}, b^\gamma_{i,b})$$
+  where $a = \argmin_{k, k < j, T(b_{i,k}) = \gamma}(j - k)$ and $b =
+  \argmin_{k, k > j, T(b_{i,k}) = \gamma}(k - j)$.
+
+\item Given two $\gamma$ transactions, we define \emph{get-piece function}
+  $$P(b^\gamma_{i,a}, b^\gamma_{i,b}) = \{b_{i,j} : b_{i,j} \in B_i, a \le j \le
+  b\}.$$
+
+\item Given two blockchains and a message, we define the \emph{do-transaction
+    function}
+  $$X_\tau(B_s, B_r, m) = (B'_s, B'_r)$$
+  where $B'_s = \{(H(b_{s,h_s}), h_s + 1, h_r + 1, s_s, s_r, m)\} \cup B_s$,
+  $B'_r = \{(H(b_{r, h_r}), h_s + 1, h_r + 1, s_s, s_r, m)\} \cup B_r$, $h_s =
+  |B_s|$ and $h_r = |B_r|$.
+
+\item Given a blockchain, we define the \emph{do-checkpoint function}
+  $$X_\gamma(B_i, r, p) = \{ (H(b_{i,h}), H(\mathcal{C}_r), p) \}\cup B_i$$ where
+  $h = |B_i|$, and $\mathcal{C}_r$ is the latest consensus result.
+
+\item Note that $X_\tau$ and $X_\gamma$ perform a state transition.
+
+\item The result of a consensus in round $r$ is a set of two-tuple of
+  checkpoints. Namely, $\mathcal{C}_r = \{ (b^\gamma_{i,a}, b^\gamma_{i,b}) : a
+  < b, \text{agreed by the promoters}\}$.
+\end{itemize}
+
+\section{Checkpoint consensus}
+
+\subsection{Promoter registration}
+Node $i$ can register as a promoter when the latest consensus result is
+announced (suppose after the completion of round $r-1$), then it generates a new
+block using $b = T_\gamma(B_i, r-1, 1)$. The current promoters (in round $r$)
+may decide to include $b$ in the new consensus result. If $b$ is in it, then $i$
+becomes one of the promoter of round $r+1$.
+
+We can fix the number of promotors to $N$ by sorting the promotors by their
+``luck value''' and taking the first $N$.
+
+\subsection{Setup phase}
+We begin in the state where $\mathcal{C}_{r-1}$ has just been agreed but has not
+been disseminated yet.
+\begin{lemma}
+  Nodes in the network can always verify the validity of the consensus result.
+\end{lemma}
+\begin{proof}
+\end{proof}
+
+\begin{lemma}
+  The new set of promoter for the next consensus round is consistent with
+  respect to all the nodes in the network.
+\end{lemma}
+
+\begin{lemma}
+  Promoters waiting for a some time $\Delta$ to collect transactions does not
+  violate the asynchronous assumption.
+\end{lemma}
+
+\begin{corollary}
+  The setup phase satisfies the validity, correctness and termination
+  properties.
+\end{corollary}
+
+\subsection{Consensus phase}
+
+
+\section{Fraud detection}
+Here we provide two techniques for fraud detection. The first guarantees fraud
+detection but is not practical. The second is a randomised solution that detects
+fraud with a high probability.
+
+\subsection{Breadth first search}
+
+\subsection{Random sampling}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../thesis"
+%%% End:
