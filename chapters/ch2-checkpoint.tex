@@ -14,10 +14,12 @@
 
 \subsection{Assumptions}
 \begin{itemize}
+\item Asynchronous network
+\item Private and authenticated channel
 \item We elect $N$ consensus promoters in every round, we assume the number of
   faulty promoters is $f$ and $N = 3f + 1$.
 \item Promoters have the complete history of the previously agreed set of
-  transactions.
+  transactions (TX).
 % \item Single connected component for TrustChain.
 % \item No sybil attack % 
 \end{itemize}
@@ -38,45 +40,62 @@
 \item $T(b_{i, j}) = \{ \tau, \gamma \}$ is the type function, where its domain
   is a block and outputs the corresponding type of the block.
 
-\item A block of type $\tau$ is a \emph{transaction block}. It is a six-tuple,
-  i.e. $$b^\tau_{i,j} = (H(b_{i,j-1}), h_s, h_r, s_s, s_r, m).$$ $h_s$ and $h_r$
-  denote the height (the sequence number for when the transaction is made) of
-  the sender and receiver respectively. $s_s$ and $s_r$ denote the signature of
-  the sender and the receiver respectively.
+\item A block of type $\tau$ is a \emph{transaction block} or \emph{TX block}.
+  It is a six-tuple, i.e. $$b^\tau_{i,j} = (H(b_{i,j-1}), h_s, h_r, s_s, s_r,
+  m).$$ $h_s$ and $h_r$ denote the height (the sequence number for when the TX
+  is made) of the sender and receiver respectively. $s_s$ and $s_r$ denote the
+  signature of the sender and the receiver respectively. $i = \{s, r\}$ and $j =
+  \{h_s, h_r\}$ and we call the block a sender block or a receiver block
+  respectively.
 
-\item A block of type $\gamma$ is a \emph{checkpoint block}. It is a
-  three-tuple, i.e.
+\item Given two TX blocks $b^\tau_{i,j}$ and $b^\tau_{i',j'}$, but $i \neq i'$.
+  If $h_s = h'_s$, $h_r = h'_r$, $m = m'$ and the signatures are valid, then we
+  call them a \emph{pair}.
+
+\item If there exist two TX blocks $b^\tau_{i,j}$ and $b^\tau_{i',j'}$, where
+  $s_s$ and $s_s'$ is created by the same public key and $h_s = h_s'$ but $i
+  \neq i'$, then we call this a \emph{fork}.
+
+\item A TX block has two \emph{inputs} blocks, to retrieve the input we define
+  the \emph{get-tx-input function} $I^\tau$. Let the pair of $b^\tau_{i,j}$ be
+  $b^\tau_{i',j'}$, then
+  $$I^\tau(b^\tau_{i,j}) = (b_{i, j-1}, b_{i', j'-1}).$$
+
+\item A block of type $\gamma$ is a \emph{checkpoint block} or \emph{CP block}.
+  It is a three-tuple, i.e.
   $$b^\gamma_{i,j} = (H(b_{i,j}), H(\mathcal{C}_r), p)$$
   where $\mathcal{C}_r$ is the consensus result in round $r$ and $p \in {0,1}$
   which indicates whether $i$ wish to become a promoter in the following
   consensus round.
 
+\item A CP block has one input, we define the \emph{get-cp-input
+    function} $$I^\gamma(b^\gamma_{i,j}) = b_{i,j-1}.$$
+
 \item Given the input $b^\tau_{i,j}$, we define the
-  \emph{get-neighbouring-checkpoints function}
+  \emph{get-nearest-cp function}
   $$C(b^\tau_{i,j}) = (b^\gamma_{i,a}, b^\gamma_{i,b})$$
   where $a = \argmin_{k, k < j, T(b_{i,k}) = \gamma}(j - k)$ and $b =
   \argmin_{k, k > j, T(b_{i,k}) = \gamma}(k - j)$.
 
-\item Given two $\gamma$ transactions, we define \emph{get-piece function}
+\item Given two $\gamma$ blocks, we define \emph{get-piece function}
   $$P(b^\gamma_{i,a}, b^\gamma_{i,b}) = \{b_{i,j} : b_{i,j} \in B_i, a \le j \le
   b\}.$$
 
-\item Given two blockchains and a message, we define the \emph{do-transaction
-    function}
+\item Given two blockchains and a message, we define the \emph{do-tx-function}
   $$X_\tau(B_s, B_r, m) = (B'_s, B'_r)$$
   where $B'_s = \{(H(b_{s,h_s}), h_s + 1, h_r + 1, s_s, s_r, m)\} \cup B_s$,
   $B'_r = \{(H(b_{r, h_r}), h_s + 1, h_r + 1, s_s, s_r, m)\} \cup B_r$, $h_s =
   |B_s|$ and $h_r = |B_r|$.
 
-\item Given a blockchain, we define the \emph{do-checkpoint function}
+\item Given a blockchain, we define the \emph{do-cp function}
   $$X_\gamma(B_i, r, p) = \{ (H(b_{i,h}), H(\mathcal{C}_r), p) \}\cup B_i$$ where
   $h = |B_i|$, and $\mathcal{C}_r$ is the latest consensus result.
 
 \item Note that $X_\tau$ and $X_\gamma$ perform a state transition.
 
-\item The result of a consensus in round $r$ is a set of two-tuple of
-  checkpoints. Namely, $\mathcal{C}_r = \{ (b^\gamma_{i,a}, b^\gamma_{i,b}) : a
-  < b, \text{agreed by the promoters}\}$.
+\item The result of a consensus in round $r$ is a set of two-tuple of CP.
+  Namely, $\mathcal{C}_r = \{ (b^\gamma_{i,a}, b^\gamma_{i,b}) : a < b,
+  \text{agreed by the promoters}\}$.
 \end{itemize}
 
 \section{Checkpoint consensus}
@@ -93,9 +112,11 @@ We can fix the number of promotors to $N$ by sorting the promotors by their
 
 \subsection{Setup phase}
 We begin in the state where $\mathcal{C}_{r-1}$ has just been agreed but has not
-been disseminated yet.
+been disseminated yet. The promoters 
+
 \begin{lemma}
-  Nodes in the network can always verify the validity of the consensus result.
+  If a node sees a valid $\mathcal{C}_r$ and another node sees a valid
+  $\mathcal{C}'_r$, then $\mathcal{C}_r = \mathcal{C}'_r$.
 \end{lemma}
 \begin{proof}
 \end{proof}
@@ -116,15 +137,84 @@ been disseminated yet.
 \end{corollary}
 
 \subsection{Consensus phase}
+We need an atomic broadcast algorithm for the consensus phase. We use a similar
+but simplified construction as~\cite{miller2016honey}, where atomic broadcast is
+constructed from the reliable broadcast\footnote{Reliable broadcast solves the
+  Byzantine generals problem.}~\cite{bracha1984asynchronous} and asynchronous
+common subset (ACS). The ACS protocol requires a binary Byzantine agreement
+protocol, and for that it needs a trusted dealer to distributed the secret
+shares. Promoters can check whether the secret shares are valid, but they cannot
+prevent the dealer from disclosing the secrets.
 
+There techniques that uses no dealers. First is to use
+PBFT~\cite{castro1999practical}, but we must change our asynchronous assumption
+into the weak synchrony assumption. Second is to use an inefficient binary
+Byzantine agreement protocol where its message complexity is $O(N^3)$ rather
+than $O(N^2)$ and becomes a bottleneck.
+
+Suppose we use a dealer, what is the effect to the algorithm if the dealer is
+malicious?
 
 \section{Fraud detection}
 Here we provide two techniques for fraud detection. The first guarantees fraud
 detection but is not practical. The second is a randomised solution that detects
 fraud with a high probability.
 
-\subsection{Breadth first search}
+\subsection{Depth first search}
+\begin{algorithmic}
+\State{$bs = \emptyset$}
 
+\Procedure{reverse-dfs}{$G, b$}
+\State {$bs \gets {b} \cup bs$}
+\If{$t = \text{genesis}$}
+    \State \textbf{return} $1$
+\EndIf
+\ForAll{$d \in I(b)$}
+\If{\Call{valid}{$d$} = 0}
+   \State {\textbf{return} 0}
+\EndIf
+\EndFor
+
+\State {\textbf{return} 1}
+\EndProcedure
+\end{algorithmic}
+
+\begin{algorithmic}
+\Procedure{valid}{$b, bs$}
+
+\State $(b^\gamma_a, b^\gamma_b) = C(b)$
+\State $p = P(b^\gamma_a, b^\gamma_b)$
+\If{$(b^\gamma_a, b^\gamma_b)$ is in a consensus result}
+  \If{$p$ is a valid chain}
+    \If{$b$ does not have a \emph{fork} in $bs$}
+      \State {\textbf{return} $1$}
+    \EndIf
+  \EndIf
+\EndIf
+
+\State \textbf{return} $0$
+\EndProcedure
+\end{algorithmic}
+
+\begin{lemma}
+  The \verb!reverse-dfs! algorithm traverses all nodes that may have an effect
+  on block $b$.
+\end{lemma}
+\begin{proof}
+  Recall that the TrustChain is a DAG, which always has a topological ordering.
+  That is, for every edge $(b', b)$, $b'$ comes before $b$ in the ordering, and
+  nodes before $b$ are its ancestors. If we reverse all the edges, then $b'$
+  comes after $b$ in the ordering, and nodes before $b$ are its descendents.
+
+  \verb!reverse-dfs! is essentially running DFS with all the edges reversed. If
+  the DFS outputs the visited nodes in reverse postordering, then the output is
+  in topological order and contains all of $b$'s original ancestors. Due to the
+  hash pointers, only the ancestors can have an effect on $b$.
+\end{proof}
+
+\begin{lemma}
+  \verb!verify!...
+\end{lemma}
 \subsection{Random sampling}
 
 %%% Local Variables:
