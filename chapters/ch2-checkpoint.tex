@@ -24,119 +24,181 @@
 % \item No sybil attack % 
 \end{itemize}
 
-\subsection{Notations}
+\subsection{Notation and definition}
 \begin{itemize}
 
-\item $y = H(x)$ is a cryptographically secure hash function (random oracle),
-  the domain $x$ is infinite and the range is $y \in \{0, 2^{256}-1\}$.
+\item $y = \texttt{h}(x)$ is a cryptographically secure hash function (random
+  oracle), the domain $x$ is infinite and the range is $y \in \{0, 2^{256}-1\}$.
 
-\item Every node in the system has an identifier $i$ and a blockchain
-  $$B_i = \{b_{i,j} : j \in \{1 \dots h\} \},$$
-  where $h$ is the height of the chain. Note that $h = |B_i|$
+\item We model our system in the permissionless setting, where each
+  participating party has a unique identity $i$, and a chain $B_i$.
 
-\item Each block $b_{i,j}$ has a type $t \in \{ \tau, \gamma \}$, denoted by
-  $b^t_{i,j}$. Blocks without the superscript can be of any type.
+\item A chain is a collection of blocks
+  $B_i = \{b_{i,j} : j \in \{1 \dots h\} \},$
+  the blocks are linked together using hash pointers, similar to bitcoin. All
+  blocks contain a reference to the previous block, the very first block with no
+  references is the genesis block.
 
-\item $T(b_{i, j}) = \{ \tau, \gamma \}$ is the type function, where its domain
-  is a block and outputs the corresponding type of the block.
+  The sequence number of the block begins at 0 on the genesis block and is
+  incremented for every new block. The height of the chain is $h = |B_i|$.
 
-\item A block of type $\tau$ is a \emph{transaction block} or \emph{TX block}.
-  It is a six-tuple, i.e. $$b^\tau_{i,j} = (H(b_{i,j-1}), h_s, h_r, s_s, s_r,
-  m).$$ $h_s$ and $h_r$ denote the height (the sequence number for when the TX
-  is made) of the sender and receiver respectively. $s_s$ and $s_r$ denote the
-  signature of the sender and the receiver respectively. $i = \{s, r\}$ and $j =
-  \{h_s, h_r\}$ and we call the block a sender block or a receiver block
+\item There are two sets of blocks $T_i$ and $C_i$, where $T_i \cup
+  C_i = B_i$ and $T_i \cap C_i = \emptyset$. This can be seen as the
+  block type, where $t_{i,j}$ and $c_{i,j}$ to represent a
+  \emph{transaction block (TX block)} and \emph{checkpoint block (CP block)}
   respectively.
 
-\item Given two TX blocks $b^\tau_{i,j}$ and $b^\tau_{i',j'}$, but $i \neq i'$.
-  If $h_s = h'_s$, $h_r = h'_r$, $m = m'$ and the signatures are valid, then we
-  call them a \emph{pair}.
+\item $\texttt{typeof}: B_i \rightarrow \{ \tau, \gamma \}$ returns the
+  corresponding type of the block.
 
-\item If there exist two TX blocks $b^\tau_{i,j}$ and $b^\tau_{i',j'}$, where
-  $s_s$ and $s_s'$ is created by the same public key and $h_s = h_s'$ but $i
-  \neq i'$, then we call this a \emph{fork}.
+\item A block of type $\tau$ is a six-tuple, i.e. $$t_{i,j} =
+  (\texttt{h}(b_{i,j-1}), h_s, h_r, s_s, s_r, m).$$ $h_s$ and $h_r$ denote the
+  height (the sequence number for when the TX is made) of the sender and
+  receiver respectively. $s_s$ and $s_r$ are the signatures of the sender and
+  the receiver respectively. $i = \{s, r\}$ and $j = \{h_s, h_r\}$ depending on
+  whether $i$ is the sender or the receiver.
 
-\item A TX block has two \emph{inputs} blocks, to retrieve the input we define
-  the \emph{get-tx-input function} $I^\tau$. Let the pair of $b^\tau_{i,j}$ be
-  $b^\tau_{i',j'}$, then
-  $$I^\tau(b^\tau_{i,j}) = (b_{i, j-1}, b_{i', j'-1}).$$
+\item Given two TX blocks $t_{i,j}$ and $t_{i',j'}$, but $i \neq i'$. If $h_s =
+  h'_s$, $h_r = h'_r$, $m = m'$ and the signatures are valid, then we call them
+  a \emph{pair}.
 
-\item A block of type $\gamma$ is a \emph{checkpoint block} or \emph{CP block}.
-  It is a three-tuple, i.e.
-  $$b^\gamma_{i,j} = (H(b_{i,j}), H(\mathcal{C}_r), p)$$
+\item If there exist two TX blocks $t_{i,j}$ and $t_{i',j'}$, where $s_s$ and
+  $s_s'$ is created by the same public key, $h_s = h_s'$, but $i \neq i'$, then
+  we call this a \emph{fork}.
+
+\item A block of type $\gamma$ is a three-tuple, i.e.
+  $$c_{i,j} = (\texttt{h}(b_{i,j}), H(\mathcal{C}_r), p)$$
   where $\mathcal{C}_r$ is the consensus result in round $r$ and $p \in {0,1}$
   which indicates whether $i$ wish to become a promoter in the following
   consensus round.
 
-\item A CP block has one input, we define the \emph{get-cp-input
-    function} $$I^\gamma(b^\gamma_{i,j}) = b_{i,j-1}.$$
+\item We define
+  $$\texttt{newtx}: B_i \times B_j \times M \rightarrow B_i \times B_j$$
+  as a function that creates new TX blocks. Its functionality is to
+  extend the given chains using the following rule. If the input is $(B_s, B_r,
+  m)$ then the output is $(B'_s, B'_r)$ where $B'_s = \{(\texttt{h}(b_{s,h_s}), h_s + 1,
+  h_r + 1, s_s, s_r, m)\} \cup B_s$, $B'_r = \{(\texttt{h}(b_{r, h_r}), h_s + 1, h_r + 1,
+  s_s, s_r, m)\} \cup B_r$, $h_s = |B_s|$ and $h_r = |B_r|$.
 
-\item Given the input $b^\tau_{i,j}$, we define the
-  \emph{get-nearest-cp function}
-  $$C(b^\tau_{i,j}) = (b^\gamma_{i,a}, b^\gamma_{i,b})$$
-  where $a = \argmin_{k, k < j, T(b_{i,k}) = \gamma}(j - k)$ and $b =
-  \argmin_{k, k > j, T(b_{i,k}) = \gamma}(k - j)$.
+\item We define
+  $$\texttt{newcp}: B_i \times \mathbb{R}_{\ge 1} \times \{0, 1\} \rightarrow B_i$$
+  as a function that creates new CP blocks. Concretely, given $(B_i, r, p)$, it
+  results in $\{ (\texttt{h}(b_{i,h}), H(\mathcal{C}_r), p) \}\cup B_i$ where $h =
+  |B_i|$, and $\mathcal{C}_r$ is the latest consensus result at round $r$.
 
-\item Given two $\gamma$ blocks, we define \emph{get-piece function}
-  $$P(b^\gamma_{i,a}, b^\gamma_{i,b}) = \{b_{i,j} : b_{i,j} \in B_i, a \le j \le
-  b\}.$$
-
-\item Given two blockchains and a message, we define the \emph{do-tx-function}
-  $$X_\tau(B_s, B_r, m) = (B'_s, B'_r)$$
-  where $B'_s = \{(H(b_{s,h_s}), h_s + 1, h_r + 1, s_s, s_r, m)\} \cup B_s$,
-  $B'_r = \{(H(b_{r, h_r}), h_s + 1, h_r + 1, s_s, s_r, m)\} \cup B_r$, $h_s =
-  |B_s|$ and $h_r = |B_r|$.
-
-\item Given a blockchain, we define the \emph{do-cp function}
-  $$X_\gamma(B_i, r, p) = \{ (H(b_{i,h}), H(\mathcal{C}_r), p) \}\cup B_i$$ where
-  $h = |B_i|$, and $\mathcal{C}_r$ is the latest consensus result.
-
-\item Note that $X_\tau$ and $X_\gamma$ perform a state transition.
+\item Note that in the actual system, \texttt{newtx} and \texttt{newcp} perform
+  a state transition.
 
 \item The result of a consensus in round $r$ is a set of two-tuple of CP.
-  Namely, $\mathcal{C}_r = \{ (b^\gamma_{i,a}, b^\gamma_{i,b}) : a < b,
-  \text{agreed by the promoters}\}$.
+  Namely, $\mathcal{C}_r = \{ (c_{i,j}, c_{i,k}) : j < k, \text{agreed by the
+    promoters}\}$.
+\end{itemize}
+
+\subsection{Properties}
+\begin{itemize}
+\item A TX block has two \emph{ancestor} blocks. Let a pair be $t_{i,j}$ and
+  $t_{i',j'}$, then $(b_{i, j-1}, b_{i', j'-1})$ is the input block of $t_{i,j}$.
+
+\item A CP block has one \emph{ancestor} block, that is simply the block with
+  the previous sequence number, i.e. the ancestor of $c_{i,j}$ is $b_{i,j-1}$.
+
+\item Every TX block $t_{i,j}$ is enclosed by two CP blocks $(c_{i,a},
+  c_{i,b})$, where $a = \argmin_{k, k < j, \texttt{typeof}(b_{i,k}) = \gamma}(j
+  - k)$ and $b = \argmin_{k, k > j, \texttt{typeof}(b_{i,k}) = \gamma}(k - j)$.
+
+\item The blocks between two $\gamma$ blocks $(c_{i,a}, c_{i,b})$ is $\{b_{i,j}
+  : b_{i,j} \in B_i, a \le j \le b\}$.
+
 \end{itemize}
 
 \section{Checkpoint consensus}
 
+\subsection{Luck value}
+First we define the luck value $l_{i,j} = \texttt{h}(k_i || c_{i,j})$, where $k$ is the
+public key of $i$. A lower luck value equates to higher luck.
+
 \subsection{Promoter registration}
 Node $i$ can register as a promoter when the latest consensus result is
 announced (suppose after the completion of round $r-1$), then it generates a new
-block using $b = T_\gamma(B_i, r-1, 1)$. The current promoters (in round $r$)
-may decide to include $b$ in the new consensus result. If $b$ is in it, then $i$
-becomes one of the promoter of round $r+1$.
+block $b_{i,j} = \texttt{newcp}(B_i, r-1, 1)$. The current promoters (in round
+$r$) may decide to include $b_{i,j}$ in the new consensus result. If $b$ is in
+it, then $i$ becomes one of the promoter of round $r+1$.
 
-We can fix the number of promotors to $N$ by sorting the promotors by their
-``luck value''' and taking the first $N$.
+We can fix the number of promoters to $N$ by sorting the promoters by their
+``luck value''' and taking the first $N$. 
 
 \subsection{Setup phase}
+The setup phase should satisfy the BFT conditions regarding the promoter
+selection, that is:
+\begin{enumerate}
+\item \emph{Agreement}: If any correct node outputs a promoter $p$, then every
+  correct node outputs $p$.
+\item \emph{Total Order}: If one correct node outputs the sequence of promoters
+  $\{p_1, p_i, \dots, p_n\}$ and another has output $\{p'_0, p'_1, \dots,
+  p'_{n'} \}$, then $p_i = p'_i$ for $i \le \min(n, n')$.
+\item \emph{Liveness}: All $N - f$ correct nodes terminate eventually.
+\end{enumerate}
+
 We begin in the state where $\mathcal{C}_{r-1}$ has just been agreed but has not
-been disseminated yet. The promoters 
+been disseminated yet. The exact technique to disseminate $\mathcal{C}_{r-1}$ is
+irrelevant, broadcasting or gossiping are both sufficient. In fact,
+dissemination is not necessary, nodes interested in the result can simply query
+the promoters that created $\mathcal{C}_{r-1}$.
 
 \begin{lemma}
-  If a node sees a valid $\mathcal{C}_r$ and another node sees a valid
-  $\mathcal{C}'_r$, then $\mathcal{C}_r = \mathcal{C}'_r$.
+  If a node sees a valid $\mathcal{C}_{r-1}$ and another node sees a valid
+  $\mathcal{C}'_{r-1}$, then $\mathcal{C}_{r-1} = \mathcal{C}'_{r-1}$.
 \end{lemma}
 \begin{proof}
+  (sketch) $\mathcal{C}_{r-1}$ is signed by at least $N-f$ promoters from round
+  $r-1$.
 \end{proof}
+
+The potential promoters now need to first discover whether
+they are the first $N$ lucky promoters.
 
 \begin{lemma}
   The new set of promoter for the next consensus round is consistent with
   respect to all the nodes in the network.
 \end{lemma}
+\begin{proof}
+  (sketch) All nodes use the same deterministic function to compute the luck
+  value.
+\end{proof}
+
+Nodes should wait for some time to collect the CP blocks, so they wait for some
+time $\Delta$ before moving on to the next phase.
 
 \begin{lemma}
   Promoters waiting for a some time $\Delta$ to collect transactions does not
   violate the asynchronous assumption.
 \end{lemma}
+\begin{proof}
+  (sketch) This can be seen as a long delay in the asynchronous system.
+\end{proof}
 
 \begin{corollary}
-  The setup phase satisfies the validity, correctness and termination
-  properties.
+  The setup phase satisfies the validity, agreement and liveness properties.
 \end{corollary}
+\begin{proof}
+  (sketch) Validity and agreement is satisfied because the promoters are
+  computed using a deterministic algorithm using the latest consensus result.
+  Liveness is satisfied because $\mathcal{C}_{r-1}$ is eventually propagated to
+  all node by gossiping.
+\end{proof}
 
 \subsection{Consensus phase}
+The consensus phase should satisfy the BFT conditions regarding the CP blocks,
+that is:
+\begin{enumerate}
+\item \emph{Agreement}: If any correct node outputs a CP block $c$, then every
+  correct node outputs $c$.
+\item \emph{Total Order}: If one correct node outputs the sequence of CP blocks
+  $\{c_1, c_i, \dots, c_n\}$ and another has output $\{c'_0, c'_1, \dots,
+  c'_{n'} \}$, then $c_i = c'_i$ for $i \le \min(n, n')$.
+\item \emph{Liveness}: All $N - f$ correct nodes terminate eventually.
+\end{enumerate}
+
 We need an atomic broadcast algorithm for the consensus phase. We use a similar
 but simplified construction as~\cite{miller2016honey}, where atomic broadcast is
 constructed from the reliable broadcast\footnote{Reliable broadcast solves the
@@ -148,73 +210,25 @@ prevent the dealer from disclosing the secrets.
 
 There techniques that uses no dealers. First is to use
 PBFT~\cite{castro1999practical}, but we must change our asynchronous assumption
-into the weak synchrony assumption. Second is to use an inefficient binary
-Byzantine agreement protocol where its message complexity is $O(N^3)$ rather
-than $O(N^2)$ and becomes a bottleneck.
+into the weak synchrony assumption. Most likely this is not possible because of
+the ``When to start?'' problem. It's difficult to give a bounded delay for
+propagating the consensus result.
+
+Second is to use an inefficient binary Byzantine agreement protocol where its
+message complexity is $O(N^3)$ rather than $O(N^2)$ and becomes a bottleneck. Or
+a suboptimal one, e.g. $n/5$ instead of $n/3$.
 
 Suppose we use a dealer, what is the effect to the algorithm if the dealer is
 malicious?
 
 \section{Fraud detection}
-Here we provide two techniques for fraud detection. The first guarantees fraud
-detection but is not practical. The second is a randomised solution that detects
-fraud with a high probability.
 
-\subsection{Depth first search}
-\begin{algorithmic}
-\State{$bs = \emptyset$}
+\subsection{Threat model}
+\begin{itemize}
+\item What is the influence of a fork for future transactions?
+\item What if both parties (sender and receiver) are malicious?
+\end{itemize}
 
-\Procedure{reverse-dfs}{$G, b$}
-\State {$bs \gets {b} \cup bs$}
-\If{$t = \text{genesis}$}
-    \State \textbf{return} $1$
-\EndIf
-\ForAll{$d \in I(b)$}
-\If{\Call{valid}{$d$} = 0}
-   \State {\textbf{return} 0}
-\EndIf
-\EndFor
-
-\State {\textbf{return} 1}
-\EndProcedure
-\end{algorithmic}
-
-\begin{algorithmic}
-\Procedure{valid}{$b, bs$}
-
-\State $(b^\gamma_a, b^\gamma_b) = C(b)$
-\State $p = P(b^\gamma_a, b^\gamma_b)$
-\If{$(b^\gamma_a, b^\gamma_b)$ is in a consensus result}
-  \If{$p$ is a valid chain}
-    \If{$b$ does not have a \emph{fork} in $bs$}
-      \State {\textbf{return} $1$}
-    \EndIf
-  \EndIf
-\EndIf
-
-\State \textbf{return} $0$
-\EndProcedure
-\end{algorithmic}
-
-\begin{lemma}
-  The \verb!reverse-dfs! algorithm traverses all nodes that may have an effect
-  on block $b$.
-\end{lemma}
-\begin{proof}
-  Recall that the TrustChain is a DAG, which always has a topological ordering.
-  That is, for every edge $(b', b)$, $b'$ comes before $b$ in the ordering, and
-  nodes before $b$ are its ancestors. If we reverse all the edges, then $b'$
-  comes after $b$ in the ordering, and nodes before $b$ are its descendents.
-
-  \verb!reverse-dfs! is essentially running DFS with all the edges reversed. If
-  the DFS outputs the visited nodes in reverse postordering, then the output is
-  in topological order and contains all of $b$'s original ancestors. Due to the
-  hash pointers, only the ancestors can have an effect on $b$.
-\end{proof}
-
-\begin{lemma}
-  \verb!verify!...
-\end{lemma}
 \subsection{Random sampling}
 
 %%% Local Variables:
