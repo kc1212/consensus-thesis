@@ -89,6 +89,21 @@
 \item Note that in the actual system, \texttt{newtx} and \texttt{newcp} perform
   a state transition.
 
+\item We define
+  $$\texttt{getr}: C_i \rightarrow \mathbb{R}_{\ge 1}$$
+  as a function that gets the consensus round number used to create the given CP
+  block.
+
+\item The CP blocks that follows a pair of TX blocks must be created using the
+  same $\mathcal{C}_r$, otherwise the transaction is invalid. Concretely, given
+  a pair $t_{i,j}$ and $t_{i',j'}$, then there exist $c_{i, k}$ and $c_{i', k'}$
+  where $j < k$, $j' < k'$, $\{ \texttt{typeof}(b_{i, x}) : x \in \{j, \dots k -
+  1\}\}$ are all $\tau$, $ \{ \texttt{typeof}(b_{i', x}) : x \in \{ j', \dots k'
+  - 1\} \}$ are all $\tau$ and $\texttt{getr}(c_{i, k}) = \texttt{getr}(c_{i',
+    k'})$. This constraint is not the result of the consensus protocol, but the
+  validation protocol.
+
+
 \item The result of a consensus in round $r$ is a set of two-tuple of CP.
   Namely, $\mathcal{C}_r = \{ (c_{i,j}, c_{i,k}) : j < k, \text{agreed by the
     promoters}\}$.
@@ -222,12 +237,33 @@ Suppose we use a dealer, what is the effect to the algorithm if the dealer is
 malicious?
 
 \section{Fraud detection}
+Fraud detection is application specific. In the context of electronic cash, a
+fraudulent transaction will have an effect in subsequent transactions. In the
+context of P2P file sharing, the transactions are reports of the number of bytes
+uploaded and/or downloaded, thus they are independent of each other.
+
+We focus in the latter case, where trasactions are independent.
 
 \subsection{Threat model}
 \begin{itemize}
 \item What is the influence of a fork for future transactions?
 \item What if both parties (sender and receiver) are malicious?
 \end{itemize}
+
+\subsection{Existence testing}
+Suppose node $i$ created a TX $t_{i,j}$ and its pair is $t_{i',j'}$. Our
+protocol states that there exist two CP block $c_{i,k}$ and $c_{i',k'}$ such
+that $k>j$ and $k' > j'$, but all blocks between $(k, j)$ and $(k', j')$ are of
+type $\tau$. To verify whether $t_{i', j'}$ exists, $i$ performs the following
+tasks:
+\begin{enumerate}
+\item Waits for $c_{i', k'}$ to be in consensus.
+\item Finds $c_{i', k''}$ such that $k'' < j' < k'$ and $k''$ is also in
+  consensus (in some previous consensus round).
+\item Asks $i'$ for $\{b_{i', x} : x \in \{ k'', \dots k' \}\}$, and verified
+  that all the blocks follow the rules of TrustChain and contains $t_{i', j'}$.
+\end{enumerate}
+
 
 \subsection{Random sampling}
 
