@@ -24,7 +24,7 @@
 % \item No sybil attack % 
 \end{itemize}
 
-\subsection{Notation and definition}
+\subsection{Notation, definition and properties}
 \begin{itemize}
 
 \item $y = \texttt{h}(x)$ is a cryptographically secure hash function (random
@@ -58,9 +58,10 @@
   the receiver respectively. $i = \{s, r\}$ and $j = \{h_s, h_r\}$ depending on
   whether $i$ is the sender or the receiver.
 
-\item Given two TX blocks $t_{i,j}$ and $t_{i',j'}$, but $i \neq i'$. If $h_s =
-  h'_s$, $h_r = h'_r$, $m = m'$ and the signatures are valid, then we call them
-  a \emph{pair}.
+\item Given two TX blocks $t_{i,j}$ and $t_{i',j'}$, if $i \ne i'$, $i = s$, $i'
+  = r$, $h_s = h'_s$, $h_r = h'_r$, $m = m'$ and the signatures are valid, then
+  we call them a \emph{pair}. Note that given one TX block, the pair can be
+  determined directly.
 
 \item If there exist two TX blocks $t_{i,j}$ and $t_{i',j'}$, where $s_s$ and
   $s_s'$ is created by the same public key, $h_s = h_s'$, but $i \neq i'$, then
@@ -90,7 +91,7 @@
   a state transition.
 
 \item We define
-  $$\texttt{getr}: C_i \rightarrow \mathbb{R}_{\ge 1}$$
+  $$\texttt{round}: C_i \rightarrow \mathbb{R}_{\ge 1}$$
   as a function that gets the consensus round number used to create the given CP
   block.
 
@@ -99,18 +100,16 @@
   a pair $t_{i,j}$ and $t_{i',j'}$, then there exist $c_{i, k}$ and $c_{i', k'}$
   where $j < k$, $j' < k'$, $\{ \texttt{typeof}(b_{i, x}) : x \in \{j, \dots k -
   1\}\}$ are all $\tau$, $ \{ \texttt{typeof}(b_{i', x}) : x \in \{ j', \dots k'
-  - 1\} \}$ are all $\tau$ and $\texttt{getr}(c_{i, k}) = \texttt{getr}(c_{i',
+  - 1\} \}$ are all $\tau$ and $\texttt{round}(c_{i, k}) = \texttt{round}(c_{i',
     k'})$. This constraint is not the result of the consensus protocol, but the
   validation protocol.
 
+\item The result of a consensus in round $r$ is a set of CP blocks. Namely,
+  $$\mathcal{C}_r = \{ c_{i,j} : \text{agreed by the promoters}\}.$$
 
-\item The result of a consensus in round $r$ is a set of two-tuple of CP.
-  Namely, $\mathcal{C}_r = \{ (c_{i,j}, c_{i,k}) : j < k, \text{agreed by the
-    promoters}\}$.
-\end{itemize}
+\item A TX block can be valid, invalid or unknown. All TX blocks begin as
+  unknown, they can be validated using our validation protocol.
 
-\subsection{Properties}
-\begin{itemize}
 \item A TX block has two \emph{ancestor} blocks. Let a pair be $t_{i,j}$ and
   $t_{i',j'}$, then $(b_{i, j-1}, b_{i', j'-1})$ is the input block of $t_{i,j}$.
 
@@ -118,11 +117,29 @@
   the previous sequence number, i.e. the ancestor of $c_{i,j}$ is $b_{i,j-1}$.
 
 \item Every TX block $t_{i,j}$ is enclosed by two CP blocks $(c_{i,a},
-  c_{i,b})$, where $a = \argmin_{k, k < j, \texttt{typeof}(b_{i,k}) = \gamma}(j
-  - k)$ and $b = \argmin_{k, k > j, \texttt{typeof}(b_{i,k}) = \gamma}(k - j)$.
+  c_{i,b})$, where
+  $$a = \argmin_{k, k < j, \texttt{typeof}(b_{i,k}) = \gamma}(j - k),$$
+  $$b = \argmin_{k, k > j, \texttt{typeof}(b_{i,k}) = \gamma}(k - j).$$
+  We call this the \emph{enclosure} of $t_{i,j}$.
 
-\item The blocks between two $\gamma$ blocks $(c_{i,a}, c_{i,b})$ is $\{b_{i,j}
-  : b_{i,j} \in B_i, a \le j \le b\}$.
+\item The \emph{piece} of $t_{i,j}$ defined by the enclosure $(c_{i,a},
+  c_{i,b})$ is $\{b_{i,j} : a \le j \le b\}$.
+  We define
+  $$ \texttt{pieces}: B_i \rightarrow P(B_i) $$
+  as the function that returns the pieces ($P$ denotes power set).
+
+\item Every TX block $t_{i,j}$ is enclosed by two \emph{agreed} CP blocks
+  $(c_{i,a}, c_{i,b})$ (CP blocks that are in some consensus result), where
+  $$a = \argmin_{k, k < j, \texttt{typeof}(b_{i,k}) = \gamma}(j - k),$$
+  $$b = \argmin_{k, k > j, \texttt{typeof}(b_{i,k}) = \gamma}(k - j).$$
+  We call this the \emph{agreed enclosure} of $t_{i,j}$.
+
+\item The \emph{agreed piece} of $t_{i,j}$ defined by the agreed enclosure
+  $(c_{i,a}, c_{i,b})$ is $\{b_{i,j} : a \le j \le b\}$. Note that \emph{piece}
+  $\subseteq$ \emph{agreed piece} for some TX block.
+  We define
+  $$ \texttt{a-pieces}: B_i \rightarrow P(B_i) $$
+  as the function that returns the agreed pieces.
 
 \end{itemize}
 
@@ -130,7 +147,12 @@
 
 \subsection{Luck value}
 First we define the luck value $l_{i,j} = \texttt{h}(k_i || c_{i,j})$, where $k$
-is the public key of $i$. A lower luck value equates to higher luck.
+is the public key of $i$. A lower luck value equates to higher luck. We assume
+an application agnostic system and do not attempt to defend against the sybil
+attack.
+
+An alternative is to use \emph{proof of work}. This defends the sybil attack.
+But an incentive is needed for the nodes that expend their CPU resources.
 
 \subsection{Promoter registration}
 Node $i$ can register as a promoter when the latest consensus result is
@@ -171,7 +193,7 @@ irrelevant, broadcasting or gossiping are both sufficient. In fact,
 dissemination is not necessary, nodes interested in the result can simply query
 the promoters that created $\mathcal{C}_{r-1}$.
 
-\begin{lemma}
+\begin{lemma}\label{lem:con_consistent}
   If a node sees a valid $\mathcal{C}_{r-1}$ and another node sees a valid
   $\mathcal{C}'_{r-1}$, then $\mathcal{C}_{r-1} = \mathcal{C}'_{r-1}$.
 \end{lemma}
@@ -180,10 +202,18 @@ the promoters that created $\mathcal{C}_{r-1}$.
   $r-1$.
 \end{proof}
 
+\begin{lemma}\label{lem:con_alive}
+  Eventually all node sees a valid $\mathcal{C}_{r-1}.$  
+\end{lemma}
+\begin{proof}
+  (sketch) Liveness is satisfied because $\mathcal{C}_{r-1}$ is eventually propagated to
+  all node by gossiping.
+\end{proof}
+
 The potential promoters now need to first discover whether
 they are the first $N$ lucky promoters.
 
-\begin{lemma}
+\begin{lemma}\label{lem:promoter_consistent}
   The new set of promoter for the next consensus round is consistent with
   respect to all the nodes in the network.
 \end{lemma}
@@ -193,25 +223,17 @@ they are the first $N$ lucky promoters.
 \end{proof}
 
 Nodes should wait for some time to collect the CP blocks, so they wait for some
-time $\Delta$ before moving on to the next phase.
-
-\begin{lemma}
-  Promoters waiting for a some time $\Delta$ to collect transactions does not
-  violate the asynchronous assumption.
-\end{lemma}
-\begin{proof}
-  (sketch) This can be seen as a long delay in the asynchronous system.
-\end{proof}
+time $\Delta$ before moving on to the next phase. Note that promoters waiting
+for a some time $\Delta$ to collect transactions does not violate the
+asynchronous assumption because this behaviour can be seen as a long delay in
+the asynchronous system.
 
 \begin{corollary}
-  The setup phase satisfies the validity, agreement and liveness properties.
+  Setup phase satisfies agreement and total order because the protocol is run
+  deterministicly on the same input (\cref{lem:con_consistent},
+  \cref{lem:promoter_consistent}). It also satisfies liveness due to
+  \cref{lem:con_alive}.
 \end{corollary}
-\begin{proof}
-  (sketch) Validity and agreement is satisfied because the promoters are
-  computed using a deterministic algorithm using the latest consensus result.
-  Liveness is satisfied because $\mathcal{C}_{r-1}$ is eventually propagated to
-  all node by gossiping.
-\end{proof}
 
 \subsection{Consensus phase}
 The consensus phase should satisfy the BFT conditions regarding the CP blocks,
@@ -234,7 +256,7 @@ protocol, and for that it needs a trusted dealer to distributed the secret
 shares. Promoters can check whether the secret shares are valid, but they cannot
 prevent the dealer from disclosing the secrets.
 
-There techniques that uses no dealers. First is to use
+There are techniques that uses no dealers. First is to use
 PBFT~\cite{castro1999practical}, but we must change our asynchronous assumption
 into the weak synchrony assumption. Most likely this is not possible because of
 the ``When to start?'' problem. It's difficult to give a bounded delay for
@@ -247,37 +269,156 @@ a suboptimal one, e.g. $n/5$ instead of $n/3$.
 Suppose we use a dealer, what is the effect to the algorithm if the dealer is
 malicious?
 
-\section{Fraud detection}
-Fraud detection is application specific. In the context of electronic cash, a
-fraudulent transaction will have an effect in subsequent transactions. In the
-context of P2P file sharing, the transactions are reports of the number of bytes
-uploaded and/or downloaded, thus they are independent of each other.
+\begin{lemma}
+  Consensus phase satisfied agreement, total order and liveness.
+\end{lemma}
+\begin{proof}
+  Defer proof? Refer to the papers.
+\end{proof}
 
-We focus in the latter case, where trasactions are independent.
+\begin{theorem}
+  Checkpoint consensus satisfied agreement, total order and liveness.
+\end{theorem}
+\begin{proof}
+  (sketch) Both phases are asynchronous so we do not need to make assumptions on
+  when begin phase begins. Both phases also satisfy the agreement, total order
+  and liveness.
+\end{proof}
 
-\subsection{Threat model}
-\begin{itemize}
-\item What is the influence of a fork for future transactions?
-\item What if both parties (sender and receiver) are malicious?
-\end{itemize}
+\section{Validation}\label{sec:validation}
 
-\subsection{Existence testing}
-Suppose node $i$ created a TX $t_{i,j}$ and its pair is $t_{i',j'}$. Our
-protocol states that there exist two CP block $c_{i,k}$ and $c_{i',k'}$ such
-that $k>j$ and $k' > j'$, but all blocks between $(k, j)$ and $(k', j')$ are of
-type $\tau$. To verify whether $t_{i', j'}$ exists, $i$ performs the following
-tasks:
+Since we reach consensus on checkpoints rather than all the transactions, we
+need to detect fraud, such as forks. Further, we need to ensure the system is
+secure in a sense that valid transactions cannot be forged into invalid
+transactions once it has reached consensus, and vice versa.
+
+First, we define the requirements of a valid transaction $t_{i,j}$ as follows,
+much of it is derived from the TrustChain model.
+
 \begin{enumerate}
-\item Waits for $c_{i', k'}$ to be in consensus.
-\item Finds $c_{i', k''}$ such that $k'' < j' < k'$ and $k''$ is also in
-  consensus (in some previous consensus round).
-\item Asks $i'$ for $\{b_{i', x} : x \in \{ k'', \dots k' \}\}$, and verified
-  that all the blocks follow the rules of TrustChain and contains $t_{i', j'}$.
+\item There exist a pair $t_{i', j'}$ that satisfies the pair definition.
+\item $t_{i,j}$ and $t_{i', j'}$ is created using \texttt{newtx}, i.e. valid
+  signatures and hash pointers, etc..
+\item There exist an agreed piece that contains $t_{i, j}$ and another agreed
+  piece that contains $t_{i', j'}$. All the blocks in the agreed pieces have
+  valid hash pointers, the blocks in the pieces do not need to be valid.
+\item The CP blocks $c_{i, k}, c_{i', k'}$ that immediately follow $t_{i, j}$
+  and $t_{i', j'}$ are created using \texttt{newcp} using the same consensus
+  result $\mathcal{C}_r$ as input and are in the agreed pieces.
 \end{enumerate}
 
-Node $i$ may wish to perform existence testing for all its unverified TX blocks.
+Blocks that do not satisfy the definition above are not necessarily invalid. It
+may be the case that the validity cannot be determined due to incomplete
+information. For such cases we say its validity is unknown.
+Now we define an invalid transaction.
 
-\subsection{Random sampling}
+\begin{enumerate}
+\item TODO
+\end{enumerate}
+
+Now we define the properties that are desired by the validation protocol.
+\begin{enumerate}
+\item \emph{Correctness}: The validation protocol outputs the correct result
+  according to the aforementioned requirements.
+\item \emph{Agreement}: If any correct node decides on the validity of a 
+  transaction, then all other correct nodes are able to reach the same
+  conclusion.
+\item \emph{Liveness}: Any valid transactions can be validated eventually.
+\item \emph{Unforgeability}: If some transaction is determined to be valid, then
+  it cannot be changed to an invalid transaction, the opposite also applies.
+\end{enumerate}
+
+Note that the input of the validation protocol is a TX block, so these
+properties hold with respect to TX blocks. In practice, if a node has a set of
+TX blocks that are in the unknown state, then it must run the validation
+protocol to determine whether they are valid. Further, these conditions do not
+imply all invalid transactions (forks) can be found globally, only the validity
+of the TX blocks that the honest nodes are interested in can be determined. The
+advantage of this scheme is that it saves a lot of computational and bandwidth
+costs because nodes only run the validation protocol on the TX blocks of their
+own interest.
+
+\subsection{Validation protocol}
+Assume node $u$ is aware of all the past consensus results $\mathcal{C}_r$.
+Suppose $u$ wish to validate $t_{i,j}$. It performs the following.
+
+\begin{enumerate}
+\item Determine the pair $t_{i', j'}$.
+\item Find the agreed enclosure for $t_{i,j}$ and $t_{i', j'}$ from
+  $\mathcal{C}_r$, otherwise return ``unknown''.
+%\item Find the smallest $c_{i', b}$ such that $b > j'$ is in consensus.
+\item Query $i$ and $i'$ for the agreed pieces and ensure hash pointers are
+  correct. Otherwise return ``unknown''.
+\item Check that $t_{i,j}$ and $t_{i', j'}$ are in the agreed pieces and are
+  created correctly using \texttt{newtx}. Otherwise return ``invalid''.
+\item Check the checkpoints $c_{i, k}$ and $c_{i', k'}$ that immediately follow
+  $t_{i,j}$ and $t_{i', j'}$ are in the agreed pieces and are created in the
+  same round, i.e. $\texttt{round}(c_{i, k}) = \texttt{round}(c_{i', k'})$.
+  Otherwise return ``invalid''.
+\item Return ``valid''.
+\end{enumerate}
+
+Most likely $u = i$ or $u = i'$, because they are incentivised to check the
+validity of their TX blocks that are of unknown validity.
+
+\subsection{Analysis}
+In this section we analyse the validation protocol with respect to the four
+properties in \cref{sec:validation}.
+
+\begin{lemma}
+  The validation protocol is correct.
+\end{lemma}
+\begin{proof}
+  Correctness follows directly from the protocol specification, namely it
+  directly implements the validation requirements.
+\end{proof}
+
+\begin{lemma}
+  The validation protocol satisfies the agreement property.
+\end{lemma}
+\begin{proof}
+  We proof by contradiction. Suppose two nodes $i$ and $j$ where $i \ne j$ runs
+  the protocol on the same TX block $t_{k, l}$, $i$ outputs ``valid'' and $j$
+  outputs ``invalid''. $i$ and $j$ would have both picked the same enclosure
+  $c_{k, a}$ and $c_{k, b}$, as these are determined from the consensus result.
+  Then $k$ must produce two agreed pieces that start with $c_{k,a}$ and end with
+  $c_{k, b}$ with valid hash pointers, but one satisfies the validation protocol
+  and the other one doesn't (e.g. missing $t_{k, l}$). Producing these two
+  pieces is equivalent to producing a collision. Due to the properties of
+  cryptographic hash functions this is not possible, thus a contradiction.
+\end{proof}
+
+\begin{lemma}
+  The validation protocol does not satisfy the liveness property.
+\end{lemma}
+\begin{proof}
+  (sketch) Nodes may be offline.
+\end{proof}
+
+There are many ways around the liveness. As long as the TX is validated once,
+then the agreed pieces can be gossiped.
+
+\begin{lemma}
+  A valid TX block cannot be made into an invalid TX block and vice versa.
+\end{lemma}
+\begin{proof}
+  We proof by contradiction. Suppose $t_{k, l}$ is determined to be valid using
+  the enclosure $c_{k, a}$ and $c_{k, b}$ and the agreed piece $p$. Then $t_{k,
+    l}$ is forged into an invalid transaction. To forge it into an invalid
+  transaction the attacker must either tamper with the data within the block or
+  remove $t_{k, l}$ from $p$. In other words create $p'$ where $p \ne p'$,
+  enclosed by $c_{k, a}$ and $c_{k, b}$, and has valid hash pointers. Producing
+  $p'$ is equivalent to finding a collision, thus a contradiction.
+
+  TODO proof ``vice versa''.
+\end{proof}
+
+\subsection{Time and message complexity}
+For a single transaction, the message complexity is linear with respect to the
+size of the agreed pieces for both part of the TX pair. Time complexity is
+constant since we only perfrom two queries (to $i$ and $i'$).
+
+\section{Fraud detection}
 Existence testing detects fraud when a single party of the TX is malicious. To
 detect fraud when both parties are malicious, every node performs existence
 testing on all TX blocks between CP blocks as if they are some other node. The
