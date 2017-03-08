@@ -67,11 +67,11 @@
   $s_s'$ is created by the same public key, $h_s = h_s'$, but $i \neq i'$, then
   we call this a \emph{fork}.
 
-\item A block of type $\gamma$ is a three-tuple, i.e.
-  $$c_{i,j} = (\texttt{h}(b_{i,j}), H(\mathcal{C}_r), p)$$
+\item A block of type $\gamma$ is a five-tuple, i.e.
+  $$c_{i,j} = (\texttt{h}(b_{i,j}), H(\mathcal{C}_r), r, p, s)$$
   where $\mathcal{C}_r$ is the consensus result in round $r$ and $p \in {0,1}$
   which indicates whether $i$ wish to become a promoter in the following
-  consensus round.
+  consensus round, finally $s$ is a signature of the block.
 
 \item We define
   $$\texttt{newtx}: B_i \times B_j \times M \rightarrow B_i \times B_j$$
@@ -105,7 +105,7 @@
   validation protocol.
 
 \item The result of a consensus in round $r$ is a set of CP blocks. Namely,
-  $$\mathcal{C}_r = \{ c_{i,j} : \text{agreed by the promoters}\}.$$
+  $$\mathcal{C}_r = (r, \{ c_{i,j} : \text{agreed by the promoters}\}).$$
 
 \item A TX block can be valid, invalid or unknown. All TX blocks begin as
   unknown, they can be validated using our validation protocol.
@@ -193,13 +193,22 @@ irrelevant, broadcasting or gossiping are both sufficient. In fact,
 dissemination is not necessary, nodes interested in the result can simply query
 the promoters that created $\mathcal{C}_{r-1}$.
 
+The consensus result $\mathcal{C}_{r-1}$ does not contain all the signatures of
+the promoters. Thus, the signatures must also be disseminated by the promoters.
+This can be done in the same way as consensus result dissemination. Nodes must
+collect $f + 1$ signatures in order to trust $\mathcal{C}_{r-1}$ because there
+is at least one honest node in $f + 1$ nodes. If there is a sufficient number of
+signatures on the consensus result, we say it is \emph{valid}.
+
 \begin{lemma}\label{lem:con_consistent}
   If a node sees a valid $\mathcal{C}_{r-1}$ and another node sees a valid
   $\mathcal{C}'_{r-1}$, then $\mathcal{C}_{r-1} = \mathcal{C}'_{r-1}$.
 \end{lemma}
 \begin{proof}
-  (sketch) $\mathcal{C}_{r-1}$ is signed by at least $N-f$ promoters from round
-  $r-1$.
+  $\mathcal{C}_{r-1}$ and $\mathcal{C}'_{r-1}$ are signed by at two groups of $f
+  + 1$ promoters (does not have to overlap) from round $r-1$. In both groups, at
+  least one node is honest. Thus the consensus result is what is actually
+  agreed.
 \end{proof}
 
 \begin{lemma}\label{lem:con_alive}
