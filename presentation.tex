@@ -136,6 +136,7 @@
     \item Everyone has their own chain
     \item Transactions are on arbitrary data $m$
     \item Transactions make the chains intertwined
+    \item Transactions are irrefutable due to hash pointers
     \item No consensus (my thesis)
   \end{itemize}
 \end{frame}
@@ -154,94 +155,127 @@
 
 \end{frame}
 
-\subsection{Consensus Protocol Overview}
-\begin{frame}{Consensus Protocol Overview}
+\subsection{Protocol Overview}
+\begin{frame}{Protocol Overview}
   \begin{enumerate}
-    \item $N$ lucky nodes are selected at random to act as promoters.
-    \item Every node sends CP blocks to promoters.
+    \item $n$ lucky nodes are selected at random to act as promoters.
     \item Promoters run a BFT (Byzantine Fault Tolerant) consensus algorithm to
-      agree on a set of CP blocks---$\mathcal{C}_r$.
-    \item Disseminate $\mathcal{C}_r$.
-    \item Any node can verify that their transaction is in consensus.
+      agree on a set of CP blocks.
+    \item Disseminate the consensus result (the CP blocks).
     \item Repeat for next round.
+    \item Any interested node can validate that their transaction.
   \end{enumerate}
 \end{frame}
 
 \subsection{Promoter Registration}
 \begin{frame}{Promoter Registration}
 
+  \begin{figure}[h]
+  \includegraphics[width=0.7\textwidth]{figures/trustchain-1}
+  \centering
+  \caption{We start in the state where $\mathcal{C}_{r - 1}$ has just been agreed but
+    not yet propagated.}
+  \end{figure}
+
 \end{frame}
 
-\begin{frame}{Blocks}
-\begin{block}{Block Title}
-You can also highlight sections of your presentation in a block, with it's own title
-\end{block}
-\begin{theorem}
-There are separate environments for theorems, examples, definitions and proofs.
-\end{theorem}
-\begin{example}
-Here is an example of an example block.
-\end{example}
+\begin{frame}{Promoter Registration}
+
+  \begin{figure}[h]
+  \includegraphics[width=0.7\textwidth]{figures/trustchain-2}
+  \centering
+  \caption{Nodes receive consensus result and set promoters indicator $p$, then
+    send the new CP blocks to promoters of round $r$.}
+  \end{figure}
+
 \end{frame}
 
-% Placing a * after \section means it will not show in the
-% outline or table of contents.
-\section*{Summary}
+\begin{frame}{Promoter Registration}
 
-\begin{frame}{Summary}
+  \begin{figure}[h]
+  \includegraphics[width=0.7\textwidth]{figures/trustchain-3}
+  \centering
+  \caption{Transactions carry on as usual in round $r$. Note that our CP blocks
+    (round $r - 1$) has not reached consensus yet.}
+  \end{figure}
+
+\end{frame}
+
+\begin{frame}{Promoter Registration}
+
+  \begin{figure}[h]
+  \includegraphics[width=0.7\textwidth]{figures/trustchain-4}
+  \centering
+  \caption{CP blocks at round $r-1$ should be in $\mathcal{C}_r$. If we're
+    lucky: $\texttt{h}(k_i || c_{i,j}) < T$, then we're responsible for
+    consensus of round $r + 1$.}
+  \end{figure}
+
+\end{frame}
+
+\subsection{Consensus}
+\begin{frame}{Consensus}
+  \begin{enumerate}
+    \item Nodes send CP blocks to the promoters.
+    \item The promoters' identities are encoded in the consensus result.
+    \item Promoters run the some asynchronous BFT consensus algorithm to agree on
+      a set of CP blocks---$\mathcal{C}_r$.
+    \item $n = 3t + 1$ is the optimal for BFT consensus.
+    \item $\mathcal{C}_r$ and the signatures are disseminated.
+    \item Nodes create new CP blocks when they receive $t + 1$ good signatures and
+      $\mathcal{C}_r$.
+  \end{enumerate}
+
+  \begin{theorem}
+    Assuming the promoters satisfy $n = 3t + 1$. The promoter registration and
+    the consensus protocol satisfied agreement, total order and liveness.
+  \end{theorem}
+\end{frame}
+
+\subsection{Validation}
+
+\begin{frame}{Validation}
+Assume node $u$ is aware of all the past consensus results $\mathcal{C}_r$.
+Suppose $u$ wish to validate $t_{i,j}$. It performs the following.
+
+\begin{enumerate}
+\item Determine the pair $t_{i', j'}$.
+\item Find the agreed enclosure for $t_{i,j}$ and $t_{i', j'}$ from
+  $\mathcal{C}_r$, otherwise return ``unknown''.
+%\item Find the smallest $c_{i', b}$ such that $b > j'$ is in consensus.
+\item Query $i$ and $i'$ for the agreed pieces and ensure hash pointers are
+  correct. Otherwise return ``unknown''.
+\item Check that $t_{i,j}$ and $t_{i', j'}$ are in the agreed pieces and are
+  created correctly using \texttt{newtx}. Otherwise return ``invalid''.
+\item Check the checkpoints $c_{i, k}$ and $c_{i', k'}$ that immediately follow
+  $t_{i,j}$ and $t_{i', j'}$ are in the agreed pieces and are created in the
+  same round, i.e. $\texttt{round}(c_{i, k}) = \texttt{round}(c_{i', k'})$.
+  Otherwise return ``invalid''.
+\item Return ``valid''.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Validation}
+  In essence, given a TX, ask the receiver to proof that it has a set of
+  transactions that produces some CP block, the CP block should be in the
+  consensus result and the pair of the TX should be in that set.
+
+  \begin{theorem}
+    If at least one party of every transaction is honest, then forking and other
+    forms of tampering is guaranteed to be detected if the malicious party is
+    alive.
+  \end{theorem}
+\end{frame}
+
+\subsection{Implementation}
+\begin{frame}{Implementation}
   \begin{itemize}
-  \item
-    The \alert{first main message} of your talk in one or two lines.
-  \item
-    The \alert{second main message} of your talk in one or two lines.
-  \item
-    Perhaps a \alert{third message}, but not more than that.
-  \end{itemize}
-  
-  \begin{itemize}
-  \item
-    Outlook
-    \begin{itemize}
-    \item
-      Something you haven't solved.
-    \item
-      Something else you haven't solved.
-    \end{itemize}
+    \item Currently on going---using Python and Twisted
+    \item Completed BFT consensus algorithm
+    \item Completed local TrustChain
+    \item Next step is networked TrustChain and validation protocol
   \end{itemize}
 \end{frame}
-
-
-
-% All of the following is optional and typically not needed. 
-\appendix
-\section<presentation>*{\appendixname}
-\subsection<presentation>*{For Further Reading}
-
-\begin{frame}[allowframebreaks]
-  \frametitle<presentation>{For Further Reading}
-    
-  \begin{thebibliography}{10}
-    
-  \beamertemplatebookbibitems
-  % Start with overview books.
-
-  \bibitem{Author1990}
-    A.~Author.
-    \newblock {\em Handbook of Everything}.
-    \newblock Some Press, 1990.
- 
-    
-  \beamertemplatearticlebibitems
-  % Followed by interesting articles. Keep the list short. 
-
-  \bibitem{Someone2000}
-    S.~Someone.
-    \newblock On this and that.
-    \newblock {\em Journal of This and That}, 2(1):50--100,
-    2000.
-  \end{thebibliography}
-\end{frame}
-
 \end{document}
 
 
