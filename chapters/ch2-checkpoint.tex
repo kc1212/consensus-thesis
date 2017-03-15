@@ -68,7 +68,7 @@
   we call this a \emph{fork}.
 
 \item A block of type $\gamma$ is a five-tuple, i.e.
-  $$c_{i,j} = (\texttt{h}(b_{i,j}), H(\mathcal{C}_r), r, p, s)$$
+  $$c_{i,j} = (\texttt{h}(b_{i,j-1}), \texttt{h}(\mathcal{C}_r), r, p, s)$$
   where $\mathcal{C}_r$ is the consensus result in round $r$ and $p \in {0,1}$
   which indicates whether $i$ wish to become a promoter in the following
   consensus round, finally $s$ is a signature of the block.
