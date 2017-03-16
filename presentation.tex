@@ -113,9 +113,9 @@
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{figures/trustchain-good}
   \centering
-  \caption{\emph{TX block} is a six-tuple: $t_{i,j} = (\texttt{h}(b_{i,j-1}),
-    h_s, h_r, s_s, s_r, m)$, one transaction results in two TX blocks---\emph{a
-      pair}.}
+  \caption{Every node has a chain. \emph{TX block} is a six-tuple: $t_{i,j} =
+    (\texttt{h}(b_{i,j-1}), h_s, h_r, s_s, s_r, m)$, one transaction results in
+    two TX blocks---\emph{a pair}.}
   \end{figure}
 
 \end{frame}
@@ -125,8 +125,9 @@
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{figures/trustchain-bad}
   \centering
-  \caption{Fork is two correctly signed TX blocks that has the same $h_s$ but
-    involve different receivers. Only one TX block may be in consensus.}
+  \caption{Fork is two correctly signed TX blocks that belong to the same sender
+    and has the same hash pointer but involve different receivers. Only one TX
+    block may be in consensus.}
   \end{figure}
 
 \end{frame}
@@ -135,7 +136,7 @@
   \begin{itemize}
     \item Everyone has their own chain
     \item Transactions are on arbitrary data $m$
-    \item Transactions make the chains intertwined
+    % \item Transactions make the chains intertwined
     \item Transactions are irrefutable due to hash pointers
     \item No consensus (my thesis)
   \end{itemize}
@@ -220,15 +221,15 @@
     \item The promoters' identities are encoded in the consensus result.
     \item Promoters run the some asynchronous BFT consensus algorithm to agree on
       a set of CP blocks---$\mathcal{C}_r$.
-    \item $n = 3t + 1$ is the optimal for BFT consensus.
+    \item $n \ge 3t + 1$ is the optimal for BFT consensus.
     \item $\mathcal{C}_r$ and the signatures are disseminated.
     \item Nodes create new CP blocks when they receive $t + 1$ good signatures and
       $\mathcal{C}_r$.
   \end{enumerate}
 
   \begin{theorem}
-    Assuming the promoters satisfy $n = 3t + 1$. The promoter registration and
-    the consensus protocol satisfied agreement, total order and liveness.
+    Assuming the promoters satisfy $n \ge 3t + 1$. The promoter registration and
+    the consensus protocol satisfies agreement, total order and liveness.
   \end{theorem}
 \end{frame}
 
@@ -265,6 +266,12 @@ Suppose $u$ wish to validate $t_{i,j}$. It performs the following.
     forms of tampering is guaranteed to be detected if the malicious party is
     alive.
   \end{theorem}
+
+  \begin{block}{Question}
+    Given a starting digest and an ending digest, is it possible for the prover
+    to proof to the verifier that it has a set of blocks linked by hash pointers
+    that ``fits'' inside those digests in \emph{zero knowledge}.
+  \end{block}
 \end{frame}
 
 \subsection{Implementation}
@@ -272,7 +279,7 @@ Suppose $u$ wish to validate $t_{i,j}$. It performs the following.
   \begin{itemize}
     \item Currently on going---using Python and Twisted
     \item Completed BFT consensus algorithm
-    \item Completed local TrustChain
+    \item Completed local TrustChain with Checkpoints
     \item Next step is networked TrustChain and validation protocol
   \end{itemize}
 \end{frame}
