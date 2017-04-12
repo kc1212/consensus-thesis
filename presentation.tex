@@ -149,8 +149,8 @@
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{figures/trustchain-bad-cp}
   \centering
-  \caption{CP block is a five-tuple: $c_{i,j} = (\texttt{h}(b_{i,j-1}),
-    \texttt{h}(\mathcal{C}_r), r, p, s)$, $\mathcal{C}_r$ is the consensus
+  \caption{CP block is a six-tuple: $c_{i,j} = (\texttt{h}(b_{i,j-1}),
+    \texttt{h}(\mathcal{C}_r), h, r, p, s)$, $\mathcal{C}_r$ is the consensus
     result at round $r$, $p =$ promoter indicator, $s =$ signature.}
   \end{figure}
 
@@ -274,13 +274,56 @@ Suppose $u$ wish to validate $t_{i,j}$. It performs the following.
   \end{block}
 \end{frame}
 
-\subsection{Implementation}
-\begin{frame}{Implementation}
+\subsection{Implementation and Experimentation Results}
+\begin{frame}{Implementation (4 weeks ago)}
   \begin{itemize}
     \item Currently on going---using Python and Twisted
     \item Completed BFT consensus algorithm
     \item Completed local TrustChain with Checkpoints
     \item Next step is networked TrustChain and validation protocol
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Implementation}
+  \begin{itemize}
+    \item Completed BFT consensus algorithm, with erasure coding
+    \item Completed TrustChain with Checkpoints, with experiments on DAS5
+    \item Validation function is working
+    \item Next step is to build validation into a network protocol and do experiments
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Experiment with 500 nodes---no gossip}
+  \begin{figure}[h]
+  \includegraphics[width=0.95\textwidth]{figures/consensus-500-no-gossip}
+  \centering
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Experiment with 500 nodes---with gossip}
+  \begin{figure}[h]
+  \includegraphics[width=0.95\textwidth]{figures/consensus-500}
+  \centering
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Experiment with 500 nodes---with gossip}
+  \begin{block}{Conclusion}
+    \begin{itemize}
+      \item The number of facilitators affects the consensus latency ($O(N\log{N})$?).
+      \item The transaction rate has little or not effect on the average consensus latency.
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Planned experiments}
+  \begin{itemize}
+    \item Consensus latency (y-axis) vs population size (x-axis)---to
+      investigate how population size impacts consensus latency.
+    \item Global transaction rate vs population size---to investigate
+      the scalability property.
+    \item Global validation rate vs population size---to also investigate the
+      scalability property.
   \end{itemize}
 \end{frame}
 \end{document}

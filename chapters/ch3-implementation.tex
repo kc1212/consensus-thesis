@@ -1,0 +1,15 @@
+\section{Implementation}
+Python. Twisted.
+
+\section{Evaluation}
+\begin{itemize}
+  \item How fast is the consensus algorithm? Possibly plot graph of time versus
+    the number of nodes.
+  \item Does the promoter registration phase add a lot of extra overhead?
+  \item What's the rate of transaction such that they can be verified ``on
+    time'', i.e. without a growing backlog?
+  \item Our global validation rate is somewhat equivalent to the transaction
+    rate in other systems. Does the validation rate scale with respect to the
+    number of nodes? In theory it should. Plot validation rate vs number of
+    nodes, we expect it to be almost linear.
+\end{itemize}

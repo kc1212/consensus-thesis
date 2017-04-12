@@ -67,8 +67,9 @@
   $s_s'$ is created by the same public key, $h_s = h_s'$, but $i \neq i'$, then
   we call this a \emph{fork}.
 
-\item A block of type $\gamma$ is a five-tuple, i.e.
-  $$c_{i,j} = (\texttt{h}(b_{i,j-1}), \texttt{h}(\mathcal{C}_r), r, p, s)$$
+% TODO remove the p indication
+\item A block of type $\gamma$ is a six-tuple, i.e.
+  $$c_{i,j} = (\texttt{h}(b_{i,j-1}), \texttt{h}(\mathcal{C}_r), h, r, p, s)$$
   where $\mathcal{C}_r$ is the consensus result in round $r$ and $p \in {0,1}$
   which indicates whether $i$ wish to become a promoter in the following
   consensus round, finally $s$ is a signature of the block.
@@ -279,14 +280,14 @@ Suppose we use a dealer, what is the effect to the algorithm if the dealer is
 malicious?
 
 \begin{lemma}
-  Consensus phase satisfied agreement, total order and liveness.
+  Consensus phase satisfies agreement, total order and liveness.
 \end{lemma}
 \begin{proof}
   Defer proof? Refer to the papers.
 \end{proof}
 
 \begin{theorem}
-  Checkpoint consensus satisfied agreement, total order and liveness.
+  Checkpoint consensus satisfies agreement, total order and liveness.
 \end{theorem}
 \begin{proof}
   (sketch) Both phases are asynchronous so we do not need to make assumptions on

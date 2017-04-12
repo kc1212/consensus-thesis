@@ -622,7 +622,7 @@
      inkscape:groupmode="layer"
      id="layer11"
      inkscape:label="extra-tx"
-     style="display:none"
+     style="display:inline"
      transform="translate(0,0.34752975)"
      sodipodi:insensitive="true">
     <path
@@ -772,7 +772,7 @@
      inkscape:groupmode="layer"
      id="layer6"
      inkscape:label="tx"
-     style="display:none"
+     style="display:inline"
      transform="translate(0,0.34752975)"
      sodipodi:insensitive="true">
     <rect
@@ -815,7 +815,7 @@
      inkscape:groupmode="layer"
      id="layer7"
      inkscape:label="cp"
-     style="display:inline"
+     style="display:none"
      transform="translate(0,0.34752975)"
      sodipodi:insensitive="true">
     <circle
@@ -989,7 +989,7 @@
      inkscape:groupmode="layer"
      id="layer13"
      inkscape:label="heights-t"
-     style="display:none"
+     style="display:inline"
      sodipodi:insensitive="true">
     <text
        transform="translate(0,0.34752976)"
@@ -1066,7 +1066,7 @@
      inkscape:groupmode="layer"
      id="layer14"
      inkscape:label="heights-c"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true">
     <text
        xml:space="preserve"
@@ -1143,7 +1143,7 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="annotation-tx"
-     style="display:none;opacity:1"
+     style="display:inline;opacity:1"
      transform="translate(-6.2090478,-68.85468)"
      sodipodi:insensitive="true">
     <text
@@ -1216,7 +1216,7 @@
      inkscape:groupmode="layer"
      id="layer12"
      inkscape:label="promoter-registration"
-     style="display:inline"
+     style="display:none"
      sodipodi:insensitive="true">
     <text
        xml:space="preserve"
