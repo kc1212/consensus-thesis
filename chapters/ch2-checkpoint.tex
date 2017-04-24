@@ -440,6 +440,22 @@ If the number of malicious parties is low, then it's more probable that a fork
 is detected. If where there are a large number of malicious parties, we repeat
 the random sampling process.
 
+\section{Privacy}
+Currently the validation protocol requires TX blocks to be sent in full. We can
+do better by modifying how the chain is computed to enhance user's privacy.
+First, recall that hash pointers are calculated on the whole block (TX or CP),
+i.e. $\texttt{h}(b_{s, h_s})$. In the validation stage, $b_{s, h_s}$ must be
+provided to recompuate the digest and check that it matches the block at $h_s - 1$.
+To improve this algorithm, we introduce a new property \emph{digest} for each
+block, which simply is $d_{s, h_s} = \texttt{h}(b_{s, h_s})$, $d$ is computed
+dynamically. Then the chain of hash pointers is formed using $\texttt{h}(d_{s,
+  h_s})$. During the validation phase, there is no need to provide the complete
+block, only the \emph{digest} is sufficient. Of course, the pair of the TX of
+interest must be provided in full.
+
+
+
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "../thesis"
