@@ -46,6 +46,7 @@
 %\usetheme{Warsaw}
 
 \usepackage{graphicx}
+\graphicspath{{../figures/}}
 
 \title{Presentation Title}
 
@@ -111,7 +112,7 @@
 \begin{frame}{TrustChain}{}
 
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{figures/trustchain-good}
+  \includegraphics[width=0.7\textwidth]{trustchain-good}
   \centering
   \caption{Every node has a chain. \emph{TX block} is a six-tuple: $t_{i,j} =
     (\texttt{h}(b_{i,j-1}), h_s, h_r, s_s, s_r, m)$, one transaction results in
@@ -123,7 +124,7 @@
 \begin{frame}{TrustChain}{}
 
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{figures/trustchain-bad}
+  \includegraphics[width=0.7\textwidth]{trustchain-bad}
   \centering
   \caption{Fork is two correctly signed TX blocks that belong to the same sender
     and has the same hash pointer but involve different receivers. Only one TX
@@ -147,7 +148,7 @@
 \begin{frame}{TrustChain with Checkpoints}
 
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{figures/trustchain-bad-cp}
+  \includegraphics[width=0.7\textwidth]{trustchain-bad-cp}
   \centering
   \caption{CP block is a six-tuple: $c_{i,j} = (\texttt{h}(b_{i,j-1}),
     \texttt{h}(\mathcal{C}_r), h, r, p, s)$, $\mathcal{C}_r$ is the consensus
@@ -172,7 +173,7 @@
 \begin{frame}{Promoter Registration}
 
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{figures/trustchain-1}
+  \includegraphics[width=0.7\textwidth]{trustchain-1}
   \centering
   \caption{We start in the state where $\mathcal{C}_{r - 1}$ has just been agreed but
     not yet propagated.}
@@ -183,7 +184,7 @@
 \begin{frame}{Promoter Registration}
 
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{figures/trustchain-2}
+  \includegraphics[width=0.7\textwidth]{trustchain-2}
   \centering
   \caption{Nodes receive consensus result and set promoters indicator $p$, then
     send the new CP blocks to promoters of round $r$.}
@@ -194,7 +195,7 @@
 \begin{frame}{Promoter Registration}
 
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{figures/trustchain-3}
+  \includegraphics[width=0.7\textwidth]{trustchain-3}
   \centering
   \caption{Transactions carry on as usual in round $r$. Note that our CP blocks
     (round $r - 1$) has not reached consensus yet.}
@@ -205,7 +206,7 @@
 \begin{frame}{Promoter Registration}
 
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{figures/trustchain-4}
+  \includegraphics[width=0.7\textwidth]{trustchain-4}
   \centering
   \caption{CP blocks at round $r-1$ should be in $\mathcal{C}_r$. If we're
     lucky: $\texttt{h}(k_i || c_{i,j}) < T$, then we're responsible for
@@ -295,14 +296,14 @@ Suppose $u$ wish to validate $t_{i,j}$. It performs the following.
 
 \begin{frame}{Experiment with 500 nodes---no gossip}
   \begin{figure}[h]
-  \includegraphics[width=0.95\textwidth]{figures/consensus-500-no-gossip}
+  \includegraphics[width=0.95\textwidth]{consensus-500-no-gossip}
   \centering
   \end{figure}
 \end{frame}
 
 \begin{frame}{Experiment with 500 nodes---with gossip}
   \begin{figure}[h]
-  \includegraphics[width=0.95\textwidth]{figures/consensus-500}
+  \includegraphics[width=0.95\textwidth]{consensus-500}
   \centering
   \end{figure}
 \end{frame}
