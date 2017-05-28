@@ -1,5 +1,59 @@
-This is a story about a scalable blockchain framework and Byzantine
-generals\dots
+TODO some positive intro about blockchain
+
+One of the key issues in many blockchain systems today is that they are not scalable.
+Bitcoin~\cite{bitcoin}, the largest permissionless\footnote{Explain permissionless} blockchain system
+in terms of market capitalisation~\cite{bitcoinmarketcap} has a maximum transaction rate of merely 7 transaction per second (TX/s).
+This is due to the consensus mechanism in Bitcoin, namely proof-of-work (PoW),
+miners can only create new blocks every 10 minutes and every block cannot be larger than 1 megabyte.
+Payment processors in use today such as Visa can handle transaction rates in the order of thousands~\cite{visa}.
+While Bitcoin may be a revolutionary phenomenon, it clearly cannot be ubiquitous in its current state.
+
+An different approach is to not reach global consensus at all.
+For instance in TrustChain~\cite{multichain} and Tangle~\cite{tangle},
+nodes in the network only store their personal ledger.
+Since consensus is left out, nodes can perform transactions as fast as their machine and network allows.
+The downside of this approach is that it cannot prevent fraud (it is possible to detect fraud).
+To examplify, a malicious node Mallory may claim she has 3 units of currency to Alice,
+but in reality Mallory already spent all of it on Bob.
+If there is no global consensus and Bob and Alice never communicate,
+then the 3 units that Alice is about to receive is nonexistent.
+
+The scalability property of TrustChain and Tangle are exceptionally desirable.
+The global consensus mechanism of Bitcoin and many other blockchain systems are also worthwhile for detecting or preventing fraud.
+These two properties may seem mutually exclusive, but in this work, we demonstrate the opposite.
+Specifically, we answer the following research question in the affirmative.
+\emph{Is it possible to design a blockchain fabric that can reach global consensus on the state of the system 
+and also scalable?} We define scalability as a property where if more nodes join the system, then the transaction rate should increases.
+% this is not completely true, there's a cap
+
+Our primary insight came from observing the differences between how transactional systems work in the real world and how they work in blockchain systems like Bitcoin. 
+Take a restaurant owner for example, most of the time the customer is honest and pays the bill.
+There is no need for the customer or the restaurant owner to report the transaction to any central authority 
+because both parties are happy with the transaction.
+On the other hand, if the customer leaves without paying the bill,
+then the restaurant owner would report the incident to some central authority, e.g. the police.
+On the contrary, in blockchain systems, every transaction is effectively sent to the miners,
+which can be seen as a collective authority.
+This consequently lead to limited scalability because every transaction must be validated by the authority even when most of the transaction are legitimate.
+
+Using the aforementioned insight,
+we explore an alternative consensus model for blockchain systems where transactions themself do not reach consensus,
+but nevertheless verifiable at a later stage by any node in the network.
+Informally, out model works as follows.
+Every node stores its own blockchain and every block is one transaction, same as the TrustChain construction.
+We randomly selected nodes in every round, the selected ones are called facilitators.
+They reach consensus not on the individual transactions,
+but on the state of every chain represented by a single digest, we call this state the checkpoint.
+If a checkpoint of some node is in consensus, 
+then that node can proof to any other node that it holds a set of transactions that computes (form a chain) to the checkpoint.
+This immediately show that those transactions are tamper-proof.
+
+We begin the detailed discussion by formulating the model \autoref{sec:model}. 
+Next, we analyse the correctness, security and performance of our design in \autoref{sec:analysis},
+this is where we present our theorems.
+Implementation and experimental results are discussed in \autoref{sec:implementation}.
+Finally, we compare our system with other state-of-the-art blockchain systems and conclude in Sections \ref{sec:related} and \ref{sec:conclusion} respectively.
+
 
 %%% Local Variables:
 %%% mode: latex
