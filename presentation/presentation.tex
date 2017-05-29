@@ -294,39 +294,35 @@ Suppose $u$ wish to validate $t_{i,j}$. It performs the following.
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Experiment with 500 nodes---no gossip}
+\begin{frame}{Consensus duration vs population size (static neighbour)}
   \begin{figure}[h]
-  \includegraphics[width=0.95\textwidth]{consensus-500-no-gossip}
+  \includegraphics[width=0.95\textwidth]{result-normal-cons-vs-pop}
   \centering
   \end{figure}
 \end{frame}
 
-\begin{frame}{Experiment with 500 nodes---with gossip}
+\begin{frame}{Throughput vs population size (static neighbour)}
   \begin{figure}[h]
-  \includegraphics[width=0.95\textwidth]{consensus-500}
+  \includegraphics[width=0.95\textwidth]{result-normal-throughput-vs-pop}
   \centering
   \end{figure}
 \end{frame}
 
-\begin{frame}{Experiment with 500 nodes---with gossip}
-  \begin{block}{Conclusion}
-    \begin{itemize}
-      \item The number of facilitators affects the consensus latency ($O(N\log{N})$?).
-      \item The transaction rate has little or not effect on the average consensus latency.
-    \end{itemize}
-  \end{block}
+\begin{frame}{Consensus duration vs population size (random neighbour)}
+  \begin{figure}[h]
+  \includegraphics[width=0.95\textwidth]{result-rand-cons-vs-pop}
+  \centering
+  \end{figure}
 \end{frame}
 
-\begin{frame}{Planned experiments}
-  \begin{itemize}
-    \item Consensus latency (y-axis) vs population size (x-axis)---to
-      investigate how population size impacts consensus latency.
-    \item Global transaction rate vs population size---to investigate
-      the scalability property.
-    \item Global validation rate vs population size---to also investigate the
-      scalability property.
-  \end{itemize}
+\begin{frame}{Throughput vs population size (random neighbour)}
+  \begin{figure}[h]
+  \includegraphics[width=0.95\textwidth]{result-rand-throughput-vs-pop}
+  \centering
+  \end{figure}
 \end{frame}
+
+
 \end{document}
 
 
