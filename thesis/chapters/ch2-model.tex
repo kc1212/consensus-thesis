@@ -25,6 +25,7 @@ and a reference\footnote{TODO This is the difference?} to its \emph{pair}.
 Suppose Alice made a transaction with Bob, then both parties must create a TX block to acknowledge that the transaction took place.
 The pair of Alice's TX block is the corresponding TX on Bob's chain and vice versa.
 An example of 3 nodes is shown in \Cref{fig:trustchain-bad}.
+
 \begin{figure}
     \includegraphics[width=0.8\textwidth]{trustchain-bad}
     \centering
@@ -52,6 +53,7 @@ In particular, the state of the chain is captured with a hash pointer.
 The state of the whole system is captured in the content of the CP block,
 namely as a digest of the latest \emph{consensus result} which we explain in \Cref{sec:overview-cons}.
 A visual representation is shown in \Cref{fig:trustchain-bad-cp}.
+
 \begin{figure}
     \includegraphics[width=0.8\textwidth]{trustchain-bad-cp}
     \centering

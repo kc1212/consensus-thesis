@@ -1,112 +1,81 @@
-%
-% TU/e Style Master Thesis template for LaTeX
-%
-% Public version 1.0
-% 2010 - 2013 Thijs Nugteren and Joos Buijs
-%
-% THIS IS THE MAIN FILE (i.e. compile this file, compiling the others directly won't work)
-%
-\documentclass[a4paper,10pt,twoside]{report}
+% This document provides the style to be used for a MSc Thesis at the
+% Parallel and Distributed Systems group
+\documentclass[11pt,twoside,a4paper,openright]{report}
 
-%all the other includes etc. are done in the thesis.sty file.
-\usepackage{thesis}
-
-%
-% These commands need to be defined in order to produce a correct and personalized document
-%
-\newcommand{\shortdoctitle}{TODO short title}
-\newcommand{\doctitle}{TODO title}
-\newcommand{\docsubtitle}{TODO subtitle}
-
-\newcommand{\me}{Kelong Cong}
-\newcommand{\keywords}{consensus, byzantine, blockchain}
-\newcommand{\version}{Version 1.0}
-\newcommand{\monthYear}{Month 2017}
-
-%Be sure to use all the titles for your committee members!!! (their names show up on the very first page!)
-\newcommand{\firstCommitteeMember}{Dr. J. Pouwelse}
-\newcommand{\secondCommitteeMember}{Dr. Unknown}
-\newcommand{\thirdCommitteeMember}{Prof. Unknown}
-
+% use babel for proper hyphenation
+\usepackage[british]{babel}
+\usepackage{graphicx}
+\graphicspath{{../figures/}}
+\usepackage{url}
 \usepackage{algpseudocode} 
+\usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
+\usepackage{cleveref}
+
 \DeclareMathOperator*{\argmin}{arg\,min}
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}
 \newtheorem{lemma}{Lemma}
 
-\author{\me}
-
-%
-% PDF settings
-%
-\hypersetup
-{
-    pdfauthor={\me},
-    pdftitle={\shortdoctitle},
-    pdfsubject={\doctitle},
-    pdfkeywords={\keywords}
+%use this command when you want the next content to appear on an odd page
+\newcommand{\clearemptydoublepage}{
+    \newpage{\pagestyle{empty}
+    \cleardoublepage}
 }
 
 \begin{document}
 
-%use this include for PDF and distribution versions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\hoffset=1.63cm
+\oddsidemargin=0in
+\evensidemargin=0in
+\textwidth=5in
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\parindent=1em
+
+\pagestyle{empty}
+
+% FRONTCOVER
+\include{formalities/frontcover}
+
+% EMPTY PAGE
+\cleardoublepage
+
+\pagestyle{plain}
+
+% TITLE PAGE: page i (hidden)
+\include{formalities/titlepage}
+
+% GRADUATION DATA AND ABSTRACT: pages ii and iii (hidden)
+\include{formalities/abstract}
+
 \pagenumbering{roman}
-\include{titlepage}
+\setcounter{page}{4}
 
-\normalsize
+% EMPTY PAGE: page iv
+\cleardoublepage
 
-%% TODO uncomment when writing thesis
-%\clearemptydoublepage
-%
-%%Sometimes line numbers are nice, uncomment the next line to enable:
-%%\linenumbers
-%
-%%It could be handy to have a list of todos and brainstorms in your thesis
-%%\chapter*{*General todos*}\todo{remove this chapter}
-%%\input{chapters/general_todos}
-%
-%%\chapter*{*Brainstorm results*}\todo{remove this chapter}
-%%\input{chapters/brainstorm_results}
-%
-%\chapter*{Abstract}\label{chapter:abstract}
-%\input{chapters/abstract}
-%
-%\clearemptydoublepage
-%
-%%An executive summary if you want:
-%%\chapter*{Executive summary}\label{chapter:executive_summary}
-%%\input{chapters/executive_summary}
-%
-%%\clearemptydoublepage
-%
-%
-%\chapter*{Preface}\label{chapter:preface}
-%\input{chapters/preface}
-%
-%\clearemptydoublepage
-%
-%\tableofcontents
-%
-%%\clearemptydoublepage
-%%
-%%\listoffigures
-%%
-%%\clearemptydoublepage
-%%
-%%\listoftables
-%%
-%%\clearemptydoublepage
-%%
-%%\lstlistoflistings
-%
-%\clearemptydoublepage
-%
-\chapter{Introduction}\label{ch:intro}
-\setcounter{page}{0}
+% OPTIONAL QUOTATION: page v
+%\include{quotation}
+% EMPTY PAGE: page vi
+%\cleardoublepage
+
+% PREFACE: page v
+\include{formalities/preface}
+% EMPTY PAGE: page vi
+\cleardoublepage
+
+% TABLE OF CONTENTS: starting at page vii
+\tableofcontents
+
+\cleardoublepage
+
 \pagenumbering{arabic}
-%from here on, start the 'real' page numbering, from 1, with normal digits
+\setcounter{page}{1}
+
+\chapter{Introduction}\label{ch:intro}
 \input{chapters/ch1-intro}
 
 \clearemptydoublepage
@@ -126,17 +95,13 @@
 
 \clearemptydoublepage
 
-%Choose a good bibliography style, plain would do often, but these might be nice too
-%\bibliographystyle{these}
+% BIBLIOGRAPHY
 \bibliographystyle{plain}
 \bibliography{references}
 
-%% Uncomment for appendix
-%\clearemptydoublepage
-%
 %\appendix
-%\addcontentsline{toc}{chapter}{Appendix}
-%
-%\input{appendices/main}
+
+%\include{appendix_a}
 
 \end{document}
+
