@@ -12,11 +12,17 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{cleveref}
+\usepackage{subcaption}
+\usepackage{rotating}
 
 \DeclareMathOperator*{\argmin}{arg\,min}
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}
 \newtheorem{lemma}{Lemma}
+
+\newcommand{\Cons}{\mathcal{C}}
+\newcommand{\Pideal}{\Pi_{\text{ideal}}}
+\newcommand{\Preal}{\Pi_{\text{real}}}
 
 %use this command when you want the next content to appear on an odd page
 \newcommand{\clearemptydoublepage}{
@@ -75,33 +81,24 @@
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
-\chapter{Introduction}\label{ch:intro}
 \input{chapters/ch1-intro}
-
 \clearemptydoublepage
 
-\chapter{System Model}\label{ch:model}
 \input{chapters/ch2-model}
-
 \clearemptydoublepage
 
-\chapter{Checkpoint Consensus}\label{ch:consensus}
 \input{chapters/ch2-checkpoint}
-
 \clearemptydoublepage
 
-\chapter{Implementation and Experimental Results}\label{ch:implementation}
 \input{chapters/ch3-implementation}
-
 \clearemptydoublepage
 
 % BIBLIOGRAPHY
 \bibliographystyle{plain}
 \bibliography{references}
 
-%\appendix
-
-%\include{appendix_a}
+\appendix
+\include{appendices/consensus-example}
 
 \end{document}
 
