@@ -1,15 +1,42 @@
-\chapter{System Model}
+\chapter{System Architecture}
 \label{ch:model}
 
-TODO
-What does our model capture?
-What are the functionalities of our system?
-What's necessary in a model?
-Which formalism to use? (reason for the choice)
+The primary goal guiding our design is scalability.
+As mentioned in the Introduction, having a scalable blockchain system while still keeping global consensus
+allows the system to be ubiquitous and realise the full potential of blockchain.
 
-\section{Universally Composable Framework}
+Our secondary goal is to design an application neutral system.
+In particular, it should act as a framework that provides the building blocks of blockchain systems,
+namely transaction and consensus.
+Application developers using the framework should be able to create any blockchain based application they wish.
+Further, we do not impose on a consensus algorithm,
+the application developer is free to choose between proof-of-work, proof-of-stake,
+Byzantine consensus as long as it  satisfies the properties in \Cref{sec:todo}TODO.
+
+Due to the nature of our system, we do not explicitly address the Sybil attack~\cite{douceur2002sybil}.
+Sybil defence mechanism always require some form of reputation score from the application.
+For example, social network based Sybil defence mechanims use graph structure of real-world relationships~\cite{yu2006sybilguard}.
+Online marketplaces such as Amazon use the rating of buyer and sellers.
+Thus with a application neutral framework it is not possible to design a Sybil defence mechanism.
+On the other hand, our system has no restrictions on the Sybil defence technique.
+
+The third and final goal is security.
+Our system should be unaffected in the presence of powerful adversaries.
+Security is often difficult to verify, especially when it is not formalised, therefore we require our design to be provably secure.
+To summarise, our system design is designed with the following goals in mind.
+\begin{itemize}
+    \item Application neutrality,
+    \item scalability and
+    \item security.
+\end{itemize}
+
+We begin the chapter with an informal overview of our design in \Cref{sec:protocol-overview}.
+Next, we introduce the Universally Composable (UC) Framework and its explain its importance in \Cref{sec:uc-intro}.
+The UC framework is used in \Cref{sec:formal-model} to formally model our design.
+Finally, we give some possible extensions of our design in \Cref{sec:protocol-extensions}.
 
 \section{Protocol Overview}
+\label{sec:protocol-overview}
 The protocol can be described in four parts, the extended TrustChain datastructure, 
 the consensus protocol, the transaction protocol and finally the validation protocol.
 We first describe how the protocols work individually and then explain how they fit together.
@@ -143,8 +170,40 @@ For instance, a node may start the consensus protocol, and while it is running, 
 By the time the consensus protocol is done, the new CP block is added to whatever the state that the chain is in.
 It is not necessary to keep the chain immutable while the consensus protocol is running.
 
+\section{Universally Composable Framework}
+\label{sec:uc-intro}
 
-\section{Extended TrustChain Protocol}
+In order to analyse the security of a system, a formal notion of security is required.
+For instance, what does it mean if an encryption algorithm is secure?
+One may say it is secure if the adversay cannot learn any information about the plaintext from the ciphertext.
+But what if the adversay has some background information, for instance she may know it is English.
+Do we then still say the encryption algorithm is secure?
+Goldwasser and Micali introduced the notion of semantic security~\cite{goldwasser1982probabilistic}.
+That is, imagine two worlds, a real world and an ideal world.
+In the real world, the adversay is given the ciphertext,
+and in the ideal world the adversay has nothing.
+Then the encryption algorithm is semantically secure if the amount of information that the adversay can learn in the real world is just as much as the ideal world.
+While our description is informal, the notion of security can be formally captured in this way.
+
+Security sensitive distributed systems such as secure multi-party computation and blockchain systems also require a formal notion of security so that they can be analysed.
+Fortunately, the idea from semantic security can also be applied in a distributed setting.
+In an ideal world, we create an ideal functionality $\Fideal$ that performs all the computation on behalf of every node in the network.
+The nodes act as dummies and only relay messages between $\Fideal$ and the environment.
+Thus $\Fideal$ essentially becomes the specification of the distributed protocol.
+If the execution of the real world protocol is indistinguishable from the ideal emulation in the presence of some adversay,
+then the real world protocol is secure as per the ideal specification.
+This is in essence the Universally Composable (UC) framework.
+
+We use the UC framework not only because it suits our needs, it is also the only framework used in modelling blockchain systems to the best of our knowledge
+~\cite{todo}TODO.
+In the remainder of this section we give an overview of the UC framework.
+The framework is formally described in~\cite{canetti2001universally}.
+
+TODO
+
+\section{Formal Specification}
+\label{sec:formal-model}
 
 \section{Protocol Extensions}
+\label{sec:protocol-extensions}
 
