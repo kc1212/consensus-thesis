@@ -5,10 +5,9 @@ The primary goal guiding our design is scalability.
 As mentioned in the Introduction, having a scalable blockchain system while still keeping global consensus
 allows the system to be ubiquitous and realise the full potential of blockchain.
 
-Our secondary goal is to design an application neutral system.
-In particular, it should act as a framework that provides the building blocks of blockchain systems,
-namely transaction and consensus.
-Application developers using the framework should be able to create any blockchain based application they wish.
+The secondary goal is to design an application neutral system.
+In particular, it should act as a framework that provides the building blocks of blockchain based applications.
+Application developers using the framework should be able to create any application they wish.
 Further, we do not impose on a consensus algorithm,
 the application developer is free to choose between proof-of-work, proof-of-stake,
 Byzantine consensus as long as it  satisfies the properties in \Cref{sec:todo}TODO.
@@ -17,8 +16,9 @@ Due to the nature of our system, we do not explicitly address the Sybil attack~\
 Sybil defence mechanism always require some form of reputation score from the application.
 For example, social network based Sybil defence mechanims use graph structure of real-world relationships~\cite{yu2006sybilguard}.
 Online marketplaces such as Amazon use the rating of buyer and sellers.
-Thus with a application neutral framework it is not possible to design a Sybil defence mechanism.
-On the other hand, our system has no restrictions on the Sybil defence technique.
+Thus it is not possible to design a Sybil defence mechanism with a a application neutral framework.
+On the other hand, our system also has no restrictions on the Sybil defence technique
+and application designers can pick the best mechanism for their application.
 
 The third and final goal is security.
 Our system should be unaffected in the presence of powerful adversaries.
@@ -126,10 +126,10 @@ starting a new execution immediately after the previous one is completed.
 As we mentioned earlier, the high message complexity prohibits us from running a Byzantine consensus algorithm on a large network.
 Thus, for every round, we randomly select some node---called facilitators---to collect CP blocks,
 and then use them as the proposal of the Byzantine consensus algorithm.
-The facilitators are elected using a \emph{luck value}, which is computed using $H(\Cons_r || pk_i)$,
-where $\Cons_r$ is the consensus result in round $r$ and $pk_i$ is the public key of $i$.
+The facilitators are elected using a \emph{luck value}, which is computed using $H(\C_r || pk_i)$,
+where $\C_r$ is the consensus result in round $r$ and $pk_i$ is the public key of $i$.
 Intuitively, the election is guaranteed to be random 
-because the output of a cryptographically secure hash function is unpredictable and $\Cons_r$ cannot be determined in advance.
+because the output of a cryptographically secure hash function is unpredictable and $\C_r$ cannot be determined in advance.
 
 A visual explaination can be found in \Cref{app:consensus-example},
 it walks through the steps needed for a node to be selected as a facilitator.
@@ -194,15 +194,127 @@ If the execution of the real world protocol is indistinguishable from the ideal 
 then the real world protocol is secure as per the ideal specification.
 This is in essence the Universally Composable (UC) framework.
 
-We use the UC framework not only because it suits our needs, it is also the only framework used in modelling blockchain systems to the best of our knowledge
+We use the UC framework not only because it suits our needs, 
+it is also the only framework used in modelling blockchain systems to the best of our knowledge
 ~\cite{todo}TODO.
 In the remainder of this section we give an overview of the UC framework.
-The framework is formally described in~\cite{canetti2001universally}.
+A detailed treatment  can be found in~\cite{canetti2001universally}.
 
-TODO
+\subsection{Model of Computation}
+The model of computation considered in the UC framework is the interactive Turing machine (ITM).
+Specifically, an ITM is an extension of the Turing machine with externally writable tapes which are the following.
+\begin{enumerate}
+\item input tape---TODO
+\item incoming communication tape---TODO
+\item subroutine output tape---TODO
+\end{enumerate}
+ITM can be seen as a specification or an algorithm, a machine running an ITM is an ITM instance (ITI).
+To communicate, an ITI can write on the externally writable tapes of other ITIs.
+The writing ITI then pauses exeuction, the receiving ITI begins execution.
+Consequently, only one ITI is running at any point in time.
+
+\subsection{Simulation-based Security}
+Simulation-based security, also known as ideal/real paradigm is a model for defining security.
+The model consist of a set of , the environment $\E$, the adversay $\A$,
+the protocol ITM $\Preal$ and zero or more ideal functionalities $\mathcal{F}_0, \mathcal{F}_1, \dots$.
+The 
+Other than the machines running the protocol under consideration, the model contains two extra entities,
+the environment $\E$ and the adversary $\A$.
+$\E$ can be seen as users of the protocol, it can only provide input and receive output from $\A$ and the protocol.
+
+Control function TODO
+
+\subsection{Universal Composability}
 
 \section{Formal Specification}
 \label{sec:formal-model}
+
+The formal model follows the same structure as \ref{fig:todo}TODO.
+
+\begin{framed}
+\textbf{Protocol}\,$\Preal$
+
+The ETC protocol. On initialisation do the following.
+\begin{itemize}
+\item Generate public and private key pair, $pk_i$ and $sk_i$.
+\item Set personal chain $C := \{genesis\}$.
+\item Set checkpoint buffer $\C' := \varnothing$.
+\item Set the facilitators $F$ to the bootstrap nodes provided by $\E$.
+\end{itemize}
+
+Run the protocol as specified below after initialisation.
+\begin{itemize}
+
+\item Upon (\texttt{tx\_init}, $m$, $p$) from $\E$, 
+    $C := C \cup \{new\_tx(m)\}$,
+    send (\texttt{tx\_req}, latext TX in $C$) to $p$.
+\item Upon (\texttt{tx\_req}, $m$) from $p \in \P$,
+    $C := C \cup \{new\_tx(m)\}$,
+    let $m'$ be the latest TX in $C$ and set $m$ to be the other half of $m'$,
+    send (\texttt{tx\_resp}, $m'$) to $p$.
+    Output the complete TX to $\E$.
+\item Upon (\texttt{tx\_resp}, $m'$) from $p \in \P$,
+    find the corresponding pair of $m'$ and name it $m$,
+    add $m'$ as the other half of $m$.
+    Output the complete TX to $\E$.
+
+\item Upon (\texttt{vd\_init}, $s$) from $\E$,
+    if the sequence number $s$ does not exist in $C$ or the block with $s$ does not have the other half then do nothing.
+    Otherwise send (\texttt{vd\_req}, $s'$) to $p'$ where $s'$ is the sequence number of the other half and $p'$ is the counterparty.
+\item Upon (\texttt{vd\_req}, $s'$) from $p \in \P$,
+    if the sequence number $s'$ does not exist then do nothing.
+    Otherwise send (\texttt{vd\_resp}, $agreed\_fragment(s')$) to $p$.
+\item Upon (\texttt{vd\_resp}, $x$) from $p \in \P$,
+    run $validate(x)$ and output result to $\E$.
+
+\item Upon (\texttt{consensus}, $r$, $D$) from $\F_\text{BFT}$,
+    TODO,
+    send (\texttt{propose})
+
+\item Upon (\texttt{checkpoint}, $c$) from $p \in \P$,
+
+
+\end{itemize}
+
+\end{framed}
+
+\begin{framed}
+\textbf{Functionality}\,$\F_\text{BFT}$
+
+The ideal Byzantine consensus protocol, parameterised by...
+
+\begin{itemize}
+\item Upon (\texttt{propose}, $r$, $C$),
+\item Upon (\texttt{fetch}),
+\end{itemize}
+\end{framed}
+
+\subsection{Discussion}
+
+\subsubsection{Global clock for synchronisation}
+Where there is no Byzantine corruption, we conjecture that our protocol runs in the asynchronous setting.
+However, security of many Byzantine consensus algorithms, especially the one we adopted---HoneyBadgerBFT,
+fall apart when there is dynamic corruption.
+In order to enforce that the corrupted machines do not change when running an instance of some Byzantine consensus algorithm,
+we introduce synchrony.
+
+We make use of a global clock... TODO
+
+Dynamic corruption only between different clock ticks is enforced by the control function.
+
+\subsubsection{Static corruption versus dynamic corruption}
+A subtlety exists when modelling the type of corruption.
+In dynamic corruption\footnote{In \cite{canetti2001universally}, dynamic corruption is termed Byzantine corruption.},
+$\A$ take full control of a number of machines and also learns all of their states.
+The states include private keys.
+Thus, using the dynamic corruption model from \cite{canetti2001universally} we cannot guarantee security as
+$\A$ can corrupt different machines over time and eventually learn all the private keys..
+
+First is to use static corruption, where the corrupted machines are fixed.
+While this circumvents our problem, it is a much weaker model.
+Alternatively, we modify the aforementioned dynamic corruption model and weaken the adversary's abilities.
+In particular, we introduce that forgetful adversary that only remembers the state of the currently corrupted nodes and forget the state of the recovered nodes.
+
 
 \section{Protocol Extensions}
 \label{sec:protocol-extensions}
