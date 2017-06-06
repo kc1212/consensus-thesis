@@ -30,16 +30,18 @@ To summarise, our system design is designed with the following goals in mind.
     \item security.
 \end{itemize}
 
-We begin the chapter with an informal overview of our design in \Cref{sec:protocol-overview}.
-Next, we introduce the Universally Composable (UC) Framework and its explain its importance in \Cref{sec:uc-intro}.
-The UC framework is used in \Cref{sec:formal-model} to formally model our design.
-Finally, we give some possible extensions of our design in \Cref{sec:protocol-extensions}.
+We begin the chapter with an intuitive overview of the architecture in \Cref{sec:system-overview}.
+Next, we give the formal description, starting with the model and assumptions in \Cref{sec:model-assumptions}.
+Then, the three protocols which make up the complete system,
+namely consensus protocol (\Cref{sec:cons-protocol}), transaction protocol (\Cref{sec:tx-protocol}) and validation protocol (\Cref{sec:vd-protocol}).
+Finally, the possible extensions are described in \Cref{sec:protocol-extensions}.
 
-\section{Protocol Overview}
-\label{sec:protocol-overview}
-The protocol can be described in four parts, the extended TrustChain datastructure, 
-the consensus protocol, the transaction protocol and finally the validation protocol.
-We first describe how the protocols work individually and then explain how they fit together.
+
+\section{System Overview}
+\label{sec:system-overview}
+The system consist of one data structure---Extended TrustChain,
+and three protocols---consensus protocol, transaction protocol and validation protocol.
+We first describe each component individually and then explain how they fit together in \Cref{sec:combined-protocol}.
 
 \subsection{Extended TrustChain}
 Extended TrustChain naturally builds on top of TrustChain, thus we first describe the standard TrustChain.
@@ -48,16 +50,15 @@ This is to help with the description of the extended TrustChain.
 However, the two descriptions are functionally the same.
 
 \subsubsection*{Standard TrustChain}
-In TrustChain, every node has their ``personal'' chain. 
+In TrustChain, every node has a ``personal'' chain. 
 Initially, the chain only contains a genesis block.
 When a node wishes to add a new transaction (TX), a new TX block is generated and is appended to the chain.
 A TX block must have a valid hash pointer pointing to the previous block
 and a reference\footnote{This is different from the original TrustChain definition found in~\cite{trustchain}.
 In there, a TX block has two outgoing edges which are hash pointers to the two parties involved in the transaction.
 This work uses one outgoing edge and a reference.} to its \emph{pair}.
-Suppose Alice made a transaction with Bob, then both parties must create a TX block to acknowledge that the transaction took place.
-The pair of Alice's TX block is the corresponding TX on Bob's chain and vice versa.
-An example of 3 nodes is shown in \Cref{fig:trustchain-bad}.
+As a result, a single transaction generates two TX blocks, one on each party's chain.
+An example of is shown in \Cref{fig:trustchain-bad}.
 
 \begin{figure}
     \includegraphics[width=0.9\textwidth]{trustchain-bad}
@@ -78,10 +79,10 @@ In \Cref{fig:trustchain-bad}, node $b$ (in the middle chain) created two TX bloc
 If this is a ledger system it can be seen as a double spend, where the currency accumulated up until $t_{b, 5}$ are spent twice.
 
 \subsubsection*{Extended TrustChain}
-We are now ready to explain the extended TrustChain, which we abbreviate to ETC.
-In ETC, we introduce a new type of block, namely checkpoint (CP) block.
+We are now ready to explain the Extended TrustChain, which we abbreviate to ETC.
+In ETC, we introduce a new type of block---checkpoint (CP) block.
 In contract to TX blocks, CP blocks do not store transactions or contain references.
-They capture the state of the chain and the state of the whole system.
+Their purpose is to capture the state of the chain and the state of the whole system.
 In particular, the state of the chain is captured with a hash pointer.
 The state of the whole system is captured in the content of the CP block,
 namely as a digest of the latest \emph{consensus result} which we explain in \Cref{sec:overview-cons}.
@@ -117,7 +118,7 @@ Thus in the ETC consensus protocol, we assume there exist an "off-the-shelf" Byz
 In our case, every node do not propose some arbitrary data, but a set of CP blocks.
 Thus the result of the consensus is the set union of all the legitimate proposals.
 
-\subsubsection*{ETC consensus protocol} 
+\subsubsection*{Consensus Protocol} 
 The consensus protocol runs continuously in rounds.
 That is because a blockchain systems always need to reach consensus on new values, or CP blocks in our case.
 This can be seen as running infinitly many rounds of some Byzantine consensus algorithm,
@@ -125,7 +126,7 @@ starting a new execution immediately after the previous one is completed.
 
 As we mentioned earlier, the high message complexity prohibits us from running a Byzantine consensus algorithm on a large network.
 Thus, for every round, we randomly select some node---called facilitators---to collect CP blocks,
-and then use them as the proposal of the Byzantine consensus algorithm.
+and then use the CP blocks as proposals of the Byzantine consensus algorithm.
 The facilitators are elected using a \emph{luck value}, which is computed using $H(\C_r || pk_i)$,
 where $\C_r$ is the consensus result in round $r$ and $pk_i$ is the public key of $i$.
 Intuitively, the election is guaranteed to be random 
@@ -135,187 +136,438 @@ A visual explaination can be found in \Cref{app:consensus-example},
 it walks through the steps needed for a node to be selected as a facilitator.
 
 \subsection{Transaction Protocol}
-The TX protocol~\footnote{It is also known as True Halves, devised and implemented by Ewout Bongers.
+The TX protocol~\footnote{It is also known as True Halves.
 See \url{https://github.com/Tribler/tribler/pull/2135} for more information.}
-consist of two messages, \texttt{TX\_REQ} and \texttt{TX\_RESP}.
+consist of two messages, \texttt{tx\_req} and \texttt{tx\_resp}.
 When a node  wishes to create a transaction,
 it generates a TX block with the corresponding hash pointer, sequence number, counterparty and the transaction message itself.
-It then sends a \texttt{TX\_REQ} message containing the TX block to the counterparty.
+It then sends a \texttt{tx\_req} message containing the TX block to the counterparty.
 Upon receiving a TX block at the counterparty, it creates its own version of the TX block (the pair of the sender's TX block),
-and sends it back to the sender in a \texttt{TX\_RESP} message.
+and sends it back to the sender in a \texttt{tx\_resp} message.
 At the end of the protocol, both parties should have both versions of the TX block.
 
 \subsection{Validation Protocol}
 The consensus and transaction protocol by themselves do not provide a mechanism to detect forks or other forms of tamperaing.
 This is the goal of the validation protocol.
 
-It also has two message---\texttt{VD\_REQ} and \texttt{VD\_RESP}.
+It also has two message---\texttt{vd\_req} and \texttt{vd\_resp}.
 When a node wishes to validate a transaction,
-it sends a \texttt{VD\_REQ} with the sequence number $s$ to the party that created the TX block of the transaction.
-Upon receiving a \text{VD\_REQ}, the node finds two \emph{agreed} CP blocks that surrounds the TX block and computes the \emph{fragment}.
+it sends a \texttt{vd\_req} with the sequence number $s$ to the party that created the TX block of the transaction.
+Upon receiving a \text{vd\_req}, the node finds two \emph{agreed} CP blocks that surrounds the TX block and computes the \emph{fragment}.
 An agreed CP block means that it has reached consensus.
 A fragment of two CP blocks is a section of the chain where the beginning and the end are defined by those two CP blocks.
-With the fragment, the node replies with a \texttt{VD\_RESP} message.
-Upon receiving a \texttt{VD\_RESP}, the node checks that the fragment is created correctly.
+With the fragment, the node replies with a \texttt{vd\_resp} message.
+Upon receiving a \texttt{vd\_resp}, the node checks that the fragment is created correctly.
 Loosely, that means the agreed CP blocks have actually reached consensus,
 the fragment has the correct hash pointers,
 and TX block containing $s$ exists and is valid.
 
 
-\subsection{Putting The Protocols Together}
-The final protocol ($\Preal$) is essentially the concurrent composition of the three aforementioned protocols.
+\subsection{Combined Protocol}
+\label{sec:combined-protocol}
+The final protocol is essentially the concurrent composition of the three aforementioned protocols,
+all making use the Extended TrustChain data structure.
+
 Our subprotocol design gives us the highly desireable non-blocking property.
 In particular, we do not need to ``freeze'' the state of the chain for some communication to complete in order to create a block.
 For instance, a node may start the consensus protocol, and while it is running, the node may still perform transactions.
 By the time the consensus protocol is done, the new CP block is added to whatever the state that the chain is in.
 It is not necessary to keep the chain immutable while the consensus protocol is running.
 
-\section{Universally Composable Framework}
-\label{sec:uc-intro}
+\section{Model and Assumptions}
+\label{sec:model-assumptions}
 
-In order to analyse the security of a system, a formal notion of security is required.
-For instance, what does it mean if an encryption algorithm is secure?
-One may say it is secure if the adversay cannot learn any information about the plaintext from the ciphertext.
-But what if the adversay has some background information, for instance she may know it is English.
-Do we then still say the encryption algorithm is secure?
-Goldwasser and Micali introduced the notion of semantic security~\cite{goldwasser1982probabilistic}.
-That is, imagine two worlds, a real world and an ideal world.
-In the real world, the adversay is given the ciphertext,
-and in the ideal world the adversay has nothing.
-Then the encryption algorithm is semantically secure if the amount of information that the adversay can learn in the real world is just as much as the ideal world.
-While our description is informal, the notion of security can be formally captured in this way.
+For notational clarify, we use the following convention (adapted from~\cite{miller2016honey}) throughout this work.
+\begin{itemize}
+\item Lower case (e.g. $x$) denotes a scalar object.
+\item Upper case (e.g. $X$) denotes a set or a constant.
+\item Sans serif (e.g. $\textsf{fn}(\cdot)$) denotes a function.
+\item Typewrite (e.g. $\texttt{ack}$) denotes message type.
+\end{itemize}
 
-Security sensitive distributed systems such as secure multi-party computation and blockchain systems also require a formal notion of security so that they can be analysed.
-Fortunately, the idea from semantic security can also be applied in a distributed setting.
-In an ideal world, we create an ideal functionality $\Fideal$ that performs all the computation on behalf of every node in the network.
-The nodes act as dummies and only relay messages between $\Fideal$ and the environment.
-Thus $\Fideal$ essentially becomes the specification of the distributed protocol.
-If the execution of the real world protocol is indistinguishable from the ideal emulation in the presence of some adversay,
-then the real world protocol is secure as per the ideal specification.
-This is in essence the Universally Composable (UC) framework.
+We assume a distributed network where nodes are fully connected,
+the channels are reliable\footnote{
+    Reliability can be achieved in unreliable networks by resending messages or using some error correction code.
+},
+but messages may be re-ordered and delayed by at most some time $\Delta$.
+Nodes are identified by their public key thus we assume there exist a Public Key Infrastructure (PKI).
+TODO this is weak synchrony?
+In addition, we assume the existance of cryptographically secure hash function $\textsf{H}(\cdot)$,
+that has preimage resistance, second preimage resistance and collision resistance.
 
-We use the UC framework not only because it suits our needs, 
-it is also the only framework used in modelling blockchain systems to the best of our knowledge
-~\cite{todo}TODO.
-In the remainder of this section we give an overview of the UC framework.
-A detailed treatment  can be found in~\cite{canetti2001universally}.
+In our model we consider $N$ nodes, which is the population size.
+$n$ of them are facilitators, $t$ out of $n$ are malicious and the inequality
+$n \ge 3t + 1$ must hold.
 
-\subsection{Model of Computation}
-The model of computation considered in the UC framework is the interactive Turing machine (ITM).
-Specifically, an ITM is an extension of the Turing machine with externally writable tapes which are the following.
+The primary data structure used in our system is Extended TrustChain.
+Each node $u$ has a public and private key pair---$pk_u$ and $sk_u$, and a chain $B_u$.
+The chain consist of blocks $B_u = \{ b_{u, i} : k \in \{ 0, \dots, h - 1 \} \}$,
+where $b_{u, i}$ is the $i$th block of $u$,
+and $h = |B_u|$.
+There are two types of blocks, TX blocks and CP blocks.
+If $T_u$ is the set of TX blocks of $u$ and $C_u$ is the set of CP blocks of $u$,
+then it must be the case that $T_u \cup C_u = B_u$ and $T_u \cap C_u = \varnothing$.
+The notation $b_{u, i}$ is generic over the block type.
+We assume there exist a function $\textsf{typeof}: B_u \rightarrow \{ \tau, \gamma \}$ that returns the type of the block,
+where $\tau$ represents the TX type and $\gamma$ represents the CP type.
+
+\subsection{TX Block}
+The TX block is a six-tuple, i.e $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), seq_u, txid, pk_v, m, sig_u \rangle$.
+We describe each item in turn.
 \begin{enumerate}
-\item input tape---TODO
-\item incoming communication tape---TODO
-\item subroutine output tape---TODO
+\item $\textsf{H}(b_{u, i - 1})$ is the hash pointer to the previous block.
+\item $seq_u$ is the sequence which should equal $i$.
+\item $txid$ is a cryptographically secure random number representing the transaction identifier.
+\item $pk_v$ is the public key of the counterparty.
+\item $m$ is the transaction message.
+\item $sig_u$ is the signature created using $sk_u$ on the concatination of the binary representation of the five items above.
 \end{enumerate}
-ITM can be seen as a specification or an algorithm, a machine running an ITM is an ITM instance (ITI).
-To communicate, an ITI can write on the externally writable tapes of other ITIs.
-The writing ITI then pauses exeuction, the receiving ITI begins execution.
-Consequently, only one ITI is running at any point in time.
+The fact that we have no constraint on the content of $m$ is in alignment with our design goal---application neutrality.
 
-\subsection{Simulation-based Security}
-Simulation-based security, also known as ideal/real paradigm is a model for defining security.
-The model consist of a set of , the environment $\E$, the adversay $\A$,
-the protocol ITM $\Preal$ and zero or more ideal functionalities $\mathcal{F}_0, \mathcal{F}_1, \dots$.
-The 
-Other than the machines running the protocol under consideration, the model contains two extra entities,
-the environment $\E$ and the adversary $\A$.
-$\E$ can be seen as users of the protocol, it can only provide input and receive output from $\A$ and the protocol.
+TX blocks come in pairs.
+In particular, for every block $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), seq_u, txid, pk_v, m, sig_u \rangle$
+there exist one and only one \emph{pair} $t_{v, j} = \langle \textsf{H}(b_{v, j - 1}), seq_v, txid, pk_u, m, sig_v \rangle$.
+Note that the $txid$ and $m$ are the same, and the public keys refer to each other.
+Thus, given a TX block, these properties allow us to identify its pair.
 
-Control function TODO
+% TODO Node $v$ may cheat and create more than one pair for $t_{u, i}. we discuss later
 
-\subsection{Universal Composability}
+\subsection{CP Block}
 
-\section{Formal Specification}
-\label{sec:formal-model}
+The CP block is a five-tuple, 
+i.e. $c_{u, i} = \langle \textsf{H}(b_{u, i-1}), seq_u, \textsf{H}(\C_r), r, sig_u \rangle$,
+where $\C_r$ is the consensus result in round $r$, the other items are the same as the TX block definition.
+Note that unlike in our prior work~\cite{implicitconsensus}, CP blocks and TX blocks do not have independent sequence numbers.
 
-The formal model follows the same structure as \ref{fig:todo}TODO.
-
-\begin{framed}
-\textbf{Protocol}\,$\Preal$
-
-The ETC protocol. On initialisation do the following.
-\begin{itemize}
-\item Generate public and private key pair, $pk_i$ and $sk_i$.
-\item Set personal chain $C := \{genesis\}$.
-\item Set checkpoint buffer $\C' := \varnothing$.
-\item Set the facilitators $F$ to the bootstrap nodes provided by $\E$.
-\end{itemize}
-
-Run the protocol as specified below after initialisation.
-\begin{itemize}
-
-\item Upon (\texttt{tx\_init}, $m$, $p$) from $\E$, 
-    $C := C \cup \{new\_tx(m)\}$,
-    send (\texttt{tx\_req}, latext TX in $C$) to $p$.
-\item Upon (\texttt{tx\_req}, $m$) from $p \in \P$,
-    $C := C \cup \{new\_tx(m)\}$,
-    let $m'$ be the latest TX in $C$ and set $m$ to be the other half of $m'$,
-    send (\texttt{tx\_resp}, $m'$) to $p$.
-    Output the complete TX to $\E$.
-\item Upon (\texttt{tx\_resp}, $m'$) from $p \in \P$,
-    find the corresponding pair of $m'$ and name it $m$,
-    add $m'$ as the other half of $m$.
-    Output the complete TX to $\E$.
-
-\item Upon (\texttt{vd\_init}, $s$) from $\E$,
-    if the sequence number $s$ does not exist in $C$ or the block with $s$ does not have the other half then do nothing.
-    Otherwise send (\texttt{vd\_req}, $s'$) to $p'$ where $s'$ is the sequence number of the other half and $p'$ is the counterparty.
-\item Upon (\texttt{vd\_req}, $s'$) from $p \in \P$,
-    if the sequence number $s'$ does not exist then do nothing.
-    Otherwise send (\texttt{vd\_resp}, $agreed\_fragment(s')$) to $p$.
-\item Upon (\texttt{vd\_resp}, $x$) from $p \in \P$,
-    run $validate(x)$ and output result to $\E$.
-
-\item Upon (\texttt{consensus}, $r$, $D$) from $\F_\text{BFT}$,
-    TODO,
-    send (\texttt{propose})
-
-\item Upon (\texttt{checkpoint}, $c$) from $p \in \P$,
+The genesis block in the chain must be a CP block in the form of
+$c_{u, 0} = \langle \textsf{H}(\bot), 0,  \textsf{H}(\bot), 0, sig_u \rangle$
+where $\textsf{H}(\bot)$ can be interpreted as applying the hash function on an empty string.
+The genesis block is unique due to every node due to $sig_u$.
 
 
-\end{itemize}
+\subsection{Consensus Result}
+Our consensus protocol runs in rounds as discussed in \Cref{sec:system-overview}.
+Every round is identified by a round number $r$, which is incremented on every new round.
+The consensus result is a tuple, i.e. $\C_r = \langle r, C \rangle$,
+where $C$ is a set of CP blocks agreed by the facilitators of round $r$.
 
-\end{framed}
+\subsection{Chain Properties}
+Here we define a few important properties which results from the interleaving nature of CP and TX blocks.
 
-\begin{framed}
-\textbf{Functionality}\,$\F_\text{BFT}$
+If there exist a tuple $\langle c_{u,a}, c_{u, b} \rangle$ for a TX block $t_{u, i}$,
+where 
+$$a = \argmin_{k, k < i, \texttt{typeof}(b_{u,k}) = \gamma}(i - k)$$
+$$b = \argmin_{k, k > i, \texttt{typeof}(b_{u,k}) = \gamma}(k - i),$$
+then $\langle c_{u,a}, c_{u, b} \rangle$ is the \emph{enclosure} of $t_{u, i}$.
+Some TX blocks may not have any subsequent CP blocks, then its enclosure is $\bot$.
 
-The ideal Byzantine consensus protocol, parameterised by...
+If the enclosure of some TX block is $\langle c_{u,a}, c_{u, b} \rangle$,
+then its \emph{fragment} is computed as $\{ b_{u, i} : a \le i \le b \}$.
+For convenience, the function $\textsf{fragment}(\cdot)$ represents the fragment of some TX block if it exists, otherwise $\bot$.
 
-\begin{itemize}
-\item Upon (\texttt{propose}, $r$, $C$),
-\item Upon (\texttt{fetch}),
-\end{itemize}
-\end{framed}
+\emph{Agreed enclosure} is the same as enclosure with an extra constraint where the CP blocks must be in some consensus result $\C_r$.
+Similarly, \emph{agreed fragment} is computed using agreed enclosure.
+We define its function to be $\textsf{agreed\_fragment}(\cdot)$
 
-\subsection{Discussion}
+The length of the fragment is constrained by $L$,
+namely $\forall t |\textsf{fragment}(t)| \le L$.
+The purpose to prevent spam and encourage nodes to create more CP blocks.
+$L$ should be sufficiently high so that busy nodes are not hindered by it.
 
-\subsubsection{Global clock for synchronisation}
-Where there is no Byzantine corruption, we conjecture that our protocol runs in the asynchronous setting.
-However, security of many Byzantine consensus algorithms, especially the one we adopted---HoneyBadgerBFT,
-fall apart when there is dynamic corruption.
-In order to enforce that the corrupted machines do not change when running an instance of some Byzantine consensus algorithm,
-we introduce synchrony.
+\section{Consensus Protocol}
+\label{sec:cons-protocol}
 
-We make use of a global clock... TODO
+Our consensus protocol runs on top of the model describe before, it makes heavy use of CP blocks.
+We describe the protocol step by step.
+Starting with the bootstrap phase and then moving on to the actual consensus phase.
 
-Dynamic corruption only between different clock ticks is enforced by the control function.
+\subsection{Bootstrap Phase}
+Recall that facilitators are computed from the consensus result,
+but the consensus result is agreed by the facilitators.
+Thus we have a dependency cycle.
+The goal of the bootstrap phase is to give us a starting point for the cycle.
 
-\subsubsection{Static corruption versus dynamic corruption}
-A subtlety exists when modelling the type of corruption.
-In dynamic corruption\footnote{In \cite{canetti2001universally}, dynamic corruption is termed Byzantine corruption.},
-$\A$ take full control of a number of machines and also learns all of their states.
-The states include private keys.
-Thus, using the dynamic corruption model from \cite{canetti2001universally} we cannot guarantee security as
-$\A$ can corrupt different machines over time and eventually learn all the private keys..
+Our bootstrap phase runs as follows.
+First we assume all $N$ nodes start simultaneously.
+The facilitators for round 0 are hard coded in the program,
+in practice this could be the machines controlled by the developer.
+If some node $u$ not a facilitator,
+it sends the message $\langle \texttt{cp\_msg}, c_{u, 0} \rangle$ to all the facilitators.
+If $u$ is a facilitator, it does the same, but also waits for some time $\Delta + 1$ to collect messages of type \texttt{cp\_msg}.
+After $\Delta + 1$ elapses, it begins the atomic broadcast protocol using the collected CP blocks as the proposal.
+$\C_0$ is agreed at the end of the protocol.
+This concludes the bootstrap phase.
 
-First is to use static corruption, where the corrupted machines are fixed.
-While this circumvents our problem, it is a much weaker model.
-Alternatively, we modify the aforementioned dynamic corruption model and weaken the adversary's abilities.
-In particular, we introduce that forgetful adversary that only remembers the state of the currently corrupted nodes and forget the state of the recovered nodes.
+The bootstrap phase can be seen as an idealised version of the setup phase combined with the consensus phase,
+which we describe next.
+
+\subsection{Setup phase}
+The setup phase begins immediately after some consensus result is agreed, but not yet disseminate.
+This could be right after the bootstrap phase.
+The goal is to reach agreement on a list of new facilitators between every node.
+Concretely, for every consensus round $r$, the following is required.
+\begin{enumerate}
+\item \emph{Agreement}: If any correct node receives $\C_r$,
+  then every correct node receives $\C_r$.
+\item \emph{Liveness}: All $N - t$ correct nodes receives a value eventually.
+\end{enumerate}
+
+The setup phase works as follows.
+Assume that facilitators of round $r-1$ have just agreed on $\C_{r-1}$.
+They then immediately broadcast two messages to all the nodes---
+first the consensus message $\langle \texttt{cons\_msg}, \C_{r-1} \rangle$,
+and second the signature message $\langle \texttt{cons\_sig}, r, sig \rangle$.
+
+We make two remarks regarding those message.
+First, broadcasting is inefficient in terms of message  complexity.
+Gossiping is often better in practice but it introduces additional complexity due to its probabilistic nature.
+Thus, to keep the analysis clear in \Cref{sec:analysis}, we use broadcasting.
+Second, recall that channels are not authenticated, 
+and there are no signatures in $\C_{r - 1}$.
+If a non-facilitator sees some $\C_{r - 1}$, it cannot immediately trust it because it may have been forged.
+Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_r$.
+
+Continuing with the setup phase.
+Upon receiving $\C_{r - 1}$ and at least $t + 1$ valid signatures by $u$, $u$ performs two asks.
+First, it computes the new facilitators using $\textsf{derive\_facilitator}(C, n)$ (\Cref{alg:facilitator})
+and updates its facilitator list to the result.
+Second, it creates a new CP block using $\textsf{new\_cp}(\C_{r - 1}, r - 1)$ (\Cref{alg:new-cp}).
+This concludes the setup phase.
+
+\begin{algorithm}
+\caption{Function $\textsf{derive\_facilitator}(C, n)$ takes a list of CP blocks $C$ and an integer $n$,
+sort evey element in $C$ by its luck value (the $\lambda$-expression), and outputs the smallest $n$ elements.}
+\label{alg:facilitator}
+\begin{algorithmic}
+\State $\textbf{take} (n, \textbf{sort} (\textbf{map}(\lambda x.\textsf{H}(x || pk \text{ of x}), C)))$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Function $\textsf{new\_cp}(\C_r, r)$ runs in the context of the caller $u$. TODO}
+\label{alg:new-cp}
+\begin{algorithmic}
+\State $h \gets |B_u|$
+\State $c_{u, h} \gets \langle \textsf{H}(b_{u, h-1}), h, \textsf{H}(\C_r), r, sig_u \rangle$
+\State $B_u \gets B_u \cup c_{u, h}$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Consensus Phase}
+The consensus phase begins after the new facilitators are selected.
+Assuming the facilitators are of round $r$,
+the goal is to agree on some $\C_r$ between the facilitators.
+There are two scenarios in the consensus phase.
+First is when the node is a facilitator, the other is when the node is not.
+If the node is a facilitator, it must satisfy the following conditions.
+\begin{enumerate}
+\item \emph{Agreement}: If any correct node outputs a CP block $c$, then every
+  correct node outputs $c$.
+\item \emph{Total Order}: If one correct node outputs the sequence of CP blocks
+  $\{c_1, c_i, \dots, c_n\}$ and another has output $\{c'_0, c'_1, \dots,
+  c'_{n'} \}$, then $c_i = c'_i$ for $i \le \min(n, n')$.
+\item \emph{Liveness}: All $n - t$ correct nodes terminate eventually.
+\end{enumerate}
+
+\section{Transaction Protocol}
+\label{sec:tx-protocol}
+
+\begin{algorithm}
+
+    \caption{Function $\textsf{tx\_init}(pk_v, m)$ generates a new TX block,
+    appends it to the caller $u$'s chain and sends it to the counterparty.
+    It is executed in the private context of $u$, i.e. it has access to the $sk_u$ and $B_u$.
+    The necessary arguments are the public key of the counterparty $pk_v$ and the transaction message $m$.}
+    \label{alg:tx-init}
+
+    \begin{algorithmic}
+
+    \State $h \gets |B_u|$
+    \State $txid \in_R \{0, 1\}^{256}$ \Comment A uniformly distributed 256 bit random value.
+    \State $b_{u, h} \gets \langle \textsf{H}(b_{u, h - 1}), h, txid, pk_v, m, sig_u \rangle$
+    \State $B_u \gets B_u \cup \{ b_{u, h} \}$
+
+    \State \textbf{Send} $\langle \texttt{tx\_req}, b_{u,h} \rangle$ to $v$
+
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+    \caption{The TX protocol which runs in the context of node $u$.}
+    \label{alg:tx-proto}
+
+    \begin{algorithmic}
+        \Function{Create}{$z$}
+        \State x
+        \EndFunction
+
+    \end{algorithmic}
+
+\end{algorithm}
+
+\section{Validation Protocol}
+\label{sec:vd-protocol}
 
 
 \section{Protocol Extensions}
 \label{sec:protocol-extensions}
+
+
+% \section{Universally Composable Framework}
+% \label{sec:uc-intro}
+
+% In order to analyse the security of a system, a formal notion of security is required.
+% For instance, what does it mean if an encryption algorithm is secure?
+% One may say it is secure if the adversay cannot learn any information about the plaintext from the ciphertext.
+% But what if the adversay has some background information, for instance she may know it is English.
+% Do we then still say the encryption algorithm is secure?
+% Goldwasser and Micali introduced the notion of semantic security~\cite{goldwasser1982probabilistic}.
+% That is, imagine two worlds, a real world and an ideal world.
+% In the real world, the adversay is given the ciphertext,
+% and in the ideal world the adversay has nothing.
+% Then the encryption algorithm is semantically secure if the amount of information that the adversay can learn in the real world is just as much as the ideal world.
+% While our description is informal, the notion of security can be formally captured in this way.
+
+% Security sensitive distributed systems such as secure multi-party computation and blockchain systems also require a formal notion of security so that they can be analysed.
+% Fortunately, the idea from semantic security can also be applied in a distributed setting.
+% In an ideal world, we create an ideal functionality $\Fideal$ that performs all the computation on behalf of every node in the network.
+% The nodes act as dummies and only relay messages between $\Fideal$ and the environment.
+% Thus $\Fideal$ essentially becomes the specification of the distributed protocol.
+% If the execution of the real world protocol is indistinguishable from the ideal emulation in the presence of some adversay,
+% then the real world protocol is secure as per the ideal specification.
+% This is in essence the Universally Composable (UC) framework.
+
+% We use the UC framework not only because it suits our needs, 
+% it is also the only framework used in modelling blockchain systems to the best of our knowledge
+% ~\cite{todo}TODO.
+% In the remainder of this section we give an overview of the UC framework.
+% A detailed treatment  can be found in~\cite{canetti2001universally}.
+
+% \subsection{Model of Computation}
+% The model of computation considered in the UC framework is the interactive Turing machine (ITM).
+% Specifically, an ITM is an extension of the Turing machine with externally writable tapes which are the following.
+% \begin{enumerate}
+% \item input tape---TODO
+% \item incoming communication tape---TODO
+% \item subroutine output tape---TODO
+% \end{enumerate}
+% ITM can be seen as a specification or an algorithm, a machine running an ITM is an ITM instance (ITI).
+% To communicate, an ITI can write on the externally writable tapes of other ITIs.
+% The writing ITI then pauses exeuction, the receiving ITI begins execution.
+% Consequently, only one ITI is running at any point in time.
+
+% \subsection{Simulation-based Security}
+% Simulation-based security, also known as ideal/real paradigm is a model for defining security.
+% The model consist of a set of , the environment $\E$, the adversay $\A$,
+% the protocol ITM $\Preal$ and zero or more ideal functionalities $\mathcal{F}_0, \mathcal{F}_1, \dots$.
+% The 
+% Other than the machines running the protocol under consideration, the model contains two extra entities,
+% the environment $\E$ and the adversary $\A$.
+% $\E$ can be seen as users of the protocol, it can only provide input and receive output from $\A$ and the protocol.
+
+% Control function TODO
+
+% \subsection{Universal Composability}
+
+% \section{Formal Specification}
+% \label{sec:formal-model}
+
+% The formal model follows the same structure as \ref{fig:todo}TODO.
+
+% \begin{figure}[h]
+% \begin{framed}
+% \small  % end with \normalsize
+
+% \textbf{Protocol}\,$\Preal$
+
+% The ETC protocol. On initialisation do the following.
+% \begin{itemize}
+% \item Generate public and private key pair, $pk$ and $sk$.
+% \item Set personal chain $C := \{genesis()\}$.
+% \item Set checkpoint buffer $\C' := \varnothing$.
+% \item Set the facilitators $F$ to the bootstrap nodes provided by $\E$.
+% \item Set the latest round $r_{\text{latest}} = 0$.
+% \end{itemize}
+
+% Run the protocol as specified below after initialisation.
+% \begin{itemize}
+
+% \item Upon (\texttt{consensus}, $D$) from $\F^r_\text{BFT}$,
+%     if $r_{\text{latest}} >= r$ then do nothing and pause,
+%     otherwise do $try_add_cp(D, r)$
+%     send (\texttt{propose})
+
+% \item Upon (\texttt{consensus}, $D$, $r$) from $p \in \P$,
+
+% \item Upon (\texttt{checkpoint}, $c$) from $p \in \P$,
+
+% \item Upon (\texttt{tx\_init}, $m$, $p$) from $\E$, 
+%     $C := C \cup \{new\_tx(m)\}$,
+%     send (\texttt{tx\_req}, latext TX in $C$) to $p$.
+
+% \item Upon (\texttt{tx\_req}, $m$) from $p \in \P$,
+%     $C := C \cup \{new\_tx(m)\}$,
+%     let $m'$ be the latest TX in $C$ and set $m$ to be the other half of $m'$,
+%     send (\texttt{tx\_resp}, $m'$) to $p$.
+%     Output the complete TX to $\E$.
+
+% \item Upon (\texttt{tx\_resp}, $m'$) from $p \in \P$,
+%     find the corresponding pair of $m'$ and name it $m$,
+%     add $m'$ as the other half of $m$.
+%     Output the complete TX to $\E$.
+
+% \item Upon (\texttt{vd\_init}, $s$) from $\E$,
+%     if the sequence number $s$ does not exist in $C$ or the block with $s$ does not have the other half then do nothing.
+%     Otherwise send (\texttt{vd\_req}, $s'$) to $p'$ where $s'$ is the sequence number of the other half and $p'$ is the counterparty.
+
+% \item Upon (\texttt{vd\_req}, $s'$) from $p \in \P$,
+%     if the sequence number $s'$ does not exist then do nothing.
+%     Otherwise send (\texttt{vd\_resp}, $agreed\_fragment(s')$) to $p$.
+
+% \item Upon (\texttt{vd\_resp}, $x$) from $p \in \P$,
+%     run $validate(x)$ and output result to $\E$.
+
+% \end{itemize}
+
+% \normalsize
+% \end{framed}
+% \end{figure}
+
+% \begin{framed}
+% \textbf{Functionality}\,$\F^r_\text{BFT}$
+
+% The ideal Byzantine consensus protocol, parameterised by the round number $r$.
+
+% \begin{itemize}
+% \item Upon (\texttt{propose}, $r$, $C$),
+% \item Upon (\texttt{fetch}),
+% \end{itemize}
+% \end{framed}
+
+% \subsection{Discussion}
+
+% \subsubsection{Global clock for synchronisation}
+% Where there is no Byzantine corruption, we conjecture that our protocol runs in the asynchronous setting.
+% However, security of many Byzantine consensus algorithms, especially the one we adopted---HoneyBadgerBFT,
+% fall apart when there is dynamic corruption.
+% In order to enforce that the corrupted machines do not change when running an instance of some Byzantine consensus algorithm,
+% we introduce synchrony.
+
+% We make use of a global clock... TODO
+
+% Dynamic corruption only between different clock ticks is enforced by the control function.
+
+% \subsubsection{Static corruption versus dynamic corruption}
+% A subtlety exists when modelling the type of corruption.
+% In dynamic corruption\footnote{In \cite{canetti2001universally}, dynamic corruption is termed Byzantine corruption.},
+% $\A$ take full control of a number of machines and also learns all of their states.
+% The states include private keys.
+% Thus, using the dynamic corruption model from \cite{canetti2001universally} we cannot guarantee security as
+% $\A$ can corrupt different machines over time and eventually learn all the private keys..
+
+% First is to use static corruption, where the corrupted machines are fixed.
+% While this circumvents our problem, it is a much weaker model.
+% Alternatively, we modify the aforementioned dynamic corruption model and weaken the adversary's abilities.
+% In particular, we introduce that forgetful adversary that only remembers the state of the currently corrupted nodes and forget the state of the recovered nodes.
+
 
