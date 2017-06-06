@@ -135,32 +135,45 @@ because the output of a cryptographically secure hash function is unpredictable 
 A visual explaination can be found in \Cref{app:consensus-example},
 it walks through the steps needed for a node to be selected as a facilitator.
 
-\subsection{Transaction Protocol}
-The TX protocol~\footnote{It is also known as True Halves.
-See \url{https://github.com/Tribler/tribler/pull/2135} for more information.}
-consist of two messages, \texttt{tx\_req} and \texttt{tx\_resp}.
-When a node  wishes to create a transaction,
-it generates a TX block with the corresponding hash pointer, sequence number, counterparty and the transaction message itself.
-It then sends a \texttt{tx\_req} message containing the TX block to the counterparty.
-Upon receiving a TX block at the counterparty, it creates its own version of the TX block (the pair of the sender's TX block),
-and sends it back to the sender in a \texttt{tx\_resp} message.
-At the end of the protocol, both parties should have both versions of the TX block.
+\subsection{Transaction and Validation}
+The TX protocol is a simple request and response protocol.
+The nodes exchange one round of messages and create new TX blocks on their respective chains.
+Thus, as we mentioned before, one transaction should result in two TX blocks.
 
-\subsection{Validation Protocol}
 The consensus and transaction protocol by themselves do not provide a mechanism to detect forks or other forms of tamperaing.
-This is the goal of the validation protocol.
+Thus we need a validation protocol to counteract malicious behaviour.
+When a node wish to validate one of its TX, it asks the counterparty for the \emph{fragment} of the TX.
+A fragment of a TX is a section of the chain beginning and ending with CP blocks that contains the TX.
+Upon the counterparty's response, the node checks that the CP blocks are in consensus, the hash pointers are valid and his TX is actually in the fragment.
+The TX is valid if these conditions are satisfied.
+Intuitively, this works because it is hard (because hash collision is hard)
+ to create a different chain that begins and ends with the same two CP blocks but with a different middle section.
 
-It also has two message---\texttt{vd\_req} and \texttt{vd\_resp}.
-When a node wishes to validate a transaction,
-it sends a \texttt{vd\_req} with the sequence number $s$ to the party that created the TX block of the transaction.
-Upon receiving a \text{vd\_req}, the node finds two \emph{agreed} CP blocks that surrounds the TX block and computes the \emph{fragment}.
-An agreed CP block means that it has reached consensus.
-A fragment of two CP blocks is a section of the chain where the beginning and the end are defined by those two CP blocks.
-With the fragment, the node replies with a \texttt{vd\_resp} message.
-Upon receiving a \texttt{vd\_resp}, the node checks that the fragment is created correctly.
-Loosely, that means the agreed CP blocks have actually reached consensus,
-the fragment has the correct hash pointers,
-and TX block containing $s$ exists and is valid.
+% The TX protocol~\footnote{It is also known as True Halves.
+% See \url{https://github.com/Tribler/tribler/pull/2135} for more information.}
+% consist of two messages, \texttt{tx\_req} and \texttt{tx\_resp}.
+% When a node  wishes to create a transaction,
+% it generates a TX block with the corresponding hash pointer, sequence number, counterparty and the transaction message itself.
+% It then sends a \texttt{tx\_req} message containing the TX block to the counterparty.
+% Upon receiving a TX block at the counterparty, it creates its own version of the TX block (the pair of the sender's TX block),
+% and sends it back to the sender in a \texttt{tx\_resp} message.
+% At the end of the protocol, both parties should have both versions of the TX block.
+
+% \subsection{Validation Protocol}
+% The consensus and transaction protocol by themselves do not provide a mechanism to detect forks or other forms of tamperaing.
+% This is the goal of the validation protocol.
+
+% It also has two message---\texttt{vd\_req} and \texttt{vd\_resp}.
+% When a node wishes to validate a transaction,
+% it sends a \texttt{vd\_req} with the sequence number $s$ to the party that created the TX block of the transaction.
+% Upon receiving a \text{vd\_req}, the node finds two \emph{agreed} CP blocks that surrounds the TX block and computes the \emph{fragment}.
+% An agreed CP block means that it has reached consensus.
+% A fragment of two CP blocks is a section of the chain where the beginning and the end are defined by those two CP blocks.
+% With the fragment, the node replies with a \texttt{vd\_resp} message.
+% Upon receiving a \texttt{vd\_resp}, the node checks that the fragment is created correctly.
+% Loosely, that means the agreed CP blocks have actually reached consensus,
+% the fragment has the correct hash pointers,
+% and TX block containing $s$ exists and is valid.
 
 
 \subsection{Combined Protocol}
@@ -204,6 +217,7 @@ Each node $u$ has a public and private key pair---$pk_u$ and $sk_u$, and a chain
 The chain consist of blocks $B_u = \{ b_{u, i} : k \in \{ 0, \dots, h - 1 \} \}$,
 where $b_{u, i}$ is the $i$th block of $u$,
 and $h = |B_u|$.
+We often use $b_{u, h}$ to denote the latest block.
 There are two types of blocks, TX blocks and CP blocks.
 If $T_u$ is the set of TX blocks of $u$ and $C_u$ is the set of CP blocks of $u$,
 then it must be the case that $T_u \cup C_u = B_u$ and $T_u \cap C_u = \varnothing$.
@@ -282,6 +296,7 @@ We describe the protocol step by step.
 Starting with the bootstrap phase and then moving on to the actual consensus phase.
 
 \subsection{Bootstrap Phase}
+\label{sec:bootstrap}
 Recall that facilitators are computed from the consensus result,
 but the consensus result is agreed by the facilitators.
 Thus we have a dependency cycle.
@@ -358,8 +373,10 @@ The consensus phase begins after the new facilitators are selected.
 Assuming the facilitators are of round $r$,
 the goal is to agree on some $\C_r$ between the facilitators.
 There are two scenarios in the consensus phase.
-First is when the node is a facilitator, the other is when the node is not.
-If the node is a facilitator, it must satisfy the following conditions.
+First, if node $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, h} \rangle$ to all the facilitators.
+Second if the node is a facilitator, it waits for some duration $\delta$ and collect messages of type \texttt{cp\_msg}.
+After $\delta$ is elapsed, it begins the atomic broadcast algorithm.
+In particular, the facilitators must satisfy the following conditions.
 \begin{enumerate}
 \item \emph{Agreement}: If any correct node outputs a CP block $c$, then every
   correct node outputs $c$.
@@ -369,27 +386,44 @@ If the node is a facilitator, it must satisfy the following conditions.
 \item \emph{Liveness}: All $n - t$ correct nodes terminate eventually.
 \end{enumerate}
 
+We remark that this procedure is the same as what is described in the bootstrap phase (\Cref{sec:bootstrap}),
+but the precondition and the waiting time is different.
+In particular, the bootstrap stage assumed that every node initiated and sent the \texttt{cp\_msg} simultaneously,
+but here we make no such assumption. Further, the bootstrap waits for duration $\Delta$ in order to collect all the CP blocks,
+here we wait for some $\delta$ which is a system variable.
+We make no assumption on the value of $\delta$ in relation to $\Delta$,
+thus it may be the case that not all \texttt{cp\_msg} are delivered before the the facilitators begins the atomic broadcast protocol.
+
+At the core of the consensus phase is the atomic broadcast protocol.
+While using any atomic broadcast protocol will suffice,
+we use a (minimal) simplification of HoneyBadgerBFT as it is designed for blockchain systems and runs in fully asynchronous networks.
+The transactions in HoneyBadgerBFT are first queued in a buffer, the main consensus algorithm starts only when the buffer reaches an optimal size.
+We do not have an infinite stream of CP blocks, thus buffering is unsuitable.
+The main algorithms are kept the same, namely Asynchronous Common Subset, Reliable Broadcast and Binary Agreement.
+At the end of the consensus sphase, some $\C_r$ should be agreed upon.
+This bring us back to the setup phase and the cycle can be started again.
+
+
 \section{Transaction Protocol}
 \label{sec:tx-protocol}
 
-\begin{algorithm}
+The TX protocol, shown in \Cref{alg:tx-proto}, is run by all nodes.
+It is also known as True Halves TODO.
+Node that wish to initiate a transaction calls $\textsf{new\_tx}(pk_v, m, txid)$ (\Cref{alg:new-tx}) with the intended counterparty $v$ identified by $pk_v$ and message $m$.
+$txid$ should be a uniformly distributed random value, i.e. $txid \in_R \{0, 1\}^{256}$.
+Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 
-    \caption{Function $\textsf{tx\_init}(pk_v, m)$ generates a new TX block,
-    appends it to the caller $u$'s chain and sends it to the counterparty.
+\begin{algorithm}
+    \caption{Function $\textsf{new\_tx}(pk_v, m, txid)$ generates a new TX block and appends it to the caller $u$'s chain.
     It is executed in the private context of $u$, i.e. it has access to the $sk_u$ and $B_u$.
-    The necessary arguments are the public key of the counterparty $pk_v$ and the transaction message $m$.}
-    \label{alg:tx-init}
+    The necessary arguments are the public key of the counterparty $pk_v$, the transaction message $m$ and the transaction identifier $txid$.}
+    \label{alg:new-tx}
 
     \begin{algorithmic}
-
     \State $h \gets |B_u|$
-    \State $txid \in_R \{0, 1\}^{256}$ \Comment A uniformly distributed 256 bit random value.
-    \State $b_{u, h} \gets \langle \textsf{H}(b_{u, h - 1}), h, txid, pk_v, m, sig_u \rangle$
-    \State $B_u \gets B_u \cup \{ b_{u, h} \}$
-
-    \State \textbf{Send} $\langle \texttt{tx\_req}, b_{u,h} \rangle$ to $v$
-
-\end{algorithmic}
+    \State $t_{u, h} \gets \langle \textsf{H}(b_{u, h - 1}), h, txid, pk_v, m, sig_u \rangle$
+    \State $B_u \gets B_u \cup \{ t_{u, h} \}$
+    \end{algorithmic}
 \end{algorithm}
 
 \begin{algorithm}
@@ -397,13 +431,20 @@ If the node is a facilitator, it must satisfy the following conditions.
     \label{alg:tx-proto}
 
     \begin{algorithmic}
-        \Function{Create}{$z$}
-        \State x
-        \EndFunction
+        \Upon $\langle \texttt{tx\_req}, t_{v, j} \rangle$
+        \State $txid, pk_v, m \gets t_{v, j}$ \Comment Unpack the TX
+        \State $\textsf{new\_tx}(pk_u, m, txid)$
+        \State store $t_{v, j}$ as the other half of $t_{u, h}$
+        \State send $\langle \texttt{tx\_reqp}, t_{u, h} \rangle$ to $v$
 
+        \Upon $\langle \texttt{tx\_resp}, t_{v, j} \rangle$
+        \State $txid, pk_v, m \gets t_{v, j}$ \Comment Unpack the TX
+        \State store $t_{v, j}$ as the other half of the TX with identifier $txid$
     \end{algorithmic}
-
 \end{algorithm}
+
+A key feature of the TX protocol is that it is non-blocking.
+TODO
 
 \section{Validation Protocol}
 \label{sec:vd-protocol}
