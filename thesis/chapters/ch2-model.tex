@@ -149,32 +149,6 @@ The TX is valid if these conditions are satisfied.
 Intuitively, this works because it is hard (because hash collision is hard)
  to create a different chain that begins and ends with the same two CP blocks but with a different middle section.
 
-% The TX protocol~\footnote{It is also known as True Halves.
-% See \url{https://github.com/Tribler/tribler/pull/2135} for more information.}
-% consist of two messages, \texttt{tx\_req} and \texttt{tx\_resp}.
-% When a node  wishes to create a transaction,
-% it generates a TX block with the corresponding hash pointer, sequence number, counterparty and the transaction message itself.
-% It then sends a \texttt{tx\_req} message containing the TX block to the counterparty.
-% Upon receiving a TX block at the counterparty, it creates its own version of the TX block (the pair of the sender's TX block),
-% and sends it back to the sender in a \texttt{tx\_resp} message.
-% At the end of the protocol, both parties should have both versions of the TX block.
-
-% \subsection{Validation Protocol}
-% The consensus and transaction protocol by themselves do not provide a mechanism to detect forks or other forms of tamperaing.
-% This is the goal of the validation protocol.
-
-% It also has two message---\texttt{vd\_req} and \texttt{vd\_resp}.
-% When a node wishes to validate a transaction,
-% it sends a \texttt{vd\_req} with the sequence number $s$ to the party that created the TX block of the transaction.
-% Upon receiving a \text{vd\_req}, the node finds two \emph{agreed} CP blocks that surrounds the TX block and computes the \emph{fragment}.
-% An agreed CP block means that it has reached consensus.
-% A fragment of two CP blocks is a section of the chain where the beginning and the end are defined by those two CP blocks.
-% With the fragment, the node replies with a \texttt{vd\_resp} message.
-% Upon receiving a \texttt{vd\_resp}, the node checks that the fragment is created correctly.
-% Loosely, that means the agreed CP blocks have actually reached consensus,
-% the fragment has the correct hash pointers,
-% and TX block containing $s$ exists and is valid.
-
 
 \subsection{Combined Protocol}
 \label{sec:combined-protocol}
@@ -192,7 +166,7 @@ It is not necessary to keep the chain immutable while the consensus protocol is 
 
 For notational clarify, we use the following convention (adapted from~\cite{miller2016honey}) throughout this work.
 \begin{itemize}
-\item Lower case (e.g. $x$) denotes a scalar object.
+\item Lower case (e.g. $x$) denotes a scalar object or a tuple.
 \item Upper case (e.g. $X$) denotes a set or a constant.
 \item Sans serif (e.g. $\textsf{fn}(\cdot)$) denotes a function.
 \item Typewrite (e.g. $\texttt{ack}$) denotes message type.
@@ -354,7 +328,7 @@ This concludes the setup phase.
 sort evey element in $C$ by its luck value (the $\lambda$-expression), and outputs the smallest $n$ elements.}
 \label{alg:facilitator}
 \begin{algorithmic}
-\State $\textbf{take} (n, \textbf{sort} (\textbf{map}(\lambda x.\textsf{H}(x || pk \text{ of x}), C)))$
+\State $\textbf{take} (n, \textbf{sort} (\textbf{map}(\lambda x.\textsf{H}(x || pk \text{ of } x), C)))$
 \end{algorithmic}
 \end{algorithm}
 
@@ -394,6 +368,8 @@ here we wait for some $\delta$ which is a system variable.
 We make no assumption on the value of $\delta$ in relation to $\Delta$,
 thus it may be the case that not all \texttt{cp\_msg} are delivered before the the facilitators begins the atomic broadcast protocol.
 
+TODO assume the wait time is much longer than network delay.
+
 At the core of the consensus phase is the atomic broadcast protocol.
 While using any atomic broadcast protocol will suffice,
 we use a (minimal) simplification of HoneyBadgerBFT as it is designed for blockchain systems and runs in fully asynchronous networks.
@@ -408,7 +384,7 @@ This bring us back to the setup phase and the cycle can be started again.
 \label{sec:tx-protocol}
 
 The TX protocol, shown in \Cref{alg:tx-proto}, is run by all nodes.
-It is also known as True Halves TODO.
+It is also known as True Halves, first described by Veldhuisen~\cite[Chapter~3.2]{truehalves}.
 Node that wish to initiate a transaction calls $\textsf{new\_tx}(pk_v, m, txid)$ (\Cref{alg:new-tx}) with the intended counterparty $v$ identified by $pk_v$ and message $m$.
 $txid$ should be a uniformly distributed random value, i.e. $txid \in_R \{0, 1\}^{256}$.
 Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
@@ -427,28 +403,183 @@ Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 \end{algorithm}
 
 \begin{algorithm}
-    \caption{The TX protocol which runs in the context of node $u$.}
+    \caption{The TX protocol which runs in the context of node $u$. TODO}
     \label{alg:tx-proto}
 
     \begin{algorithmic}
-        \Upon $\langle \texttt{tx\_req}, t_{v, j} \rangle$
-        \State $txid, pk_v, m \gets t_{v, j}$ \Comment Unpack the TX
+        \Upon $\langle \texttt{tx\_req}, t_{v, j} \rangle$ from $v$
+        \State $txid, pk_v, m \gets t_{v, j}$ \Comment unpack the TX
         \State $\textsf{new\_tx}(pk_u, m, txid)$
-        \State store $t_{v, j}$ as the other half of $t_{u, h}$
+        \State store $t_{v, j}$ as the pair of $t_{u, h}$
         \State send $\langle \texttt{tx\_reqp}, t_{u, h} \rangle$ to $v$
 
-        \Upon $\langle \texttt{tx\_resp}, t_{v, j} \rangle$
-        \State $txid, pk_v, m \gets t_{v, j}$ \Comment Unpack the TX
-        \State store $t_{v, j}$ as the other half of the TX with identifier $txid$
+        \Upon $\langle \texttt{tx\_resp}, t_{v, j} \rangle$ from $v$
+        \State $txid, pk_v, m \gets t_{v, j}$ \Comment unpack the TX
+        \State store $t_{v, j}$ as the pair of the TX with identifier $txid$
     \end{algorithmic}
 \end{algorithm}
 
 A key feature of the TX protocol is that it is non-blocking.
-TODO
+At no time in \Cref{alg:new-tx} or \Cref{alg:tx-proto} do we need to hold the chain state and wait for some message to be delivered before committing a new block to the chain.
+This allows for high concurrency where we can call $\textsf{new\_tx}(\cdot)$ multiple times without waiting for the corresponding \texttt{tx\_resp} messages.
 
 \section{Validation Protocol}
 \label{sec:vd-protocol}
 
+Up to this point, we do not provide a mechanism to detect forks or other forms of tampering or forging, and we cannot detect malicious parties.
+The validation protocol aims to solve this issue.
+The protocol is also a request-response protocol, just like the transaction protocol.
+But before explaining the protocol itself, we first define what it means to be valid.
+
+\subsection{Validity Definition}
+A \emph{valid} TX must be created by following the TX protocol.
+Concretely, a TX $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), i, txid_u, pk_v, m_u, sig_u \rangle$ should satisfy the following conditions.
+\begin{enumerate}
+    \item \emph{Existance of pair}:
+        There exists $t_{v, j} = \langle \textsf{H}(b_{v, j - 1}), j, txid, pk_u, m, sig_v \rangle$,
+        i.e. the pair, where $txid_u = txid_v$, $m_u = m_v$ and the signatures are valid.
+    \item \emph{Existance of fragment}:
+        There exists $\textsf{agreed\_fragment}(t_{u, i})$---call it $F_{u, i}$ and
+        $\textsf{agreed\_fragment}(t_{v, j})$---call it $F_{v, j}$,
+        where the hash pointers are valid and the enclosing CP blocks have valid signatures.
+    \item \emph{Only one pair}:
+        There is only one transaction with $txid$ in $F_{v, j}$.
+    \item \emph{Small fragment}:
+        The $|F_{u, i}| \le L$ and $|F_{v, j}| \le L$.
+    \item \emph{Same consensus round}:
+        Suppose the last block in $F_{u,i}$ and the last block in $F_{v, j}$ are respectively $c_{u, p}$ and $c_{v, q}$. 
+        Then these they must be created from the same consensus round.
+\end{enumerate}
+We make three remarks regarding the definition.
+Firstly, the existance of fragment is the most important property.
+It ensures that the pair of TX blocks exist between a pair of CP blocks that are in consensus.
+This implicitly proves that the TX blocks are in consensus (we show a proof in \Cref{sec:analysis} TODO).
+Secondly, the same consensus round property is to encourage node to remain active in the network.
+Recall that the facilitators waits for duration $\Delta$, which is much longer than the network delay.
+Thus the \texttt{cp\_msg} should be delivered to the facilitators before the consensus starts.
+Lastly, TX blocks that do not satisfy the requirement above are not invalid.
+In fact, most new TX blocks cannot satisfy the Existance of fragment property because the CP blocks following the new transactions have not reached consensus.
+Moreoever, very new TX blocks may not satisfy the Existance of pair property because the counterparty may have not yet sent \texttt{tx\_resp}.
+Next we define \emph{invalid} transactions.
+\begin{enumerate}
+    \item \emph{Bad pair}:
+        $txid_u = txid_v \wedge m_u \ne m_v$.
+    \item \emph{Invalid counterparty}:
+        $txid_u = txid_v$, but $pk_u$ in $t_{v, j}$ does not match $u$'s public key.
+    \item \emph{Invalid hash pointer}:
+        Suppose $F_{u, i}$ and $F_{v, j}$ are available, but the transactions in the fragments do not form a chain.
+    \item \emph{Large fragment}:
+        $F_{u, i} > L \vee F_{v, j} > L$.
+    \item \emph{Different consensus round}:
+        The last block in $F_{u,i}$ and the last block in $F_{v, j}$ are respectively $c_{u, p}$ and $c_{v, q}$. 
+        But these CP blocks are not created from the same consensus round.
+\end{enumerate}
+The final two properties are the negation of the final two properties in the valid definition.
+The other three properties are for detecting tampering.
+Any transaction that do not fall into the valid or invalid category are known as \emph{unknown} transactions.
+
+\subsection{Validation Protocol}
+With the validity definition, we are ready to construct a protocol for determining the validity of transactions.
+The protocol is a simple response and request protocol (\Cref{alg:vd-proto}).
+If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends $\langle \texttt{vd\_req}, txid \rangle$ to $v$.
+The desired properties of the validation protocol are as follows.
+\begin{enumerate}
+    \item \emph{Correctness}:
+        The validation protocol outputs the correct result
+        according to the aforementioned validity definition.
+    \item \emph{Agreement}:
+        If any correct node decides on the validity of a transaction,
+        then all other correct nodes are able to reach the same conclusion.
+    \item \emph{Liveness}:
+        Any valid transactions can be validated eventually.
+    \item \emph{Unforgeability}:
+        If some transaction is valid, it cannot be forged into an invalid transaction.
+        If some transaction is invalid, it cannot be forged into a valid transaction.
+\end{enumerate}
+
+\begin{algorithm}
+\caption{Validation protocol}
+\label{alg:vd-proto}
+
+\begin{algorithmic}
+    \Upon $\langle \texttt{vd\_req}, txid \rangle$ from $v$
+        \State $t_{u, i} \gets \text{the transaction identified by } txid$
+        \State $F_{u, i} \gets \textsf{agreed\_fragment}(t_{u, i})$
+        \State send $\langle \texttt{vd\_resp}, txid, F_{u, i} \rangle$ to $v$
+
+    \Upon $\langle \texttt{vd\_resp}, txid, F_{v, j} \rangle$ from $v$
+        \State $t_{u, i} \gets \text{the transaction identified by } txid$
+        \State set the validity of $t_{u, i}$ to $\textsf{get\_validity}(t_{u, i}, F_{v, j})$
+\end{algorithmic}
+\end{algorithm}
+
+The core of the validation protocol lies within the $\textsf{get\_validity}(\cdot)$ function (\Cref{alg:get-validity}).
+It essentially implements all the aforementioned validity requirements.
+If they are all satisfied, the function returns \emph{valid}.
+Otherwise, depending on which stage the function failed, it will return either \emph{unknown} or \emph{invalid}.
+We prove in the following chapter that the validation protocol satisfies the most of the desired properties.
+
+\begin{algorithm}
+\caption{Function $\textsf{get\_validity}(t_{u, i}, F_{v, j})$ runs in the private context of $u$.
+$t_{u, i}$ is the transaction that $u$ wishes to verify, and $F_{v, j}$ is the corresponding fragment received from $v$.}
+\label{alg:get-validity}
+
+\begin{algorithmic}
+
+    \State $F_{u, i} \gets \textsf{agreed\_fragment}(t_{u, i})$
+    \If{$F_{u, i} = \bot$}
+        \State \Return \emph{unknown}
+    \EndIf
+    \State
+
+    \State $c_{v, a} \gets \textsf{first}(F_{v, j})$
+    \State $c_{v, b} \gets \textsf{last}(F_{v, j})$
+    \If{$c_{v, a}$ or $c_{v, b}$ are not in consensus}
+        \State \Return \emph{unknown}
+    \EndIf
+    \State
+
+    \State $txid, pk_v, m \gets t_{u, i}$
+    \If{number of blocks of $txid$ in $F_{v, j} = 0$}
+        \State \Return \emph{unknown}
+    \EndIf
+    \State 
+
+    \If{number of blocks of $txid$ in $F_{v, j} > 1$}
+        \State \Return \emph{invalid}
+    \EndIf
+    \State 
+
+    % txid are equal now, but bad hash pointer
+    \If{sequence number in $F_{v, j}$ is correct (sequential)}
+        \If{hash pointers in $F_{v, j}$ is wrong}
+            \State \Return \emph{invalid}
+        \EndIf
+    \EndIf
+    \State
+
+    \State $txid', pk'_u, m' \gets t_{v, j}$
+    \If{$m \ne m' \vee pk_u \ne pk_u \vee |F_{v, j}| > L$}
+        \State \Return \emph{invalid}
+    \EndIf
+    \State
+
+    \State $c_{u, b} \gets \textsf{last}(F_{u, i})$
+    \If{$c_{u, b}$ is not created using the same $\C_r$ as $c_{v, b}$}
+        \State \Return \emph{invalid}
+    \EndIf
+    \State
+
+    \State \Return \emph{valid}
+\end{algorithmic}
+\end{algorithm}
+
+We make two remarks.
+First, just like the TX protocol, we do not block at any part of the protocol.
+Second, suppose some $F_{v, j}$ validates $t_{u, i}$, then that does not imply that $t_{u, i}$ only has one pair $t_{v, j}$.
+Our validity requirement only requires that there is only one $t_{v, j}$ in the correct consensus round.
+The counterparty may create any number of fake pairs in a later consensus rounds.
+But these fake pairs only pollutes the chain of $v$ and can never be validated because the round is incorrect.
 
 \section{Protocol Extensions}
 \label{sec:protocol-extensions}
