@@ -8,9 +8,7 @@ allows the system to be ubiquitous and realise the full potential of blockchain.
 The secondary goal is to design an application neutral system.
 In particular, it should act as a framework that provides the building blocks of blockchain based applications.
 Application developers using the framework should be able to create any application they wish.
-Further, we do not impose on a consensus algorithm,
-the application developer is free to choose between proof-of-work, proof-of-stake,
-Byzantine consensus as long as it  satisfies the properties in \Cref{sec:todo}TODO.
+Further, we do not impose on a consensus algorithm, as long as it satisfies the properties of atomic broadcast which we describe in~\Cref{sec:overview-cons}.
 
 Due to the nature of our system, we do not explicitly address the Sybil attack~\cite{douceur2002sybil}.
 Sybil defence mechanism always require some form of reputation score from the application.
@@ -98,35 +96,78 @@ A visual representation is shown in \Cref{fig:trustchain-bad-cp}.
 \end{figure}
 
 \subsection{Consensus Protocol}\label{sec:overview-cons}
-Before describing our consensus protocol, we take a brief detour to explain Byzantine consensus,
-which is a fundamental building block of our consensus protocol.
+Before describing our consensus protocol, we take a brief detour to explain \emph{atomic broadcast} primitive and contrast it with other well known primitives.
+It is a fundamental building block of our consensus protocol.
 
-\subsubsection*{Byzantine consensus}
-Byzantine consensus is also known as \emph{atomic broadcast}.
-Roughly speaking, atomic broadcast need to satisfy the following properties.
+\subsubsection*{Atomic broadcast}
+Atomic broadcast is an especially useful primitive for blockchain systems.
+It allows nodes to propose values (which can be transactions),
+and the goal is to reach a common ordering of the values---roughly speaking,
+the output is an ordered set of the propsal.
+Concretely, atomic broadcast needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
 \begin{enumerate}
-\item TODO
+\item \emph{Agreement}:
+    If any correct node outputs a value $v$, then every correct node outputs $v$.
+\item \emph{Total order}:
+    If one correct node has output the sequence of values $v_0, v_1, \dots, v_j$
+    and another has output $v'_0, v'_1, \dots, v_j'$, then $v_i = v'_i$ for $i \le \min(j, j')$.
+\item \emph{Liveness}:
+    If $v$ is an input to all the correct nodes, then it is eventually output by all the correct nodes.
 \end{enumerate}
-TODO downsides (can't run with too many nodes) (high message complexity)
-We stress that Byzantine consensus is not the same as Byzantine agreement or the Byzantine general's problem.
-Byzantine agreement is TODO
+The liveness property also implies censorship resilience,
+i.e. an adversay cannot block some $v$ if all the correct nodes are committed to it.
 
-The literature on Byzantine consensus and atomic broadcast is rich, some noteable ones include TODO.
-Thus in the ETC consensus protocol, we assume there exist an "off-the-shelf" Byzantine consensus algorithm which we can use
-(in our implementation we use HoneyBadgerBFT and motivate our choice in TODO).
+The atomic broadcast properties can be seen as a stronger version of reliable broadcast.
+In reliable broadcast (e.g. Bracha's reliable broadcast~\cite{bracha1984asynchronous}),
+there is only one sender and the following properties must be satisfied.
+\begin{enumerate}
+    \item \emph{Agreement}:
+        If any two correct nodes deliver $v$ and $v'$, then $v = v'$.
+    \item \emph{Totality}:
+        If any correct node delivers $v$, then all correct nodes deliver $v$.
+    \item \emph{Validity}:
+        If the sender is correct and inputs $v$, then all correct nodes deliver $v$.
+\end{enumerate}
+The main different here is that reliable broadcast does not guarantee order, it only guarantees delivery.
+If there are more than one sender, or even a single sender with multiple messages,
+the order of delivery may be different on different nodes.
 
-In our case, every node do not propose some arbitrary data, but a set of CP blocks.
-Thus the result of the consensus is the set union of all the legitimate proposals.
+Atomic broadcast also is not the same as Byzantine agreement (BA).
+In particular, BA algorithms lets nodes propose a binary value,
+then output a binary value with respect to the following properties.
+\begin{enumerate}
+    \item \emph{Agreement}:
+        If any correct node outputs $v$, then every correct node outputs $v$.
+    \item \emph{Termination}:
+        If all correct nodes make a proposal, then every correct node outputs a value.
+    \item \emph{Validity}:
+        If any correct node outputs $v$, then at least one correct node proposed $v$.
+\end{enumerate}
+The primary difference here is that BA only considers only binary value,
+and the goal is to reach agreement on the binary value according with respect to the validity property.
+Whereas the agreement is on all the proposals from honest nodes in atomic broadcast.
+
+The main drawback with atomic broadcast (and other similar protocols, i.e. reliable broadcast and Byzantine agreement)
+is the high message complexity.
+Typically, such protocols have the complexity of $O(n^2)$, where $n$ is the number of participants.
+This may work with a small number of nodes, but it is infeasible for blockchain systems where thousands of nodes are involved.
+
+
+% The literature on Byzantine consensus and atomic broadcast is rich, some noteable ones include TODO.
+% Thus in the ETC consensus protocol, we assume there exist an "off-the-shelf" Byzantine consensus algorithm which we can use
+% (in our implementation we use HoneyBadgerBFT and motivate our choice in TODO).
+
+% In our case, every node do not propose some arbitrary data, but a set of CP blocks.
+% Thus the result of the consensus is the set union of all the legitimate proposals.
 
 \subsubsection*{Consensus Protocol} 
-The consensus protocol runs continuously in rounds.
-That is because a blockchain systems always need to reach consensus on new values, or CP blocks in our case.
+The consensus protocol runs continuously in rounds
+because a blockchain systems always need to reach consensus on new values, which are CP blocks in our case.
 This can be seen as running infinitly many rounds of some Byzantine consensus algorithm,
 starting a new execution immediately after the previous one is completed.
 
 As we mentioned earlier, the high message complexity prohibits us from running a Byzantine consensus algorithm on a large network.
-Thus, for every round, we randomly select some node---called facilitators---to collect CP blocks,
-and then use the CP blocks as proposals of the Byzantine consensus algorithm.
+Thus, for every round, we randomly select some node---called facilitators---to collect CP blocks and use them as the proposal.
 The facilitators are elected using a \emph{luck value}, which is computed using $H(\C_r || pk_i)$,
 where $\C_r$ is the consensus result in round $r$ and $pk_i$ is the public key of $i$.
 Intuitively, the election is guaranteed to be random 
@@ -176,15 +217,23 @@ We assume a distributed network where nodes are fully connected,
 the channels are reliable\footnote{
     Reliability can be achieved in unreliable networks by resending messages or using some error correction code.
 },
-but messages may be re-ordered and delayed by at most some time $\Delta$.
+but messages may be re-ordered and delayed by at most some time $\Delta$,
+this is sometimes known as a $\Delta$-synchronous network.
 Nodes are identified by their public key thus we assume there exist a Public Key Infrastructure (PKI).
-TODO this is weak synchrony?
 In addition, we assume the existance of cryptographically secure hash function $\textsf{H}(\cdot)$,
 that has preimage resistance, second preimage resistance and collision resistance.
 
 In our model we consider $N$ nodes, which is the population size.
 $n$ of them are facilitators, $t$ out of $n$ are malicious and the inequality
 $n \ge 3t + 1$ must hold.
+
+We use a restricted version of the adaptive corruption model.
+The first restriction is that corrupted node can only change across rounds.
+That is, if a round has started, the corrupted nodes cannot changed until the next round.
+The second restriction is that the adversary, presumably controlling all the corrupted nodes, is forgetful.
+Namely the adversary may learn the internal state such as the private key of a corrupted node,
+but if the node recovers, then the adversary must forget the private key.
+Otherwise the adversary can eventually learn all the private keys and sabotage the system.
 
 The primary data structure used in our system is Extended TrustChain.
 Each node $u$ has a public and private key pair---$pk_u$ and $sk_u$, and a chain $B_u$.
@@ -333,7 +382,8 @@ sort evey element in $C$ by its luck value (the $\lambda$-expression), and outpu
 \end{algorithm}
 
 \begin{algorithm}
-\caption{Function $\textsf{new\_cp}(\C_r, r)$ runs in the context of the caller $u$. TODO}
+\caption{Function $\textsf{new\_cp}(\C_r, r)$ runs in the context of the caller $u$.
+It creates a new CP block and appends it to $u$'s chain.}
 \label{alg:new-cp}
 \begin{algorithmic}
 \State $h \gets |B_u|$
@@ -348,8 +398,8 @@ Assuming the facilitators are of round $r$,
 the goal is to agree on some $\C_r$ between the facilitators.
 There are two scenarios in the consensus phase.
 First, if node $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, h} \rangle$ to all the facilitators.
-Second if the node is a facilitator, it waits for some duration $\delta$ and collect messages of type \texttt{cp\_msg}.
-After $\delta$ is elapsed, it begins the atomic broadcast algorithm.
+Second if the node is a facilitator, it waits for some duration $D$ and collect messages of type \texttt{cp\_msg}, where $D >> \Delta$.
+After $D$ is elapsed, it begins the atomic broadcast algorithm.
 In particular, the facilitators must satisfy the following conditions.
 \begin{enumerate}
 \item \emph{Agreement}: If any correct node outputs a CP block $c$, then every
@@ -363,12 +413,10 @@ In particular, the facilitators must satisfy the following conditions.
 We remark that this procedure is the same as what is described in the bootstrap phase (\Cref{sec:bootstrap}),
 but the precondition and the waiting time is different.
 In particular, the bootstrap stage assumed that every node initiated and sent the \texttt{cp\_msg} simultaneously,
-but here we make no such assumption. Further, the bootstrap waits for duration $\Delta$ in order to collect all the CP blocks,
-here we wait for some $\delta$ which is a system variable.
-We make no assumption on the value of $\delta$ in relation to $\Delta$,
-thus it may be the case that not all \texttt{cp\_msg} are delivered before the the facilitators begins the atomic broadcast protocol.
-
-TODO assume the wait time is much longer than network delay.
+but here we make no such assumption.
+Further, the bootstrap waits for duration $\Delta + 1$ in order to collect all the CP blocks,
+here we wait for some duration $D$---a system parameter,
+it must be much larger than $\Delta + 1$ to ensure that all honest \texttt{cp\_msg} are collected.
 
 At the core of the consensus phase is the atomic broadcast protocol.
 While using any atomic broadcast protocol will suffice,
@@ -403,7 +451,7 @@ Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 \end{algorithm}
 
 \begin{algorithm}
-    \caption{The TX protocol which runs in the context of node $u$. TODO}
+    \caption{The TX protocol which runs in the context of node $u$.}
     \label{alg:tx-proto}
 
     \begin{algorithmic}
@@ -411,7 +459,7 @@ Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
         \State $txid, pk_v, m \gets t_{v, j}$ \Comment unpack the TX
         \State $\textsf{new\_tx}(pk_u, m, txid)$
         \State store $t_{v, j}$ as the pair of $t_{u, h}$
-        \State send $\langle \texttt{tx\_reqp}, t_{u, h} \rangle$ to $v$
+        \State send $\langle \texttt{tx\_resp}, t_{u, h} \rangle$ to $v$
 
         \Upon $\langle \texttt{tx\_resp}, t_{v, j} \rangle$ from $v$
         \State $txid, pk_v, m \gets t_{v, j}$ \Comment unpack the TX
@@ -432,51 +480,68 @@ The protocol is also a request-response protocol, just like the transaction prot
 But before explaining the protocol itself, we first define what it means to be valid.
 
 \subsection{Validity Definition}
-A \emph{valid} TX must be created by following the TX protocol.
-Concretely, a TX $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), i, txid_u, pk_v, m_u, sig_u \rangle$ should satisfy the following conditions.
-\begin{enumerate}
-    \item \emph{Existance of pair}:
-        There exists $t_{v, j} = \langle \textsf{H}(b_{v, j - 1}), j, txid, pk_u, m, sig_v \rangle$,
-        i.e. the pair, where $txid_u = txid_v$, $m_u = m_v$ and the signatures are valid.
-    \item \emph{Existance of fragment}:
-        There exists $\textsf{agreed\_fragment}(t_{u, i})$---call it $F_{u, i}$ and
-        $\textsf{agreed\_fragment}(t_{v, j})$---call it $F_{v, j}$,
-        where the hash pointers are valid and the enclosing CP blocks have valid signatures.
-    \item \emph{Only one pair}:
-        There is only one transaction with $txid$ in $F_{v, j}$.
-    \item \emph{Small fragment}:
-        The $|F_{u, i}| \le L$ and $|F_{v, j}| \le L$.
-    \item \emph{Same consensus round}:
-        Suppose the last block in $F_{u,i}$ and the last block in $F_{v, j}$ are respectively $c_{u, p}$ and $c_{v, q}$. 
-        Then these they must be created from the same consensus round.
-\end{enumerate}
-We make three remarks regarding the definition.
-Firstly, the existance of fragment is the most important property.
-It ensures that the pair of TX blocks exist between a pair of CP blocks that are in consensus.
-This implicitly proves that the TX blocks are in consensus (we show a proof in \Cref{sec:analysis} TODO).
-Secondly, the same consensus round property is to encourage node to remain active in the network.
-Recall that the facilitators waits for duration $\Delta$, which is much longer than the network delay.
-Thus the \texttt{cp\_msg} should be delivered to the facilitators before the consensus starts.
-Lastly, TX blocks that do not satisfy the requirement above are not invalid.
-In fact, most new TX blocks cannot satisfy the Existance of fragment property because the CP blocks following the new transactions have not reached consensus.
-Moreoever, very new TX blocks may not satisfy the Existance of pair property because the counterparty may have not yet sent \texttt{tx\_resp}.
-Next we define \emph{invalid} transactions.
-\begin{enumerate}
-    \item \emph{Bad pair}:
-        $txid_u = txid_v \wedge m_u \ne m_v$.
-    \item \emph{Invalid counterparty}:
-        $txid_u = txid_v$, but $pk_u$ in $t_{v, j}$ does not match $u$'s public key.
-    \item \emph{Invalid hash pointer}:
-        Suppose $F_{u, i}$ and $F_{v, j}$ are available, but the transactions in the fragments do not form a chain.
-    \item \emph{Large fragment}:
-        $F_{u, i} > L \vee F_{v, j} > L$.
-    \item \emph{Different consensus round}:
-        The last block in $F_{u,i}$ and the last block in $F_{v, j}$ are respectively $c_{u, p}$ and $c_{v, q}$. 
-        But these CP blocks are not created from the same consensus round.
-\end{enumerate}
-The final two properties are the negation of the final two properties in the valid definition.
-The other three properties are for detecting tampering.
-Any transaction that do not fall into the valid or invalid category are known as \emph{unknown} transactions.
+A transaction can be in one of three states in terms of validity---\emph{valid}, \emph{invalid} and \emph{unknown}.
+Given a fragment $F$, the validity of the transaction $t$ is captured by the function $\textsf{get\_validity}(t, F)$ (\Cref{alg:get-validity}).
+The first four conditions (up to \Cref{line:valid-fragment}) essentially check whether the fragment is the one that the verifier needs.
+If it is not, then the verifier cannot make any decision and return \emph{unknown}.
+This is likely to be the case for new transactions because $\textsf{agreed\_fragment}(\cdot)$ would be $\bot$.
+The next two conditions checks for tampering or missing blocks, if any of these misconducts are detected, then the TX is invalid.
+
+Note that the validity is on a transaction (two TX blocks with the same $txid$), rather than on one TX block owned by a single party.
+It is defined this way because the malicious sender may create new TX blocks in their own chain but never send \texttt{tx\_req} messages.
+In that case, it may seem that the counterparty, who is honest, purposefully ommitted TX blocks.
+But in reality, it was the malicious sender who did not follow the protocol.
+Thus, in such cases the whole transaction, identified by its $txid$ is marked as invalid.
+
+\begin{algorithm}
+\caption{Function $\textsf{get\_validity}(t_{u, i}, F_{v, j})$ runs in the private context of $u$.
+$t_{u, i}$ is the transaction that $u$ wishes to verify, and $F_{v, j}$ is the corresponding fragment received from $v$.}
+\label{alg:get-validity}
+
+\begin{algorithmic}[1]
+
+    \State $F_{u, i} \gets \textsf{agreed\_fragment}(t_{u, i})$
+    \If{$F_{u, i} = \bot$}
+        \State \Return \emph{unknown}
+    \EndIf \Comment $u$ has agreed fragment
+    \State 
+
+    \State $c_{v, a} \gets \textsf{first}(F_{v, j})$
+    \State $c_{v, b} \gets \textsf{last}(F_{v, j})$
+    \If{$c_{v, a}$ or $c_{v, b}$ are not in consensus}
+        \State \Return \emph{unknown}
+    \EndIf \Comment $v$ has agreed fragment
+    \State 
+
+    % txid are equal now, but bad hash pointer
+    \If{sequence number in $F_{v, j}$ is correct (sequential)}
+        \If{hash pointers in $F_{v, j}$ is wrong}
+            \State \Return \emph{unknown}
+        \EndIf
+    \EndIf \Comment correct TrustChain structure
+    \State
+
+    \State $c_{u, b} \gets \textsf{last}(F_{u, i})$
+    \If{$c_{u, b}$ is not created using the same $\C_r$ as $c_{v, b}$}
+        \State \Return \emph{unknown}
+    \EndIf \Comment correct consensus round
+    \State
+    \label{line:valid-fragment}
+    \State $txid, pk_v, m \gets t_{u, i}$
+    \If{number of blocks of $txid$ in $F_{v, j} \ne 1$}
+        \State \Return \emph{invalid}
+    \EndIf \Comment TX exists
+    \State 
+
+    \State $txid', pk'_u, m' \gets t_{v, j}$
+    \If{$m \ne m' \vee pk_u \ne pk_u \vee |F_{v, j}| > L$}
+        \State \Return \emph{invalid}
+    \EndIf \Comment no tampering
+    \State
+
+    \State \Return \emph{valid}
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{Validation Protocol}
 With the validity definition, we are ready to construct a protocol for determining the validity of transactions.
@@ -488,8 +553,8 @@ The desired properties of the validation protocol are as follows.
         The validation protocol outputs the correct result
         according to the aforementioned validity definition.
     \item \emph{Agreement}:
-        If any correct node decides on the validity of a transaction,
-        then all other correct nodes are able to reach the same conclusion.
+        If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
+        then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
     \item \emph{Liveness}:
         Any valid transactions can be validated eventually.
     \item \emph{Unforgeability}:
@@ -513,67 +578,6 @@ The desired properties of the validation protocol are as follows.
 \end{algorithmic}
 \end{algorithm}
 
-The core of the validation protocol lies within the $\textsf{get\_validity}(\cdot)$ function (\Cref{alg:get-validity}).
-It essentially implements all the aforementioned validity requirements.
-If they are all satisfied, the function returns \emph{valid}.
-Otherwise, depending on which stage the function failed, it will return either \emph{unknown} or \emph{invalid}.
-We prove in the following chapter that the validation protocol satisfies the most of the desired properties.
-
-\begin{algorithm}
-\caption{Function $\textsf{get\_validity}(t_{u, i}, F_{v, j})$ runs in the private context of $u$.
-$t_{u, i}$ is the transaction that $u$ wishes to verify, and $F_{v, j}$ is the corresponding fragment received from $v$.}
-\label{alg:get-validity}
-
-\begin{algorithmic}
-
-    \State $F_{u, i} \gets \textsf{agreed\_fragment}(t_{u, i})$
-    \If{$F_{u, i} = \bot$}
-        \State \Return \emph{unknown}
-    \EndIf
-    \State
-
-    \State $c_{v, a} \gets \textsf{first}(F_{v, j})$
-    \State $c_{v, b} \gets \textsf{last}(F_{v, j})$
-    \If{$c_{v, a}$ or $c_{v, b}$ are not in consensus}
-        \State \Return \emph{unknown}
-    \EndIf
-    \State
-
-    \State $txid, pk_v, m \gets t_{u, i}$
-    \If{number of blocks of $txid$ in $F_{v, j} = 0$}
-        \State \Return \emph{unknown}
-    \EndIf
-    \State 
-
-    \If{number of blocks of $txid$ in $F_{v, j} > 1$}
-        \State \Return \emph{invalid}
-    \EndIf
-    \State 
-
-    % txid are equal now, but bad hash pointer
-    \If{sequence number in $F_{v, j}$ is correct (sequential)}
-        \If{hash pointers in $F_{v, j}$ is wrong}
-            \State \Return \emph{invalid}
-        \EndIf
-    \EndIf
-    \State
-
-    \State $txid', pk'_u, m' \gets t_{v, j}$
-    \If{$m \ne m' \vee pk_u \ne pk_u \vee |F_{v, j}| > L$}
-        \State \Return \emph{invalid}
-    \EndIf
-    \State
-
-    \State $c_{u, b} \gets \textsf{last}(F_{u, i})$
-    \If{$c_{u, b}$ is not created using the same $\C_r$ as $c_{v, b}$}
-        \State \Return \emph{invalid}
-    \EndIf
-    \State
-
-    \State \Return \emph{valid}
-\end{algorithmic}
-\end{algorithm}
-
 We make two remarks.
 First, just like the TX protocol, we do not block at any part of the protocol.
 Second, suppose some $F_{v, j}$ validates $t_{u, i}$, then that does not imply that $t_{u, i}$ only has one pair $t_{v, j}$.
@@ -583,6 +587,11 @@ But these fake pairs only pollutes the chain of $v$ and can never be validated b
 
 \section{Protocol Extensions}
 \label{sec:protocol-extensions}
+
+(Move to future work?)
+
+Up to this point, we have discussed our protocol in the context of the model and assumptions defined in \Cref{sec:model-assumptions}.
+In this section, we remove a few assumptions and discuss how our architecture is adapted.
 
 
 % \section{Universally Composable Framework}
