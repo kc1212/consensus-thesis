@@ -1,6 +1,22 @@
 \chapter{Analysis}
 \label{ch:analysis}
 
+Up to this point we described our system specification in detail.
+Of course, specification along does not establish any truths.
+In this chapter, we prove two aspects of our system.
+First is correctness,
+where we show that the consensus protocol and the validation protocol satisfies their desired properties
+(\Cref{def:consensus} and \Cref{def:validation} respectively).
+The second is performance,
+where we prove the lower bound of our throughput and show that it out performs classical blockchain systems.
+
+\section{Correctness}
+Our objective in this section is to establish correctness,
+in particular our system should have the properties described in \Cref{def:consensus}.
+
+We first give the proof outline.
+
+
 Three aspects:
 checkpoints (consensus)
     for every round we need fair lottery, consistent facilitators, agreement, total order, liveness
@@ -8,6 +24,7 @@ checkpoints (consensus)
 transactions (tamperproofness)
     implicit consensus on transactions
     maintain chain structure (not possible, but we can do it probabilistically)
-performance
     
 
+
+\section{Performance}

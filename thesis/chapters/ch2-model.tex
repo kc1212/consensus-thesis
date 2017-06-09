@@ -96,61 +96,34 @@ A visual representation is shown in \Cref{fig:trustchain-bad-cp}.
 \end{figure}
 
 \subsection{Consensus Protocol}\label{sec:overview-cons}
-Before describing our consensus protocol, we take a brief detour to explain \emph{atomic broadcast} primitive and contrast it with other well known primitives.
+Before describing our consensus protocol, we take a brief detour to explain asynchronous common subset primitive and contrast it with other well known primitives.
 It is a fundamental building block of our consensus protocol.
 
-\subsubsection*{Atomic broadcast}
-Atomic broadcast is an especially useful primitive for blockchain systems.
-It allows nodes to propose values (which can be transactions),
-and the goal is to reach a common ordering of the values---roughly speaking,
-the output is an ordered set of the propsal.
-Concretely, atomic broadcast needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
+\subsubsection*{Asynchronous common subset}
+TODO give history/background of ACS
+Asynchronous common subset (ACS) is an especially useful primitive for blockchain systems.
+It allows any party to propose a value and the result is the set union of all the proposed values by the majority.
+Concretely, ACS needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
 \begin{enumerate}
-\item \emph{Agreement}:
-    If any correct node outputs a value $v$, then every correct node outputs $v$.
-\item \emph{Total order}:
-    If one correct node has output the sequence of values $v_0, v_1, \dots, v_j$
-    and another has output $v'_0, v'_1, \dots, v_j'$, then $v_i = v'_i$ for $i \le \min(j, j')$.
-\item \emph{Liveness}:
-    If $v$ is an input to all the correct nodes, then it is eventually output by all the correct nodes.
-\end{enumerate}
-The liveness property also implies censorship resilience,
-i.e. an adversay cannot block some $v$ if all the correct nodes are committed to it.
-
-The atomic broadcast properties can be seen as a stronger version of reliable broadcast.
-In reliable broadcast (e.g. Bracha's reliable broadcast~\cite{bracha1984asynchronous}),
-there is only one sender and the following properties must be satisfied.
-\begin{enumerate}
+    \item \emph{Validity}:
+        If any correct party outputs a set $C$,
+        then $|C| \ge n - t$ and $C$ contains the input of at least $n - 2t$ parties.
     \item \emph{Agreement}:
-        If any two correct nodes deliver $v$ and $v'$, then $v = v'$.
+        If a correct party outputs $C$, then every party outputs $C$.
     \item \emph{Totality}:
-        If any correct node delivers $v$, then all correct nodes deliver $v$.
-    \item \emph{Validity}:
-        If the sender is correct and inputs $v$, then all correct nodes deliver $v$.
+        If $n - f$ party receive an input, then all correct parties produce an output.
 \end{enumerate}
-The main different here is that reliable broadcast does not guarantee order, it only guarantees delivery.
-If there are more than one sender, or even a single sender with multiple messages,
-the order of delivery may be different on different nodes.
 
-Atomic broadcast also is not the same as Byzantine agreement (BA).
-In particular, BA algorithms lets nodes propose a binary value,
-then output a binary value with respect to the following properties.
-\begin{enumerate}
-    \item \emph{Agreement}:
-        If any correct node outputs $v$, then every correct node outputs $v$.
-    \item \emph{Termination}:
-        If all correct nodes make a proposal, then every correct node outputs a value.
-    \item \emph{Validity}:
-        If any correct node outputs $v$, then at least one correct node proposed $v$.
-\end{enumerate}
-The primary difference here is that BA only considers only binary value,
-and the goal is to reach agreement on the binary value according with respect to the validity property.
-Whereas the agreement is on all the proposals from honest nodes in atomic broadcast.
+ACS has the nice property of censorship resiliance when compared to other consensus algorithms.
+For instance, Hyperledger and Tender mint uses Practical Byzantine Fault Tolerance (PBFT) as their consensus algorithm.
+In PBFT, a leader is elected, if the leader is malicious but follows the protocol, then it can selectivly filter transactions.
+In contract, every party in ACS are involved in the proposal phase,
+and it guarantees that if $n - 2t$ parties propose the same transaction, then it must be in the agreed output.
 
-The main drawback with atomic broadcast (and other similar protocols, i.e. reliable broadcast and Byzantine agreement)
-is the high message complexity.
-Typically, such protocols have the complexity of $O(n^2)$, where $n$ is the number of participants.
-This may work with a small number of nodes, but it is infeasible for blockchain systems where thousands of nodes are involved.
+The main drawback with ACS and other BFT protocols is the high message complexity.
+Typically, such protocols have the complexity of $O(n^2)$, where $n$ is the number of parties.
+Hence, it may work with a small number of nodes,
+but it is infeasible for blockchain systems where thousands of nodes are involved.
 
 
 % The literature on Byzantine consensus and atomic broadcast is rich, some noteable ones include TODO.
@@ -316,24 +289,54 @@ TODO agreed fragment must be consecutive
 \section{Consensus Protocol}
 \label{sec:cons-protocol}
 
-Our consensus protocol runs on top of the model describe before, it makes heavy use of CP blocks.
-We describe the protocol step by step.
-Starting with the bootstrap phase and then moving on to the actual consensus phase.
+Our consensus protocol runs on top of the model described above.
+It is directly related to the creation of CP blocks.
+The objectives of the protocol are to allow honest nodes always make progress (by creating new CP blocks),
+the consensus result in every round should be correct and the facilitators election should be unbiased.
+Concretely, we define the necessary properties as follows.
+\begin{definition}
+\label{def:consensus}
+\textbf{\emph{Necessary properties of the consensus protocol}}
 
-TODO rework definitions, that is: fair lottery, consistent facilitator, agreement, totoal order and liveness
+For any $r \in \{ x \in \mathbb{Z}_+ : x < \infty \}$, starting at the genesis round (round 0),
+the system will eventually reach $r$\textsuperscript{th} round.
+Further, for every non-genesis round $r$ ($r > 0$), the following properties must be satisfied.
+\begin{enumerate}
+    \item \emph{Fair lottery}:
+        Every node with a CP block in $\C_{r - 1}$,
+        should have an equal probability to be elected as a facilitator in round $r$.
+    \item \emph{Consistent facilitators}:
+        If one honest node decides on a list of facilitators in round $r$,
+        every other node honest decides on the same list.
+    \item \emph{Validity}:
+        If any correct facilitator outputs a set $C$, then $|C| \ge n - t$ and $C$ contains the input of at least $n - 2t$ facilitators.
+        Note that the input is a set of CP blocks, so the output is a set of a set of CP blocks.
+    \item \emph{Agreement}:
+        If a correct facilitator outputs $C$, then every facilitator outputs $C$.
+    \item \emph{Totality}:
+        If $n - f$ facilitators receive an input, then all correct facilitators produce an output.
+\end{enumerate}
+\end{definition}
+Note that the final three properties are on the facilitators rather than on every node,
+they are the properties ACS. 
+The fair lottery and consistent facilitator are properties on every node,
+they are prerequites for ACS.
+
+We proceed to describe the protocol step by step.
+Starting with the bootstrap phase and then moving on to the actual consensus phase.
 
 \subsection{Bootstrap Phase}
 \label{sec:bootstrap}
 Recall that facilitators are computed from the consensus result,
 but the consensus result is agreed by the facilitators.
 Thus we have a dependency cycle.
-The goal of the bootstrap phase is to give us a starting point for the cycle.
+The goal of the bootstrap phase is to give us a starting point in the cycle.
 
 Our bootstrap phase runs as follows.
 First we assume all $N$ nodes start simultaneously.
-The facilitators for round 0 are hard coded in the program,
-in practice this could be the machines controlled by the developer.
-If some node $u$ not a facilitator,
+The facilitators for round 0 are hard coded in the program.
+In practice this could be the machines controlled by the developer.
+If some node $u$ is not a facilitator,
 it sends the message $\langle \texttt{cp\_msg}, c_{u, 0} \rangle$ to all the facilitators.
 If $u$ is a facilitator, it does the same, but also waits for some time $\Delta + 1$ to collect messages of type \texttt{cp\_msg}.
 After $\Delta + 1$ elapses, it begins the atomic broadcast protocol using the collected CP blocks as the proposal.
@@ -346,38 +349,28 @@ which we describe next.
 \subsection{Setup phase}
 The setup phase begins immediately after some consensus result is agreed, but not yet disseminate.
 This could be right after the bootstrap phase.
-The goal is to reach agreement on a list of new facilitators between every node.
-Concretely, for every consensus round $r$, the following is required.
-\begin{enumerate}
-\item \emph{Agreement}: If any correct node receives $\C_r$,
-  then every correct node receives $\C_r$.
-\item \emph{Liveness}: All $N - t$ correct nodes receives a value eventually.
-\end{enumerate}
+The goal is to reach agreement on a list of new facilitators between every node
+and should correspond to the fair lottery and consistent facilitators in \Cref{def:consensus}.
 
 The setup phase works as follows.
 Assume that facilitators of round $r-1$ have just agreed on $\C_{r-1}$.
 They then immediately broadcast two messages to all the nodes---
 first the consensus message $\langle \texttt{cons\_msg}, \C_{r-1} \rangle$,
 and second the signature message $\langle \texttt{cons\_sig}, r, sig \rangle$.
-
-We make two remarks regarding those message.
-First, broadcasting is inefficient in terms of message  complexity.
-Gossiping is often better in practice but it introduces additional complexity due to its probabilistic nature.
-Thus, to keep the analysis clear in \Cref{sec:analysis}, we use broadcasting.
-Second, recall that channels are not authenticated, 
+The reason for sending \texttt{cons\_sig} is the following.
+Recall that channels are not authenticated, 
 and there are no signatures in $\C_{r - 1}$.
 If a non-facilitator sees some $\C_{r - 1}$, it cannot immediately trust it because it may have been forged.
 Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_r$.
 
-Continuing with the setup phase.
-Upon receiving $\C_{r - 1}$ and at least $t + 1$ valid signatures by $u$, $u$ performs two asks.
-First, it computes the new facilitators using $\textsf{derive\_facilitator}(C, n)$ (\Cref{alg:facilitator})
+Continuing, upon receiving $\C_{r - 1}$ and at least $t + 1$ valid signatures by $u$, $u$ performs two asks.
+First, it computes the new facilitators using $\textsf{get\_facilitator}(C, n)$ (\Cref{alg:facilitator})
 and updates its facilitator list to the result.
 Second, it creates a new CP block using $\textsf{new\_cp}(\C_{r - 1}, r - 1)$ (\Cref{alg:new-cp}).
 This concludes the setup phase.
 
 \begin{algorithm}
-\caption{Function $\textsf{derive\_facilitator}(C, n)$ takes a list of CP blocks $C$ and an integer $n$,
+\caption{Function $\textsf{get\_facilitator}(C, n)$ takes a list of CP blocks $C$ and an integer $n$,
 sort evey element in $C$ by its luck value (the $\lambda$-expression), and outputs the smallest $n$ elements.}
 \label{alg:facilitator}
 \begin{algorithmic}
@@ -402,34 +395,28 @@ Assuming the facilitators are of round $r$,
 the goal is to agree on some $\C_r$ between the facilitators.
 There are two scenarios in the consensus phase.
 First, if node $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, h} \rangle$ to all the facilitators.
-Second if the node is a facilitator, it waits for some duration $D$ and collect messages of type \texttt{cp\_msg}, where $D >> \Delta$.
-After $D$ is elapsed, it begins the atomic broadcast algorithm.
-In particular, the facilitators must satisfy the following conditions.
-\begin{enumerate}
-\item \emph{Agreement}: If any correct node outputs a CP block $c$, then every
-  correct node outputs $c$.
-\item \emph{Total Order}: If one correct node outputs the sequence of CP blocks
-  $\{c_1, c_i, \dots, c_n\}$ and another has output $\{c'_0, c'_1, \dots,
-  c'_{n'} \}$, then $c_i = c'_i$ for $i \le \min(n, n')$.
-\item \emph{Liveness}: All $n - t$ correct nodes terminate eventually.
-\end{enumerate}
+Second if the node is a facilitator, it waits for some duration $D$ and collect messages of type \texttt{cp\_msg}, where $D \gg \Delta$.
+After $D$ is elapsed, it begins the ACS protocol and some $\C_r$ should be agreed upon by the end of it.
+The facilitators must satisfy the validity, agreement and totality properties from \Cref{def:consensus}.
+This bring us back to the setup phase and the cycle can be started again.
+
+At the core of the consensus phase is the ACS protocol.
+While any ACS protocol that satisfies the standard definition will work,
+we use a simplification of HoneyBadgerBFT as our ACS protocol
+because it is the only (to the best of our knowledge) consensus algorithms designed for blockchain systems.
+We do not use the full HoneyBadgerBFT due to the following.
+First, the transactions in HoneyBadgerBFT are first queued in a buffer and the main consensus algorithm starts only when the buffer reaches an optimal size.
+We do not have an infinite stream of CP blocks, thus buffering is unsuitable.
+Second, HoneyBadgerBFT uses threshold encryption to hide the content of the transactions.
+But we do not reach consensus on transactions, only CP blocks, so hiding CP blocks is meaningless for us as it contains no transactional information.
 
 We remark that this procedure is the same as what is described in the bootstrap phase (\Cref{sec:bootstrap}),
 but the precondition and the waiting time is different.
 In particular, the bootstrap stage assumed that every node initiated and sent the \texttt{cp\_msg} simultaneously,
 but here we make no such assumption.
-Further, the bootstrap waits for duration $\Delta + 1$ in order to collect all the CP blocks,
+Furthermore, in the bootstrap phase nodes wait for duration $\Delta + 1$ to collect all the CP blocks,
 here we wait for some duration $D$---a system parameter,
-it must be much larger than $\Delta + 1$ to ensure that all honest \texttt{cp\_msg} are collected.
-
-At the core of the consensus phase is the atomic broadcast protocol.
-While using any atomic broadcast protocol will suffice,
-we use a (minimal) simplification of HoneyBadgerBFT as it is designed for blockchain systems and runs in fully asynchronous networks.
-The transactions in HoneyBadgerBFT are first queued in a buffer, the main consensus algorithm starts only when the buffer reaches an optimal size.
-We do not have an infinite stream of CP blocks, thus buffering is unsuitable.
-The main algorithms are kept the same, namely Asynchronous Common Subset, Reliable Broadcast and Binary Agreement.
-At the end of the consensus sphase, some $\C_r$ should be agreed upon.
-This bring us back to the setup phase and the cycle can be started again.
+which is much larger than $\Delta + 1$ to ensure that all honest \texttt{cp\_msg} are collected.
 
 
 \section{Transaction Protocol}
@@ -552,6 +539,8 @@ With the validity definition, we are ready to construct a protocol for determini
 The protocol is a simple response and request protocol (\Cref{alg:vd-proto}).
 If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends $\langle \texttt{vd\_req}, txid \rangle$ to $v$.
 The desired properties of the validation protocol are as follows.
+\begin{definition}
+\label{def:validation}
 \begin{enumerate}
     \item \emph{Correctness}:
         The validation protocol outputs the correct result
@@ -565,6 +554,7 @@ The desired properties of the validation protocol are as follows.
         If some transaction is valid, it cannot be forged into an invalid transaction.
         If some transaction is invalid, it cannot be forged into a valid transaction.
 \end{enumerate}
+\end{definition}
 
 \begin{algorithm}
 \caption{Validation protocol}
@@ -597,6 +587,9 @@ But these fake pairs only pollutes the chain of $v$ and can never be validated b
 Up to this point, we have discussed our protocol in the context of the model and assumptions defined in \Cref{sec:model-assumptions}.
 In this section, we remove a few assumptions and discuss how our architecture is adapted.
 
+Gossip?
+
+Churn?
 
 % \section{Universally Composable Framework}
 % \label{sec:uc-intro}
