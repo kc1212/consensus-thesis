@@ -17,6 +17,8 @@
 \usepackage{framed}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage[style=numeric]{biblatex}
+\addbibresource{references.bib} 
 % \usepackage{times}
 
 \algnewcommand\algorithmicupon{\textbf{Upon}}
@@ -29,6 +31,7 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}
 \newtheorem{lemma}{Lemma}
+\newtheorem{claim}{Claim}
 \newtheorem{definition}{Definition}
 
 \newcommand{\A}{\mathcal{A}}
@@ -109,12 +112,10 @@
 \input{chapters/ch4-implementation}
 \clearemptydoublepage
 
-\input{chapters/ch2-checkpoint}
-\clearemptydoublepage
-
 % BIBLIOGRAPHY
-\bibliographystyle{plain}
-\bibliography{references}
+% \bibliographystyle{plain}
+% \bibliography{references}
+\printbibliography
 
 \appendix
 \include{appendices/consensus-example}

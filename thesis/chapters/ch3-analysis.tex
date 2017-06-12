@@ -11,20 +11,77 @@ The second is performance,
 where we prove the lower bound of our throughput and show that it out performs classical blockchain systems.
 
 \section{Correctness}
-Our objective in this section is to establish correctness,
-in particular our system should have the properties described in \Cref{def:consensus}.
+Our first objective in this section is to establish truths regarding the correctness of our protocol.
+We do this in two parts.
+First we use mathematical induction to show that properties in \Cref{def:consensus} holds for all round.
+Building on top that, if \Cref{def:consensus} is true, then we can show that many properties in \Cref{def:validation} is true.
 
-We first give the proof outline.
+\textbf{\emph{Correctness of consensus}}
+
+$\forall r \in \mathbb{N}$, the following properties must be satisfied.
+\begin{enumerate}
+    \item \emph{Agreement}:
+        If one honest node outputs a list of facilitators $F_r$,
+        every other node honest decides on $F_r$
+    \item \emph{Validity}:
+        If any honest node outputs $F_r$, then $|F_r| > n$ and $|F_r|$ must contain at least $n - t$ honest nodes.
+    \item \emph{Fairness}:
+        Every node should have an equal probability of becoming a facilitator.
+    \item \emph{Termination}:
+        At the end of the round, every node outputs some $F_r$.
+\end{enumerate}
 
 
-Three aspects:
-checkpoints (consensus)
-    for every round we need fair lottery, consistent facilitators, agreement, total order, liveness
-    for the whole thing, we need global liveness
-transactions (tamperproofness)
-    implicit consensus on transactions
-    maintain chain structure (not possible, but we can do it probabilistically)
-    
+\subsection{Correctness of Consensus}
 
+We begin our analysis by establishing the fact that the $\textsf{get\_facilitator}(\cdot)$ is fair.
+\begin{lemma}
+\label{lemma:fairness}
+\textbf{\emph{Fairness of facilitator election}}
+
+Every node with a CP block in $\C_r$, should have an equal probability to be elected as a facilitator.
+\end{lemma}
+\begin{proof}
+This directly follows from the random oracle model.
+Recall that the luck value is computed using $\textsf{H}(\C_r, || pk_i)$.
+Since $pk_i$ is unique for every node that has a CP block in $\C_r$, the output of $\textsf{H}(\cdot)$ is uniformly random.
+This implies that the ordered sequence by luck value is uniformly random.
+\end{proof}
+
+
+Using \Cref{lemma:fairness}, we show that our consensus protocol satisfied \Cref{def:consensus}.
+\begin{lemma}
+\textbf{\emph{Correctness of consensus}}
+$\forall r \in \mathbb{N}$, agreement, validity, fairness and termination holds.
+\end{lemma}
+
+\begin{proof}
+We proof by mathematical induction.
+
+In the base case, agreement, validity fairness and termination follows directly from the bootstrap protocol, due to the bootstrap oracle.
+Note that the result is $F_1$, which indicates the facilitators that are agreed in round 1 and are responsible for driving the ACS protocol in round 2.
+
+For the inductive step, we assume that the properties hold for round $r$.
+Then, to start round $r + 1$, the honest nodes begin sending CP blocks to $F_r$. % TODO but they don't send at the same time!
+Since the honest region in $F_r$ waits for $D$ and $D \gg \Delta$,
+the CP blocks of the honest nodes are guaranteed to be received by at least $n - t$ facilitators.
+The agreement property of ACS (from \Cref{def:acs}) ensures that the consensus result $\C_{r + 1}$ is in consensus. 
+The validity property of ACS ensures that $\C_{r + 1}$ contains the input of at least $n - 2t$ parties, but this is a quorum containing at least one honest facilitator,
+thus $\C_{r + 1}$ contains the CP blocks of all facilitators.
+Observe that $F_{r + 1}$ is computed using the deterministic function $\textsf{get\_facilitators}(\cdot)$.
+Thus agreement of $F_{r + 1}$ follows directly from agreement of ACS.
+Due to the assumption that the adversary cannot corrupt more than $t$ nodes,
+validity of $F_{r + 1}$ also follows from validity of ACS.
+The fairness property follows from \Cref{lemma:fairness}.
+Finally, the termination property holds because $D$ eventually elapses and then ACS eventually terminates.
+This completes our proof.
+
+
+\end{proof}
+
+
+\subsection{Correctness of Validation}
+
+Remark: chain structure cannot be satisfied, but can be probabilistically checked
 
 \section{Performance}

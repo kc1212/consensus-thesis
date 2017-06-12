@@ -104,6 +104,8 @@ TODO give history/background of ACS
 Asynchronous common subset (ACS) is an especially useful primitive for blockchain systems.
 It allows any party to propose a value and the result is the set union of all the proposed values by the majority.
 Concretely, ACS needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
+\begin{definition}
+\label{def:acs}
 \begin{enumerate}
     \item \emph{Validity}:
         If any correct party outputs a set $C$,
@@ -113,6 +115,7 @@ Concretely, ACS needs to satisfy the following properties (adapted from~\cite{mi
     \item \emph{Totality}:
         If $n - f$ party receive an input, then all correct parties produce an output.
 \end{enumerate}
+\end{definition}
 
 ACS has the nice property of censorship resiliance when compared to other consensus algorithms.
 For instance, Hyperledger and Tender mint uses Practical Byzantine Fault Tolerance (PBFT) as their consensus algorithm.
@@ -193,8 +196,8 @@ the channels are reliable\footnote{
 but messages may be re-ordered and delayed by at most some time $\Delta$,
 this is sometimes known as a $\Delta$-synchronous network.
 Nodes are identified by their public key thus we assume there exist a Public Key Infrastructure (PKI).
-In addition, we assume the existance of cryptographically secure hash function $\textsf{H}(\cdot)$,
-that has preimage resistance, second preimage resistance and collision resistance.
+% TODO everyone has one public key?
+Finally, we use the random oracle model, calls to the random oracle are denoted by $\textsf{H}(\cdot)$.
 
 In our model we consider $N$ nodes, which is the population size.
 $n$ of them are facilitators, $t$ out of $n$ are malicious and the inequality
@@ -301,6 +304,7 @@ Concretely, we define the necessary properties as follows.
 For any $r \in \{ x \in \mathbb{Z}_+ : x < \infty \}$, starting at the genesis round (round 0),
 the system will eventually reach $r$\textsuperscript{th} round.
 Further, for every non-genesis round $r$ ($r > 0$), the following properties must be satisfied.
+% TODO rework this -> agreement, validity, fairness, termination
 \begin{enumerate}
     \item \emph{Fair lottery}:
         Every node with a CP block in $\C_{r - 1}$,
@@ -327,6 +331,7 @@ Starting with the bootstrap phase and then moving on to the actual consensus pha
 
 \subsection{Bootstrap Phase}
 \label{sec:bootstrap}
+% TODO rework this -> bootstrap is simply setting the facilitators in a fair way, no consensus
 Recall that facilitators are computed from the consensus result,
 but the consensus result is agreed by the facilitators.
 Thus we have a dependency cycle.
@@ -347,6 +352,8 @@ The bootstrap phase can be seen as an idealised version of the setup phase combi
 which we describe next.
 
 \subsection{Setup phase}
+\label{sec:setup-phase}
+% TODO setup phase begins with known facilitators from F_r
 The setup phase begins immediately after some consensus result is agreed, but not yet disseminate.
 This could be right after the bootstrap phase.
 The goal is to reach agreement on a list of new facilitators between every node
@@ -363,7 +370,7 @@ and there are no signatures in $\C_{r - 1}$.
 If a non-facilitator sees some $\C_{r - 1}$, it cannot immediately trust it because it may have been forged.
 Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_r$.
 
-Continuing, upon receiving $\C_{r - 1}$ and at least $t + 1$ valid signatures by $u$, $u$ performs two asks.
+Continuing, upon receiving $\C_{r - 1}$ and at least $n - f$ valid signatures by $u$, $u$ performs two asks.
 First, it computes the new facilitators using $\textsf{get\_facilitator}(C, n)$ (\Cref{alg:facilitator})
 and updates its facilitator list to the result.
 Second, it creates a new CP block using $\textsf{new\_cp}(\C_{r - 1}, r - 1)$ (\Cref{alg:new-cp}).
@@ -390,6 +397,7 @@ It creates a new CP block and appends it to $u$'s chain.}
 \end{algorithm}
 
 \subsection{Consensus Phase}
+\label{sec:consensus-phase}
 The consensus phase begins after the new facilitators are selected.
 Assuming the facilitators are of round $r$,
 the goal is to agree on some $\C_r$ between the facilitators.
@@ -418,6 +426,8 @@ Furthermore, in the bootstrap phase nodes wait for duration $\Delta + 1$ to coll
 here we wait for some duration $D$---a system parameter,
 which is much larger than $\Delta + 1$ to ensure that all honest \texttt{cp\_msg} are collected.
 
+% TODO consensus phase ends when F_{r + 1} is selected
+% TODO remove duplicate CP blocks
 
 \section{Transaction Protocol}
 \label{sec:tx-protocol}
