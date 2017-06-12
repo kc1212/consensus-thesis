@@ -211,6 +211,8 @@ The second restriction is that the adversary, presumably controlling all the cor
 Namely the adversary may learn the internal state such as the private key of a corrupted node,
 but if the node recovers, then the adversary must forget the private key.
 Otherwise the adversary can eventually learn all the private keys and sabotage the system.
+Finally, we assume computational security.
+That is, the adversary can run polynomial-time algorithms but not exponential-time algorithms.
 
 The primary data structure used in our system is Extended TrustChain.
 Each node $u$ has a public and private key pair---$pk_u$ and $sk_u$, and a chain $B_u$.
@@ -449,14 +451,14 @@ This allows for high concurrency where we can call $\textsf{new\_tx}(\cdot)$ mul
 \section{Validation Protocol}
 \label{sec:vd-protocol}
 
-Up to this point, we do not provide a mechanism to detect forks or other forms of tampering or forging, and we cannot detect malicious parties.
+Up to this point, we do not provide a mechanism to detect forks or other forms of tampering or forging.
 The validation protocol aims to solve this issue.
 The protocol is also a request-response protocol, just like the transaction protocol.
-But before explaining the protocol itself, we first define what it means to be valid.
+But before explaining the protocol itself, we first define what it means for a transaction to be valid.
 
 \subsection{Validity Definition}
 A transaction can be in one of three states in terms of validity---\emph{valid}, \emph{invalid} and \emph{unknown}.
-Given a fragment $F$, the validity of the transaction $t$ is captured by the function $\textsf{get\_validity}(t, F)$ (\Cref{alg:get-validity}).
+Given a fragment $F_{v, j}$, the validity of the transaction $t_{u, i}$ is captured by the function $\textsf{get\_validity}(t, F)$ (\Cref{alg:get-validity}).
 The first four conditions (up to \Cref{line:valid-fragment}) essentially check whether the fragment is the one that the verifier needs.
 If it is not, then the verifier cannot make any decision and return \emph{unknown}.
 This is likely to be the case for new transactions because $\textsf{agreed\_fragment}(\cdot)$ would be $\bot$.
@@ -468,9 +470,10 @@ In that case, it may seem that the counterparty, who is honest, purposefully omm
 But in reality, it was the malicious sender who did not follow the protocol.
 Thus, in such cases the whole transaction, identified by its $txid$ is marked as invalid.
 
-TODO make $w$ the verified of some TX between $u$ and $v$.
-TODO remark that $w$ calls the function.
-
+Further, the caller of $\textsf{get\_validity}(t_u{u, i}, F_{v, i})$ is not necessarily 
+$u$\footnote{In practice it often is because after completing the TX protocol the parties are incentivised to check that the counterparty ``did the right thing''.}
+Any node $w$ may call $\textsf{get\_validity}(t_u{u, i}, F_{v, i})$ as long as the caller $w$ has an agreed fragment of $t_{u, i}$---$F_{u, i}$.
+$F_{u, i}$ may be readily available if $w = u$ or it may be from some other \texttt{vd\_resp} message, which we describe next in the validation protocol.
 
 \begin{algorithm}
 \caption{Function $\textsf{get\_validity}(t_{u, i}, F_{v, j})$ validates the transaction $t_{u, i}$.
@@ -494,6 +497,11 @@ The caller is $w$, it may be $u$ but this is not necessary.
     \EndIf \Comment $v$ has agreed fragment
     \State
 
+    \If{$|F_{v, j}| > L$}
+        \State \Return \emph{unknown}
+    \EndIf \Comment fragment not too long
+    \State
+
     % txid are equal now, but bad hash pointer
     \If{sequence number in $F_{v, j}$ is correct (sequential)}
         \If{hash pointers in $F_{v, j}$ is wrong}
@@ -515,7 +523,7 @@ The caller is $w$, it may be $u$ but this is not necessary.
     \State 
 
     \State $txid', pk'_u, m' \gets t_{v, j}$
-    \If{$m \ne m' \vee pk_u \ne pk_u \vee |F_{v, j}| > L$}
+    \If{$m \ne m' \vee pk_u \ne pk'_u \vee |F_{v, j}| > L$}
         \State \Return \emph{invalid}
     \EndIf \Comment no tampering
     \State
@@ -531,7 +539,7 @@ If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends 
 The desired properties of the validation protocol are as follows.
 \begin{definition}
 \label{def:validation}
-\textbf{\emph{Implicit consensus on transactions}}
+\textbf{\emph{Consensus on transactions}}
 
 \begin{enumerate}
     \item \emph{Correctness}:
@@ -540,11 +548,11 @@ The desired properties of the validation protocol are as follows.
     \item \emph{Agreement}:
         If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
         then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
+    % \item \emph{Unforgeability}:
+    %     If some transaction is valid, it cannot be forged into an invalid transaction.
+    %     If some transaction is invalid, it cannot be forged into a valid transaction.
     \item \emph{Liveness}:
         Any valid transactions can be validated eventually.
-    \item \emph{Unforgeability}:
-        If some transaction is valid, it cannot be forged into an invalid transaction.
-        If some transaction is invalid, it cannot be forged into a valid transaction.
 \end{enumerate}
 \end{definition}
 

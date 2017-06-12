@@ -36,7 +36,9 @@ This implies that the ordered sequence by luck value is uniformly random.
 
 Using \Cref{lemma:fairness}, we show that our consensus protocol satisfied \Cref{def:consensus}.
 \begin{lemma}
+\label{lemma:consensus}
 \textbf{\emph{Correctness of consensus}}
+
 $\forall r \in \mathbb{N}$, agreement, validity, fairness and termination holds.
 \end{lemma}
 
@@ -50,23 +52,76 @@ For the inductive step, we assume that the properties hold for round $r$.
 Then, to start round $r + 1$, the honest nodes begin sending CP blocks to $\F_r$. % TODO but they don't send at the same time!
 Since the honest region in $\F_r$ waits for $D$ and $D \gg \Delta$,
 the CP blocks of the honest nodes are guaranteed to be received by at least $n - t$ facilitators.
-The agreement property of ACS (from \Cref{def:acs}) ensures that the consensus result $\C_{r + 1}$ is in consensus. 
-The validity property of ACS ensures that $\C_{r + 1}$ contains the input of at least $n - 2t$ parties, but this is a quorum containing at least one honest facilitator,
-thus $\C_{r + 1}$ contains the CP blocks of all facilitators.
+The agreement property of ACS (from \Cref{def:acs}) ensures that the $\C_{r + 1}$ is in consensus. 
 Observe that $\F_{r + 1}$ is computed using the deterministic function $\textsf{get\_facilitators}(\cdot)$.
-Thus agreement of $\F_{r + 1}$ follows directly from agreement of ACS.
+Thus agreement of $\F_{r + 1}$ follows directly from the agreement of ACS.
+The validity property of ACS ensures that $\C_{r + 1}$ contains the input of at least $n - 2t$ parties, but this is a quorum containing at least one honest facilitator,
+thus $\C_{r + 1}$ contains the CP blocks of all nodes.
 Due to the assumption that the adversary cannot corrupt more than $t$ nodes,
 validity of $\F_{r + 1}$ also follows from validity of ACS.
-The fairness property follows from \Cref{lemma:fairness}.
-Finally, the termination property holds because $D$ eventually elapses and then ACS eventually terminates.
-This completes our proof.
-
-
+Since all honest nodes are in $\C_{r + 1}$, the fairness property follows directly from \Cref{lemma:fairness}.
+Finally, the termination property holds because $D$ eventually elapses and then ACS eventually terminates
+(the totality property of ACS).
+This completes the proof.
 \end{proof}
 
-
 \subsection{Correctness of Validation}
+The consensus protocol (on CP blocks and facilitators) is the backbone for consensus on transactions.
+In this section we build on top of \Cref{lemma:consensus} to show that most properties in \Cref{def:validation} can be satisfied.
 
-Remark: chain structure cannot be satisfied, but can be probabilistically checked
+\begin{lemma}
+\textbf{\emph{Correctness of the validation protocol}}
+
+The validation protocol outputs the correct result
+according to the aforementioned validity definition.
+\end{lemma}
+\begin{proof}
+Follows directly from the definition.
+\end{proof}
+
+\begin{lemma}
+\label{lemma:validation-agreement}
+\textbf{\emph{Agreement of the validation protocol}}
+
+If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
+then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
+\end{lemma}
+\begin{proof}
+We proof by contradiction.
+Without loss of generality, for some transaction $t$ with an agreed fragment $F$,
+node $u$ decides \emph{valid} but node $v$ decides \emph{invalid}.
+Then there exist a fragment $F' = \{ \dots, t', c'\}$ which $u$ received that contains a valid pair of $t$---$t'$.
+There also exist a fragment $F'' = \{ \dots, t'', c''\}$ which $v$ received that does not contain or contains an invalid pair---$t''$.
+In both cases, the $\textsf{get\_validity}(\cdot)$ must have reached \Cref{line:valid-fragment},
+meaning that $c' = c''$, otherwise the result would be \emph{unknown}.
+Since $c' (= c'') = \langle \textsf{H}(t'), \dots \rangle$ we must have $\textsf{H}(t') = \textsf{H}(t'')$ and $t' \ne t''$ (because $t''$ is invalid).
+In other words, the sender of $F''$ must be able to create some $t''$ that has the same digest as $t'$.
+But we assumed that the adversary can only perform polynomial-time algorithm, but in order to find $t''$ it needs to query the random oracle exponentially many times.
+Thus we have a contradiction and this completes our proof.
+\end{proof}
+
+A consequence \Cref{lemma:validation-agreement} is unforgeability.
+That is, no polynomial time adversary is able to create two chains $F = \{ \dots, t, c\}$ $F' = \{ \dots, t', c\}$ with correct hash pointers and the same end of chain $c$.
+
+Now we show a negative result, where the liveness property cannot be attained.
+\begin{lemma}
+\textbf{\emph{Impossibility of liveness of the validation protocol}}
+
+There exist a valid transactions that cannot be validated eventually.
+\end{lemma}
+\begin{proof}
+We proof by providing a counterexample.
+Suppose nodes $u$ and $v$ correctly perfomed the TX protocol which resulted a transaction $t$.
+Then when $u$ wants to validate $t$, it does so by sending \texttt{vd\_req} message to $v$.
+$v$ can act maliciously and ignore all \texttt{vd\_req} message, thus $t$ can never be validated.
+\end{proof}
+Although this is a negative result, it does not put the adversary in an advantageous position.
+If the adversary is observed to ignore validation requests, then the honest nodes may prefer not to transact with her in the future.
+Thus, to stay relevant in the system, the adversary need to comply to the protocol.
+
+\subsection{Summary}
+We have shown that 
+
+TODO: chain structure cannot be satisfied, but can be probabilistically checked
 
 \section{Performance}
