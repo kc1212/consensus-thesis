@@ -106,6 +106,8 @@ It allows any party to propose a value and the result is the set union of all th
 Concretely, ACS needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
 \begin{definition}
 \label{def:acs}
+\textbf{\emph{Properties of ACS}}
+
 \begin{enumerate}
     \item \emph{Validity}:
         If any correct party outputs a set $C$,
@@ -195,9 +197,8 @@ the channels are reliable\footnote{
 },
 but messages may be re-ordered and delayed by at most some time $\Delta$,
 this is sometimes known as a $\Delta$-synchronous network.
-Nodes are identified by their public key thus we assume there exist a Public Key Infrastructure (PKI).
-% TODO everyone has one public key?
-Finally, we use the random oracle model, calls to the random oracle are denoted by $\textsf{H}(\cdot)$.
+We assume there exist a Public Key Infrastructure (PKI), and nodes are identified by their unique and permanent public key.
+Finally, we use the random oracle model, i.e. calls to the random oracle are denoted by $\textsf{H}(\cdot)$.
 
 In our model we consider $N$ nodes, which is the population size.
 $n$ of them are facilitators, $t$ out of $n$ are malicious and the inequality
@@ -278,8 +279,12 @@ If the enclosure of some TX block is $\langle c_{u,a}, c_{u, b} \rangle$,
 then its \emph{fragment} is computed as $\{ b_{u, i} : a \le i \le b \}$.
 For convenience, the function $\textsf{fragment}(\cdot)$ represents the fragment of some TX block if it exists, otherwise $\bot$.
 
-\emph{Agreed enclosure} is the same as enclosure with an extra constraint where the CP blocks must be in some consensus result $\C_r$.
-Similarly, \emph{agreed fragment} is computed using agreed enclosure.
+\emph{Agreed enclosure} is the same as enclosure with an extra constraint where the CP blocks must be in some consensus result $\C_r$ and also must be the smallest enclosure.
+That is, suppose a chain is in the form
+    $\{c_{i}, c_{i+1}, t_{i+2}, c_{i+3}\}$\footnote{Usually the notation is of the form $c_{u, i}$, but the node identity is not important here so we simplify it to $c_{i}$}
+    and $c_{i}, c_{i+1}, c_{i+3}$ are in $\C_r, \C_{r+1}, \C_{r+3}$ respectively,
+    then the agreed enclosure of $t_{i+2}$ is $\langle c_{i+1}, c_{i+3}\rangle$ and cannot be $\langle c_{i}, c_{i+3}\rangle$.
+Similarly, \emph{agreed fragment} is computed using the agreed enclosure.
 We define its function to be $\textsf{agreed\_fragment}(\cdot)$
 
 The length of the fragment is constrained by $L$,
@@ -287,39 +292,35 @@ namely $\forall t |\textsf{fragment}(t)| \le L$.
 The purpose to prevent spam and encourage nodes to create more CP blocks.
 $L$ should be sufficiently high so that busy nodes are not hindered by it.
 
-TODO agreed fragment must be consecutive
 
 \section{Consensus Protocol}
 \label{sec:cons-protocol}
 
 Our consensus protocol runs on top of the model described above.
 It is directly related to the creation of CP blocks.
-The objectives of the protocol are to allow honest nodes always make progress (by creating new CP blocks),
-the consensus result in every round should be correct and the facilitators election should be unbiased.
-Concretely, we define the necessary properties as follows.
+The objectives of the protocol are to
+    allow honest nodes always make progress (by creating new CP blocks),
+    compute correct consensus result in every round
+    and have unbiased election of facilitators.
+Concretely, we define the necessary properties as follows,
+it is collectively known as the correctness properties of the consensus protocol.
 \begin{definition}
 \label{def:consensus}
-\textbf{\emph{Necessary properties of the consensus protocol}}
+\textbf{\emph{Correctness properties of the consensus protocol}}
 
-For any $r \in \{ x \in \mathbb{Z}_+ : x < \infty \}$, starting at the genesis round (round 0),
-the system will eventually reach $r$\textsuperscript{th} round.
-Further, for every non-genesis round $r$ ($r > 0$), the following properties must be satisfied.
-% TODO rework this -> agreement, validity, fairness, termination
+$\forall r \in \mathbb{N}$, the following properties must be satisfied.
 \begin{enumerate}
-    \item \emph{Fair lottery}:
-        Every node with a CP block in $\C_{r - 1}$,
-        should have an equal probability to be elected as a facilitator in round $r$.
-    \item \emph{Consistent facilitators}:
-        If one honest node decides on a list of facilitators in round $r$,
-        every other node honest decides on the same list.
-    \item \emph{Validity}:
-        If any correct facilitator outputs a set $C$, then $|C| \ge n - t$ and $C$ contains the input of at least $n - 2t$ facilitators.
-        Note that the input is a set of CP blocks, so the output is a set of a set of CP blocks.
     \item \emph{Agreement}:
-        If a correct facilitator outputs $C$, then every facilitator outputs $C$.
-    \item \emph{Totality}:
-        If $n - f$ facilitators receive an input, then all correct facilitators produce an output.
+        If one honest node outputs a list of facilitators $\F_r$,
+        every other node honest decides on $\F_r$
+    \item \emph{Validity}:
+        If any honest node outputs $\F_r$, then $|\F_r| > n$ and $|\F_r|$ must contain at least $n - t$ honest nodes.
+    \item \emph{Fairness}:
+        Every node should have an equal probability of becoming a facilitator.
+    \item \emph{Termination}:
+        At the end of the round, every node outputs some $\F_r$.
 \end{enumerate}
+
 \end{definition}
 Note that the final three properties are on the facilitators rather than on every node,
 they are the properties ACS. 
@@ -331,57 +332,63 @@ Starting with the bootstrap phase and then moving on to the actual consensus pha
 
 \subsection{Bootstrap Phase}
 \label{sec:bootstrap}
-% TODO rework this -> bootstrap is simply setting the facilitators in a fair way, no consensus
 Recall that facilitators are computed from the consensus result,
 but the consensus result is agreed by the facilitators.
 Thus we have a dependency cycle.
 The goal of the bootstrap phase is to give us a starting point in the cycle.
 
-Our bootstrap phase runs as follows.
-First we assume all $N$ nodes start simultaneously.
-The facilitators for round 0 are hard coded in the program.
-In practice this could be the machines controlled by the developer.
-If some node $u$ is not a facilitator,
-it sends the message $\langle \texttt{cp\_msg}, c_{u, 0} \rangle$ to all the facilitators.
-If $u$ is a facilitator, it does the same, but also waits for some time $\Delta + 1$ to collect messages of type \texttt{cp\_msg}.
-After $\Delta + 1$ elapses, it begins the atomic broadcast protocol using the collected CP blocks as the proposal.
-$\C_0$ is agreed at the end of the protocol.
+Imagine that there is some bootstrap oracle, that initiates the code on every node.
+The code satisfied all the properties in \Cref{def:consensus}.
+Namely every node has the same set of valid facilitators $\F_1$ that are randomly choosen.
 This concludes the bootstrap phase.
 
-The bootstrap phase can be seen as an idealised version of the setup phase combined with the consensus phase,
-which we describe next.
+In practice, the bootstrap oracle is most likely the software developer and some of the desired properties cannot be achieved.
+In particular, it is not possible to have the fairness property because it is unlikely that the developer knows the identity of every node in advance.
 
-\subsection{Setup phase}
-\label{sec:setup-phase}
-% TODO setup phase begins with known facilitators from F_r
-The setup phase begins immediately after some consensus result is agreed, but not yet disseminate.
-This could be right after the bootstrap phase.
-The goal is to reach agreement on a list of new facilitators between every node
-and should correspond to the fair lottery and consistent facilitators in \Cref{def:consensus}.
+\subsection{Consensus Phase}
+\label{sec:consensus-phase}
+The consensus phase begins when $\F_r$ is available to all the nodes.
+Note that $\F_r$ indicates the facilitators that were elected using result of round $r$ and are responsible for driving the ACS protocol in round $r + 1$.
+The goal is to reach agreement on a set of new facilitators $\F_{r + 1}$ that satisfied \Cref{def:consensus}.
 
-The setup phase works as follows.
-Assume that facilitators of round $r-1$ have just agreed on $\C_{r-1}$.
-They then immediately broadcast two messages to all the nodes---
-first the consensus message $\langle \texttt{cons\_msg}, \C_{r-1} \rangle$,
+There are two scenarios in the consensus phase.
+First, if node $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, h} \rangle$ to all the facilitators.
+Second if the node is a facilitator, it waits for some duration $D$ and collect messages of type \texttt{cp\_msg}, where $D \gg \Delta$.
+Invalid messages are removed, namely blocks with invalid signatures and duplicate blocks signed by the same key.
+After $D$ elapses, it begins the ACS protocol and some $\C_{r + 1}$ should be agreed upon by the end of it.
+
+At the core of the consensus phase is the ACS protocol.
+While any ACS protocol that satisfies the standard definition will work,
+we use a simplification of HoneyBadgerBFT as our ACS protocol
+because it is the only (to the best of our knowledge) consensus algorithms designed for blockchain systems.
+We do not use the full HoneyBadgerBFT due to the following.
+First, the transactions in HoneyBadgerBFT are first queued in a buffer and the main consensus algorithm starts only when the buffer reaches an optimal size.
+We do not have an infinite stream of CP blocks, thus buffering is unsuitable.
+Second, HoneyBadgerBFT uses threshold encryption to hide the content of the transactions.
+But we do not reach consensus on transactions, only CP blocks, so hiding CP blocks is meaningless for us as it contains no transactional information.
+
+When $\F_{r}$ reaches agreement on $\C_{r+1}$,
+they immediately broadcast two messages to all the nodes---
+first the consensus message $\langle \texttt{cons\_msg}, \C_{r+1} \rangle$,
 and second the signature message $\langle \texttt{cons\_sig}, r, sig \rangle$.
 The reason for sending \texttt{cons\_sig} is the following.
 Recall that channels are not authenticated, 
 and there are no signatures in $\C_{r - 1}$.
 If a non-facilitator sees some $\C_{r - 1}$, it cannot immediately trust it because it may have been forged.
-Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_r$.
+Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_{r + 1}$.
 
-Continuing, upon receiving $\C_{r - 1}$ and at least $n - f$ valid signatures by $u$, $u$ performs two asks.
-First, it computes the new facilitators using $\textsf{get\_facilitator}(C, n)$ (\Cref{alg:facilitator})
+Continuing, upon receiving $\C_{r + 1}$ and at least $n - f$ valid signatures by some $u$, $u$ performs two asks.
+First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1}, r + 1)$ (\Cref{alg:new-cp}).
+Second, it computes the new facilitators using $\textsf{get\_facilitator}(C, n)$ (\Cref{alg:facilitator})
 and updates its facilitator list to the result.
-Second, it creates a new CP block using $\textsf{new\_cp}(\C_{r - 1}, r - 1)$ (\Cref{alg:new-cp}).
-This concludes the setup phase.
+This concludes the consensus phase and brings us back to the beginning of the consensus phase.
 
 \begin{algorithm}
 \caption{Function $\textsf{get\_facilitator}(C, n)$ takes a list of CP blocks $C$ and an integer $n$,
 sort evey element in $C$ by its luck value (the $\lambda$-expression), and outputs the smallest $n$ elements.}
 \label{alg:facilitator}
 \begin{algorithmic}
-\State $\textbf{take} (n, \textbf{sort} (\textbf{map}(\lambda x.\textsf{H}(x || pk \text{ of } x), C)))$
+\State $\textsf{take} (n, \textsf{sort\_by} (\lambda x.\textsf{H}(x || pk \text{ of } x), C))$
 \end{algorithmic}
 \end{algorithm}
 
@@ -395,39 +402,6 @@ It creates a new CP block and appends it to $u$'s chain.}
 \State $B_u \gets B_u \cup c_{u, h}$
 \end{algorithmic}
 \end{algorithm}
-
-\subsection{Consensus Phase}
-\label{sec:consensus-phase}
-The consensus phase begins after the new facilitators are selected.
-Assuming the facilitators are of round $r$,
-the goal is to agree on some $\C_r$ between the facilitators.
-There are two scenarios in the consensus phase.
-First, if node $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, h} \rangle$ to all the facilitators.
-Second if the node is a facilitator, it waits for some duration $D$ and collect messages of type \texttt{cp\_msg}, where $D \gg \Delta$.
-After $D$ is elapsed, it begins the ACS protocol and some $\C_r$ should be agreed upon by the end of it.
-The facilitators must satisfy the validity, agreement and totality properties from \Cref{def:consensus}.
-This bring us back to the setup phase and the cycle can be started again.
-
-At the core of the consensus phase is the ACS protocol.
-While any ACS protocol that satisfies the standard definition will work,
-we use a simplification of HoneyBadgerBFT as our ACS protocol
-because it is the only (to the best of our knowledge) consensus algorithms designed for blockchain systems.
-We do not use the full HoneyBadgerBFT due to the following.
-First, the transactions in HoneyBadgerBFT are first queued in a buffer and the main consensus algorithm starts only when the buffer reaches an optimal size.
-We do not have an infinite stream of CP blocks, thus buffering is unsuitable.
-Second, HoneyBadgerBFT uses threshold encryption to hide the content of the transactions.
-But we do not reach consensus on transactions, only CP blocks, so hiding CP blocks is meaningless for us as it contains no transactional information.
-
-We remark that this procedure is the same as what is described in the bootstrap phase (\Cref{sec:bootstrap}),
-but the precondition and the waiting time is different.
-In particular, the bootstrap stage assumed that every node initiated and sent the \texttt{cp\_msg} simultaneously,
-but here we make no such assumption.
-Furthermore, in the bootstrap phase nodes wait for duration $\Delta + 1$ to collect all the CP blocks,
-here we wait for some duration $D$---a system parameter,
-which is much larger than $\Delta + 1$ to ensure that all honest \texttt{cp\_msg} are collected.
-
-% TODO consensus phase ends when F_{r + 1} is selected
-% TODO remove duplicate CP blocks
 
 \section{Transaction Protocol}
 \label{sec:tx-protocol}
@@ -494,25 +468,31 @@ In that case, it may seem that the counterparty, who is honest, purposefully omm
 But in reality, it was the malicious sender who did not follow the protocol.
 Thus, in such cases the whole transaction, identified by its $txid$ is marked as invalid.
 
+TODO make $w$ the verified of some TX between $u$ and $v$.
+TODO remark that $w$ calls the function.
+
+
 \begin{algorithm}
-\caption{Function $\textsf{get\_validity}(t_{u, i}, F_{v, j})$ runs in the private context of $u$.
-$t_{u, i}$ is the transaction that $u$ wishes to verify, and $F_{v, j}$ is the corresponding fragment received from $v$.}
+\caption{Function $\textsf{get\_validity}(t_{u, i}, F_{v, j})$ validates the transaction $t_{u, i}$.
+$F_{v, j}$ is the corresponding fragment received from $v$.}
+We assume there exist a valid $F_{u, i}$, namely the agreed fragment of $t_{u, i}$. 
+The caller is $w$, it may be $u$ but this is not necessary.
 \label{alg:get-validity}
 
 \begin{algorithmic}[1]
 
-    \State $F_{u, i} \gets \textsf{agreed\_fragment}(t_{u, i})$
-    \If{$F_{u, i} = \bot$}
-        \State \Return \emph{unknown}
-    \EndIf \Comment $u$ has agreed fragment
-    \State 
+    % \State $F_{u, i} \gets \textsf{agreed\_fragment}(t_{u, i})$
+    % \If{$F_{u, i} = \bot$}
+    %     \State \Return \emph{unknown}
+    % \EndIf \Comment $u$ has agreed fragment
+    % \State 
 
     \State $c_{v, a} \gets \textsf{first}(F_{v, j})$
     \State $c_{v, b} \gets \textsf{last}(F_{v, j})$
     \If{$c_{v, a}$ or $c_{v, b}$ are not in consensus}
         \State \Return \emph{unknown}
     \EndIf \Comment $v$ has agreed fragment
-    \State 
+    \State
 
     % txid are equal now, but bad hash pointer
     \If{sequence number in $F_{v, j}$ is correct (sequential)}
@@ -551,6 +531,8 @@ If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends 
 The desired properties of the validation protocol are as follows.
 \begin{definition}
 \label{def:validation}
+\textbf{\emph{Implicit consensus on transactions}}
+
 \begin{enumerate}
     \item \emph{Correctness}:
         The validation protocol outputs the correct result
@@ -600,6 +582,8 @@ In this section, we remove a few assumptions and discuss how our architecture is
 Gossip?
 
 Churn?
+
+Sybil?
 
 % \section{Universally Composable Framework}
 % \label{sec:uc-intro}

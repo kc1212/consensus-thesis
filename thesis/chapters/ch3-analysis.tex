@@ -16,21 +16,6 @@ We do this in two parts.
 First we use mathematical induction to show that properties in \Cref{def:consensus} holds for all round.
 Building on top that, if \Cref{def:consensus} is true, then we can show that many properties in \Cref{def:validation} is true.
 
-\textbf{\emph{Correctness of consensus}}
-
-$\forall r \in \mathbb{N}$, the following properties must be satisfied.
-\begin{enumerate}
-    \item \emph{Agreement}:
-        If one honest node outputs a list of facilitators $F_r$,
-        every other node honest decides on $F_r$
-    \item \emph{Validity}:
-        If any honest node outputs $F_r$, then $|F_r| > n$ and $|F_r|$ must contain at least $n - t$ honest nodes.
-    \item \emph{Fairness}:
-        Every node should have an equal probability of becoming a facilitator.
-    \item \emph{Termination}:
-        At the end of the round, every node outputs some $F_r$.
-\end{enumerate}
-
 
 \subsection{Correctness of Consensus}
 
@@ -59,19 +44,19 @@ $\forall r \in \mathbb{N}$, agreement, validity, fairness and termination holds.
 We proof by mathematical induction.
 
 In the base case, agreement, validity fairness and termination follows directly from the bootstrap protocol, due to the bootstrap oracle.
-Note that the result is $F_1$, which indicates the facilitators that are agreed in round 1 and are responsible for driving the ACS protocol in round 2.
+Note that the result is $\F_1$, which indicates the facilitators that are agreed in round 1 and are responsible for driving the ACS protocol in round 2.
 
 For the inductive step, we assume that the properties hold for round $r$.
-Then, to start round $r + 1$, the honest nodes begin sending CP blocks to $F_r$. % TODO but they don't send at the same time!
-Since the honest region in $F_r$ waits for $D$ and $D \gg \Delta$,
+Then, to start round $r + 1$, the honest nodes begin sending CP blocks to $\F_r$. % TODO but they don't send at the same time!
+Since the honest region in $\F_r$ waits for $D$ and $D \gg \Delta$,
 the CP blocks of the honest nodes are guaranteed to be received by at least $n - t$ facilitators.
 The agreement property of ACS (from \Cref{def:acs}) ensures that the consensus result $\C_{r + 1}$ is in consensus. 
 The validity property of ACS ensures that $\C_{r + 1}$ contains the input of at least $n - 2t$ parties, but this is a quorum containing at least one honest facilitator,
 thus $\C_{r + 1}$ contains the CP blocks of all facilitators.
-Observe that $F_{r + 1}$ is computed using the deterministic function $\textsf{get\_facilitators}(\cdot)$.
-Thus agreement of $F_{r + 1}$ follows directly from agreement of ACS.
+Observe that $\F_{r + 1}$ is computed using the deterministic function $\textsf{get\_facilitators}(\cdot)$.
+Thus agreement of $\F_{r + 1}$ follows directly from agreement of ACS.
 Due to the assumption that the adversary cannot corrupt more than $t$ nodes,
-validity of $F_{r + 1}$ also follows from validity of ACS.
+validity of $\F_{r + 1}$ also follows from validity of ACS.
 The fairness property follows from \Cref{lemma:fairness}.
 Finally, the termination property holds because $D$ eventually elapses and then ACS eventually terminates.
 This completes our proof.
