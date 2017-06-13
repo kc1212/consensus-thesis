@@ -22,8 +22,7 @@ Building on top that, if \Cref{def:consensus} is true, then we can show that man
 We begin our analysis by establishing the fact that the $\textsf{get\_facilitator}(\cdot)$ is fair.
 \begin{lemma}
 \label{lemma:fairness}
-\textbf{\emph{Fairness of facilitator election}}
-
+% (Fairness of facilitator election)
 Every node with a CP block in $\C_r$, should have an equal probability to be elected as a facilitator.
 \end{lemma}
 \begin{proof}
@@ -37,8 +36,7 @@ This implies that the ordered sequence by luck value is uniformly random.
 Using \Cref{lemma:fairness}, we show that our consensus protocol satisfied \Cref{def:consensus}.
 \begin{lemma}
 \label{lemma:consensus}
-\textbf{\emph{Correctness of consensus}}
-
+% (Correctness of consensus)
 $\forall r \in \mathbb{N}$, agreement, validity, fairness and termination holds.
 \end{lemma}
 
@@ -70,43 +68,46 @@ The consensus protocol (on CP blocks and facilitators) is the backbone for conse
 In this section we build on top of \Cref{lemma:consensus} to show that most properties in \Cref{def:validation} can be satisfied.
 
 \begin{lemma}
-\textbf{\emph{Correctness of the validation protocol}}
-
+% (Correctness of the validation protocol)
 The validation protocol outputs the correct result
-according to the aforementioned validity definition.
+according to the validity definition.
 \end{lemma}
 \begin{proof}
-Follows directly from the definition.
+The algorithm (\Cref{alg:get-validity}) is the validity definition.
 \end{proof}
 
-\begin{lemma}
-\label{lemma:validation-agreement}
-\textbf{\emph{Agreement of the validation protocol}}
-
+\begin{theorem}
+\label{theorem:validation-agreement}
+% (Agreement of the validation protocol)
 If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
 then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
-\end{lemma}
+\end{theorem}
 \begin{proof}
 We proof by contradiction.
 Without loss of generality, for some transaction $t$ with an agreed fragment $F$,
 node $u$ decides \emph{valid} but node $v$ decides \emph{invalid}.
 Then there exist a fragment $F' = \{ \dots, t', c'\}$ which $u$ received that contains a valid pair of $t$---$t'$.
 There also exist a fragment $F'' = \{ \dots, t'', c''\}$ which $v$ received that does not contain or contains an invalid pair---$t''$.
-In both cases, the $\textsf{get\_validity}(\cdot)$ must have reached \Cref{line:valid-fragment},
-meaning that $c' = c''$, otherwise the result would be \emph{unknown}.
+In both cases, the $\textsf{get\_validity}(\cdot)$ must have reached \Cref{line:valid-fragment}.
+Due to \Cref{lemma:consensus}, we have $c' = c''$, otherwise the result would be \emph{unknown}.
 Since $c' (= c'') = \langle \textsf{H}(t'), \dots \rangle$ we must have $\textsf{H}(t') = \textsf{H}(t'')$ and $t' \ne t''$ (because $t''$ is invalid).
 In other words, the sender of $F''$ must be able to create some $t''$ that has the same digest as $t'$.
 But we assumed that the adversary can only perform polynomial-time algorithm, but in order to find $t''$ it needs to query the random oracle exponentially many times.
 Thus we have a contradiction and this completes our proof.
 \end{proof}
 
-A consequence \Cref{lemma:validation-agreement} is unforgeability.
+\Cref{theorem:validation-agreement} is our first major result.
+It shows that consensus on CP blocks would lead to consensus on TX blocks when the nodes are running the validation protocol.
+One of the main advantages over running a consensus algorithm on all the transactions is that 
+the rate of transaction is no longer dependent on the consensus algorithm---ACS (up to $L$ transactions).
+This enables horizontal scalability where adding new nodes would lead to higher global transaction rate.
+In addition, a convenient consequence \Cref{theorem:validation-agreement} is unforgeability.
 That is, no polynomial time adversary is able to create two chains $F = \{ \dots, t, c\}$ $F' = \{ \dots, t', c\}$ with correct hash pointers and the same end of chain $c$.
+% Another way to think about it is if a transaction can be forged, then it cannot be agreed.
 
+However, not everything is perfect.
 Now we show a negative result, where the liveness property cannot be attained.
 \begin{lemma}
-\textbf{\emph{Impossibility of liveness of the validation protocol}}
-
 There exist a valid transactions that cannot be validated eventually.
 \end{lemma}
 \begin{proof}
@@ -119,9 +120,26 @@ Although this is a negative result, it does not put the adversary in an advantag
 If the adversary is observed to ignore validation requests, then the honest nodes may prefer not to transact with her in the future.
 Thus, to stay relevant in the system, the adversary need to comply to the protocol.
 
-\subsection{Summary}
-We have shown that 
-
-TODO: chain structure cannot be satisfied, but can be probabilistically checked
+% \subsection{Chain structure}
+% In this section we discuss how the adversary may tamper with the chain structure and its effects.
+% The adversary can create invalid blocks, which are blocks that have an invalid hash pointer.
+% The result is some chain with a broken link.
 
 \section{Performance}
+TODO intro
+
+\subsection{Bandwidth Per Transaction}
+To make and validate a transaction, the bandwidth required is of $O(l)$,
+where $l$ is the length of the agreed fragment.
+This can be seen from the fact that the largest message by far is the \texttt{vd\_resp} message,
+which contains the agreed fragment,
+the other messages (\texttt{tx\_req}, \texttt{tx\_resp} and \texttt{vd\_req}) are constant factors.
+If we assume that every node performs transactions at a constant rate of $c$ per second.
+Then $l = O(N) \cdot c$, where $O(N)$ is the message complexity of ACS (TODO explain this somewhere),
+thus the bandwidth per transaction is $O(N)$.
+TODO how does message complexity translate to time complexity?
+This is natural because consensus duration would be longer if there are more CP blocks, which means that the agreed fragments are longer.
+This behaviour is also verified experimentally in \Cref{ch:implementation}.
+
+\subsection{Global Throughput}
+TODO
