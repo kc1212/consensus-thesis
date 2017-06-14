@@ -1,4 +1,4 @@
-\chapter{Analysis}
+\chapter{Fault Tolerance and Security Analysis}
 \label{ch:analysis}
 
 Up to this point we described our system specification in detail.
@@ -10,7 +10,7 @@ where we show that the consensus protocol and the validation protocol satisfies 
 The second is performance,
 where we prove the lower bound of our throughput and show that it out performs classical blockchain systems.
 
-\section{Correctness}
+\section{Correctness in the Presense of Faults}
 Our first objective in this section is to establish truths regarding the correctness of our protocol.
 We do this in two parts.
 First we use mathematical induction to show that properties in \Cref{def:consensus} holds for all round.
@@ -138,6 +138,12 @@ In our system, we wish to understand the scalability properties.
 Thus we consider the complexity as a function of $N$ rather than $n$ or $\lambda$.
 Since $|v|$ is at most all the CP blocks from every node, we have $|v| = N$.
 Therefore the message complexity of ACS in our system is $O(N)$.
+Since we use a constant $n$, $O(N)$ message complexity also holds for a single facilitator.
+
+% We argue that with a $O(N)$ message complexity we also have $O(N)$ time complexity.
+% It is know that the running time is $O(\log n)$~\cite{miller2016honey}, which translates to $O(1)$ if our $n$ is constant.
+% On the other hand, in many distributed algorithms, computational cost is small when compared to the communication cost.
+% But in our system, we are more interested in the effect of the message size.
 
 \subsection{Bandwidth Requirement for Transactions}
 To make and validate a transaction, the bandwidth required is of $O(l)$,
@@ -154,4 +160,24 @@ This is natural because consensus duration would be longer if there are more CP 
 This behaviour is also verified experimentally in \Cref{ch:implementation}.
 
 \subsection{Global Throughput}
-TODO
+Suppose every node has some fixed bandwidth capacity $C$ (unit of communication per second),
+they make transactions at $r_{\text{tx}}$ per second.
+Then we have the inequality $C \ge r_{\text{tx}} l$, where $l$ is the length of the the agree fragment as before.
+Rearranging, we get $\frac{C}{l} \ge r_{\text{tx}}$.
+With this, we consider two cases, first is  when all the nodes are running at maximum capacity.
+Recall that $l$ is of $O(N)$, so as the the population increases, 
+the transaction rate must decrease in order to maintain the inverse relationship,
+thus $r_\text{tx}$ is of $O(N^{-1})$. % TODO is this formal? use omega?
+Therefore, the global throughput would be $O(N^{-1})N = O(1)$.
+In the second case, nodes are not running at maximum capacity and $r_{\text{tx}}$ is maintained.
+Therefore, if every node runs at $r_{\text{tx}}$,
+the global throughput becomes $O(N)$ until $N$ is too large and we go back to the first case.
+
+The upshot of this analysis is that our system scales nicely at a global throughput of $O(N)$ until the population gets too large.
+Then we maintain a constant global throughput.
+This result falls a bit short of what we envisioned in the introduction.
+However, the population is not the number of nodes that use the system, but the number of nodes that are online during a single round.
+Furthermore, this result is for the worst case where every transaction needs an agreed fragment to be transmitted.
+In practice, nodes are able to cache agreed fragments.
+For instance, if $u$ and $v$ make $x$ transactions in a single round,
+then only one agreed fragment need to be exchanged as it contains all the transactions rather than $x$ agreed fragments.
