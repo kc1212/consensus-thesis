@@ -190,6 +190,7 @@ For notational clarify, we use the following convention (adapted from~\cite{mill
 \item Sans serif (e.g. $\textsf{fn}(\cdot)$) denotes a function.
 \item Typewrite (e.g. $\texttt{ack}$) denotes message type.
 \end{itemize}
+Further, we use $a || b$ to dedote concatination of the binary representations of $a$ and $b$.
 
 We assume a distributed network where nodes are fully connected,
 the channels are reliable\footnote{
@@ -198,7 +199,8 @@ the channels are reliable\footnote{
 but messages may be re-ordered and delayed by at most some time $\Delta$,
 this is sometimes known as a $\Delta$-synchronous network.
 We assume there exist a Public Key Infrastructure (PKI), and nodes are identified by their unique and permanent public key.
-Finally, we use the random oracle model, i.e. calls to the random oracle are denoted by $\textsf{H}(\cdot)$.
+Finally, we use the random oracle model, i.e. calls to the random oracle are denoted by $\textsf{H}: \{0, 1\}^* \rightarrow \{0, 1\}^\lambda$,
+where $\{0, 1\}^*$ denotes the space of finite binary strings and $\lambda$ is the security parameter~\cite{bellare1993random}.
 
 In our model we consider $N$ nodes, which is the population size.
 $n$ of them are facilitators, $t$ out of $n$ are malicious and the inequality

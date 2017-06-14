@@ -128,16 +128,28 @@ Thus, to stay relevant in the system, the adversary need to comply to the protoc
 \section{Performance}
 TODO intro
 
-\subsection{Bandwidth Per Transaction}
+\subsection{Message Complexity of ACS}
+\label{sec:acs-complexity}
+The message complexity of ACS is $O(n^2|v| + \lambda n^3 \log n)$~\cite{miller2016honey},
+where $|v|$ is the size of largest message and $\lambda$ is the security parameter.
+Note that the security parameter is the same as the one for our random oracle described in \Cref{sec:model-assumptions}.
+In particular, it is from the use of $\textsf{H}(\cdot)$ in the reliable broadcast phase in ACS.
+In our system, we wish to understand the scalability properties.
+Thus we consider the complexity as a function of $N$ rather than $n$ or $\lambda$.
+Since $|v|$ is at most all the CP blocks from every node, we have $|v| = N$.
+Therefore the message complexity of ACS in our system is $O(N)$.
+
+\subsection{Bandwidth Requirement for Transactions}
 To make and validate a transaction, the bandwidth required is of $O(l)$,
 where $l$ is the length of the agreed fragment.
 This can be seen from the fact that the largest message by far is the \texttt{vd\_resp} message,
 which contains the agreed fragment,
 the other messages (\texttt{tx\_req}, \texttt{tx\_resp} and \texttt{vd\_req}) are constant factors.
-If we assume that every node performs transactions at a constant rate of $c$ per second.
-Then $l = O(N) \cdot c$, where $O(N)$ is the message complexity of ACS (TODO explain this somewhere),
-thus the bandwidth per transaction is $O(N)$.
-TODO how does message complexity translate to time complexity?
+If we assume that every node performs transactions at a constant rate of $r_{\text{tx}}$ per second.
+Then $l = (D_{\text{acs}} + D) \cdot r_{\text{tx}}$, where $D_{\text{acs}}$ is the duration an instance of ACS.
+But from \Cref{sec:acs-complexity}, we know that $D_{\text{acs}}$ is of $O(N)$, thus the bandwidth per transaction is $O(N)$.
+% TODO how does message complexity translate to time complexity?
+% TODO computational task minimal compared to messages, thus the sending of message is expensive?
 This is natural because consensus duration would be longer if there are more CP blocks, which means that the agreed fragments are longer.
 This behaviour is also verified experimentally in \Cref{ch:implementation}.
 
