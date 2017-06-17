@@ -1,2 +1,48 @@
 \chapter{Related Work}
 \label{ch:related}
+
+Having analysed our system both theoretically and experimentally,
+we dedicate this chapter on comparing our results with related work.
+Blockchain technology has seen a surge in recent years from both the industry and academia.
+There are many approaches and innovation.
+We classify by their consensus approach and divide them into the following categories: 
+\begin{enumerate}
+    \item classical blockchain systems,
+    \item Byzantine fault tolerance consensus based consensus,
+    \item hybrid systems and
+    \item blockchain without global consensus.
+\end{enumerate}
+
+\section{Classical Blockchain Systems}
+This category represent systems with a probabilistic probabilistic consensus algorithm.
+That is, transactions never reach consensus with a probability of 1.
+The typical examples are proof-of-work based systems such as Bitcoin, Ethereum and other Altcoins.
+In Bitcoin, the level of consensus of a block\footnote{Note that a block in Bitcoin contain many transactions whereas our TX block only contain a single transaction.}
+is determined how deep it is in the Bitcoin blockchain, also called the number of confirmation.
+The probability of a block being orphaned drops exponentially as the depth increases~\cite{bitcoin}.
+Nevertheless, the probability of the highest block being orphaned is non-negligible.
+The advantage of this type of consensus is that it can be used in a large network and is reasonably secure.
+Attackers can not out pace honest users in finding new blocks unless they have a majority of the hash power.
+The disadvantage however is that transactions are never in consensus with a probability of 1.
+Also, the performance is limited due to the fact that blocks are of fixed size and are generated at fixed intervals.
+
+Our system significantly improves upon Bitcoin and other classical blockchain systems in the performance, scalability and consistency department.
+The results described in \Cref{ch:analysis} and \Cref{ch:implementation}, show that we have horizontal scalability,
+where more nodes result in more global throughput.
+Further, we do not have the aforementioned probabilistic behaviour,
+once some consensus result is decided, it cannot be orphaned.
+The leadership election is also not ideal in classical blockchain systems.
+Mining can be seen as a technique to elect a single leader.
+The leader has full control of what goes into the block thus it may selectively censor transactions.
+We use ACS, so as long as the CP block is in $n - 2t$ nodes, it is guaranteed to be in consensus.
+
+However, the security aspect falls short of the ``honest majority'' security model that classical blockchains claim to 
+have\footnote{Recently it was shown that doing selfish-ming would give the adversary an unfair advantage when she only controls 25\% of the mining power~\cite{eyal2014majority}}.
+Our system risks going into erroneous state if the inequality $n \ge 3t + 1$ is not satisfied.
+Classical blockchain systems also have an incentive mechanism, thus they do not depend on altruistic nodes and encourages participation.
+Our system on the other hand does not have an incentive mechanism because we make no assumptions on the application.
+
+\section{Byzantine Fault Tolerance Consensus Based Systems}
+
+The Byzantine fault tolerance problem is a classical problem is distributed systems literature.
+It is first described by Leslie Lamport as the Byzantine general's problem in 1982~\cite{lamport1982byzantine}.
