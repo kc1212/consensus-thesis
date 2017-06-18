@@ -96,59 +96,17 @@ A visual representation is shown in \Cref{fig:trustchain-bad-cp}.
 \end{figure}
 
 \subsection{Consensus Protocol}\label{sec:overview-cons}
-Before describing our consensus protocol, we take a brief detour to explain asynchronous common subset primitive and contrast it with other well known primitives.
-It is a fundamental building block of our consensus protocol.
 
-\subsubsection*{Asynchronous common subset}
-TODO give history/background of ACS
-TODO more detailed explination with algorithm and new section.
-Asynchronous common subset (ACS) is an especially useful primitive for blockchain systems.
-It allows any party to propose a value and the result is the set union of all the proposed values by the majority.
-Concretely, ACS needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
-\begin{definition}
-\label{def:acs}
-\textbf{\emph{Properties of ACS}}
-
-\begin{enumerate}
-    \item \emph{Validity}:
-        If any correct party outputs a set $C$,
-        then $|C| \ge n - t$ and $C$ contains the input of at least $n - 2t$ parties.
-    \item \emph{Agreement}:
-        If a correct party outputs $C$, then every party outputs $C$.
-    \item \emph{Totality}:
-        If $n - f$ party receive an input, then all correct parties produce an output.
-\end{enumerate}
-\end{definition}
-
-ACS has the nice property of censorship resiliance when compared to other consensus algorithms.
-For instance, Hyperledger and Tender mint uses Practical Byzantine Fault Tolerance (PBFT) as their consensus algorithm.
-In PBFT, a leader is elected, if the leader is malicious but follows the protocol, then it can selectivly filter transactions.
-In contract, every party in ACS are involved in the proposal phase,
-and it guarantees that if $n - 2t$ parties propose the same transaction, then it must be in the agreed output.
-
-The main drawback with ACS and other BFT protocols is the high message complexity.
-Typically, such protocols have the complexity of $O(n^2)$, where $n$ is the number of parties.
-Hence, it may work with a small number of nodes,
-but it is infeasible for blockchain systems where thousands of nodes are involved.
-
-
-% The literature on Byzantine consensus and atomic broadcast is rich, some noteable ones include TODO.
-% Thus in the ETC consensus protocol, we assume there exist an "off-the-shelf" Byzantine consensus algorithm which we can use
-% (in our implementation we use HoneyBadgerBFT and motivate our choice in TODO).
-
-% In our case, every node do not propose some arbitrary data, but a set of CP blocks.
-% Thus the result of the consensus is the set union of all the legitimate proposals.
-
-\subsubsection*{Consensus Protocol} 
-The consensus protocol runs continuously in rounds
-because a blockchain systems always need to reach consensus on new values, which are CP blocks in our case.
-This can be seen as running infinitly many rounds of some Byzantine consensus algorithm,
+% The consensus protocol uses an existing Byzantine consensus algorithm (explained in detail in \Cref{sec:xyz}) and runs it continuously in rounds.
+The consensus protocol can be seen as a technique of running infinitly many rounds of some 
+Byzantine consensus algorithm\footnote{More accuratly it is ACS or asynchronous subset consensus, we describe ACS in \Cref{sec:acs}.},
 starting a new execution immediately after the previous one is completed.
+This is necessary because blockchain systems always need to reach consensus on new values, or CP blocks in our case.
 
-As we mentioned earlier, the high message complexity prohibits us from running a Byzantine consensus algorithm on a large network.
+The high message complexity of Byzantine consensus algorithms prohibits us from running it on a large network.
 Thus, for every round, we randomly select some node---called facilitators---to collect CP blocks and use them as the proposal.
 The facilitators are elected using a \emph{luck value}, which is computed using $H(\C_r || pk_i)$,
-where $\C_r$ is the consensus result in round $r$ and $pk_i$ is the public key of $i$.
+where $\C_r$ is the consensus result (a set of CP blocks) in round $r$ and $pk_i$ is the public key of $i$.
 Intuitively, the election is guaranteed to be random 
 because the output of a cryptographically secure hash function is unpredictable and $\C_r$ cannot be determined in advance.
 
@@ -332,8 +290,78 @@ they are the properties ACS.
 The fair lottery and consistent facilitator are properties on every node,
 they are prerequites for ACS.
 
-We proceed to describe the protocol step by step.
-Starting with the bootstrap phase and then moving on to the actual consensus phase.
+Before describing the protocol in detail, we take a brief detour to give background on the Byzantine consensus algorithm we use in the consensus protocol.
+% Starting with the bootstrap phase and then moving on to the actual consensus phase.
+
+\subsection{Background on Asynchronous Subset Consensus}
+
+The best way to explain asynchronous subset consensus (ACS) is to contrast it with the typical Byzantine consensus problem.
+We adapt the description from~\cite{podc}.
+%The Byzantine consensus problem is a classical problem is distributed systems literature.
+%It is first described by Leslie Lamport as the Byzantine general's problem in 1982~\cite{lamport1982byzantine}.
+%Byzantine consensus is described as follows (adapted from ).
+\begin{definition}
+\textbf{\emph{Byzantine Consensus}}
+
+There are $n$ nodes, of which at most $t$ might experience Byzantine fault.
+Node $i$ starts with an input value $v_i$.
+The nodes must decide for one of  those values, satisfying the the following.
+\begin{enumerate}
+    \item \emph{Agreement:}
+        All correct nodes decide for the same value.
+    \item \emph{Validity:}
+        The decision value must be the input value of a node.
+    \item \emph{Termination:}
+        All correct nodes terminate in finite time.
+\end{enumerate}
+\end{definition}
+A node under Byzantine fault means that it can have arbitrary behaviour.
+For example not sending message or colluding with other Byzantine nodes to undermine the entire system.
+Note that the decision is on a single value.
+This is in contrast to ACS which we describe next.
+
+ACS shares many similarities with Byzantine consensus.
+But it is an especially useful primitive for blockchain systems.
+It allows any party to propose a value and the result is the set union of all the proposed values by the majority.
+This is the primary difference with Byzantine consensus.
+Concretely, ACS needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
+\begin{definition}
+\label{def:acs}
+\textbf{\emph{Asynchronous Subset Consensus}}
+
+There are $n$ nodes, of which at most $t$ might experience Byzantine fault.
+Node $i$ starts with an non-empty set of input values $C_i$.
+The nodes must decide an output $C$, satisfying the following.
+\begin{enumerate}
+    \item \emph{Validity:}
+        If any correct party outputs a set $C$,
+        then $|C| \ge n - t$ and $C$ contains the input of at least $n - 2t$ parties.
+    \item \emph{Agreement:}
+        If a correct party outputs $C$, then every party outputs $C$.
+    \item \emph{Totality:}
+        If $n - t$ party receive an input, then all correct parties produce an output.
+\end{enumerate}
+\end{definition}
+ACS has the nice property of censorship resiliance when compared to other consensus algorithms.
+For instance, Hyperledger and Tender mint uses Practical Byzantine Fault Tolerance (PBFT) as their consensus algorithm.
+In PBFT, a leader is elected, if the leader is malicious but follows the protocol, then it can selectivly filter transactions.
+In contract, every party in ACS are involved in the proposal phase,
+and it guarantees that if $n - 2t$ parties propose the same transaction, then it must be in the agreed output.
+Thus, some value is submitted to at least $n - 2t$ nodes, it is guaranteed to be in the consensus result.
+For a detailed description of ACS we refer to the HoneyBadgerBFT work~\cite{miller2016honey}.
+
+The main drawback with ACS and also Byzantine consensus algorithms is the high message complexity.
+Typically, such protocols have the complexity of $O(n^2)$, where $n$ is the number of parties.
+Hence, it may work with a small number of nodes,
+but it is infeasible for blockchain systems where thousands of nodes are involved.
+
+% The literature on Byzantine consensus and atomic broadcast is rich, some noteable ones include TODO.
+% Thus in the ETC consensus protocol, we assume there exist an "off-the-shelf" Byzantine consensus algorithm which we can use
+% (in our implementation we use HoneyBadgerBFT and motivate our choice in TODO).
+
+% In our case, every node do not propose some arbitrary data, but a set of CP blocks.
+% Thus the result of the consensus is the set union of all the legitimate proposals.
+
 
 \subsection{Bootstrap Phase}
 \label{sec:bootstrap}
