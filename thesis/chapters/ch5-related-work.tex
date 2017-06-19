@@ -8,9 +8,10 @@ There are many approaches and innovation.
 We classify by their consensus approach and divide them into the following categories: 
 \begin{enumerate}
     \item classical blockchain systems,
-    \item Byzantine consensus based consensus,
+    \item classical blockchain with offchain transactions,
+    \item permissioned systems,
     \item hybrid systems and
-    \item blockchain without global consensus.
+    \item blockchains without global consensus.
 \end{enumerate}
 
 \section{Classical Blockchain Systems}
@@ -23,14 +24,14 @@ The probability of a block being orphaned drops exponentially as the depth incre
 Nevertheless, the probability of the highest block being orphaned is non-negligible.
 The advantage of this type of consensus is that it can be used in a large network and is reasonably secure.
 Attackers can not out pace honest users in finding new blocks unless they have a majority of the hash power.
-The disadvantage however is that transactions are never in consensus with a probability of 1.
+The disadvantage however is that transactions are never in consensus with a probability of 1---no consensus finality.
 Also, the performance is limited due to the fact that blocks are of fixed size and are generated at fixed intervals.
 
-Our system significantly improves upon Bitcoin and other classical blockchain systems in the performance, scalability and consistency department.
+Our system significantly improves upon Bitcoin and other classical blockchain systems in performance, scalability and consensus finality.
 The results described in \Cref{ch:analysis} and \Cref{ch:implementation}, show that we have horizontal scalability,
 where more nodes result in more global throughput.
 Further, we do not have the aforementioned probabilistic behaviour,
-once some consensus result is decided, it cannot be orphaned.
+once some consensus result is decided, it cannot be orphaned, thus our consensus is final.
 The leadership election is also not ideal in classical blockchain systems.
 Mining can be seen as a technique to elect a single leader.
 The leader has full control of what goes into the block thus it may selectively censor transactions.
@@ -42,5 +43,78 @@ Our system risks going into erroneous state if the inequality $n \ge 3t + 1$ is 
 Classical blockchain systems also have an incentive mechanism, thus they do not depend on altruistic nodes and encourages participation.
 Our system on the other hand does not have an incentive mechanism because we make no assumptions on the application.
 
-\section{Byzantine Consensus Based Systems}
+\section{Offchain Transactions}
+Offchain transactions make use of the fact that, if two or more parties frequently make transactions,
+then it is not necessary to store every transaction on the blockchain, the only useful information is the net settlement.
+The best examples are the lightning network~\cite{lightningnetwork} and full duplex channels~\cite{decker2015fast}.
+These use the Bitcoin blockchain to store the net settlement and a payment channel to conduct offchain transactions.
+
+TODO explain payment channel
+
+
+\section{Permissioned Systems}
+
+This category of systems use Byzantine consensus algorithms (discussed in \Cref{sec:acs-background}).
+In essence, they contain a fixed set of nodes, sometimes called validators,
+that run a Byzantine consensus algorithm to decide on new blocks.
+This is known as a permissioned system where the validators must be pre-determined.
+Some examples include Hyperledger and Tendermint.
+The consensus algorithm used in these two systems is PBFT.
+
+A nice aspect of Byzantine consensus and in particular PBFT is that it can handle much more transactions than classical blockchain systems.
+But our system has the potential to perform beyond that of PBFT because we represent many transactions with a single CP block,
+enabling horizontal scalability.
+Furthermore, since PBFT relies on a leader, it is not censorship resiliant.
+Our system on the other hand has the benifits of ACS where CP blocks cannot be censored.
+Finally, our system is able to work in the permissionless setting by simply submitting new CP blocks to the facilitators.
+It can even be adapted to work in the permissioned by simply removing the luck value computation.
+
+What we wish to have which is in Hyperledger is a smart contract system (also known as chaincodes in Hyperledger).
+We hope to design and implement smart contracts by adding additional logic to the transaction protocol and the validation protocol.
+Such functionalities we believe is better to be built into the backbone rather than having it as an add on.
+
+
+\section{Hybrid Systems}
+Hybrid systems are very recent inventions.
+Just like our work, they are attempts on solving the problems of traditional blockchains.
+The main characteristic of these systems is that they use a classical blockchain technique,
+i.e. proof-of-work, to elect a committee and prevent Sybils.
+And then they use a Byzantine consensus algorithm to actually reach consensus on a set of transactions within the committee.
+Some examples are SCP~\cite{luu2015scp}, ByzCoin~\cite{kogias2016enhancing} and Solidus~\cite{abraham2016solidus}.
+
+Our approach share many similarities with the hybrid systems.
+First, we also elect a committee (facilitators) to drive consensus.
+But we do not have proof-of-work for Sybil defence because we believe 
+it is possible to do it efficiently, e.g. using NetFlow~\cite{pimotte}.
+Secondly, our use of CP blocks and ACS is also unique.
+This creates a much higher throughput and enables censorship resiliance as mentioned earlier.
+For instance, ByzCoin performs just below 1000 TPS with a thousand nodes whereas we peak at 8000 TPS.
+
+A major side effect of these hybrid systems is that they cannot guarantee correctness when there is a large number of malicious nodes.
+Our system has the same issue.
+For SCP, ByzCoin and OmniLedger, they all have some probability to elect more than $n$ Byzantine nodes into the committee.
+This problem is especially difficult solve because the committee is always much smaller than the population size which has more than $t$ Byzantine nodes,
+thus electing more than $t$ nodes into the committee in always a possibility.
+Classical blockchain do not have this problem because they do not use Byzantine consensus.
+The permissioned systems work around this problem by trusting validators.
+
+\section{Blockchains Without Global Consensus}
+
+Tangle~\cite{tangle}, Corda~\cite{corda} and the original TrustChain~\cite{trustchain} do not use global consensus at all.
+By avoiding global consensus, they are able to achieve extreme scalability.
+Just like our approach, these blockchains are also application neutral where transactions can contain arbitrary data.
+
+Our system can be considered as the same as these types of blockchains but with a lightweight consensus protocol.
+Consensus might not be applicable in all applications.
+But we believe it is important for detecting and preventing fraud.
+The example in~\Cref{fig:trustchain-bad} on page~\pageref{fig:trustchain-bad} demonstrates this.
+If $b$ makes a fork and $a$ and $c$ have no way to communicate (e.g. the adversary may control parts of the network) ,
+then $c$ is tricked to believe that her transaction with $b$ is valid.
+Only when $c$ sees a conflicting chain is she able to tell that the transaction is invalid.
+But $c$ does not know the true end-of-chain of $b$, thus she can never know whether her transaction is valid.
+This is not possible in our system because $b$ cannot convince $c$ unless he can compute exponential time algorithms
+(this is finding the second preimage for a hash function).
+
+However, consensus and validation comes at a cost that do not exist in Tangle, Corda or the original TrustChain.
+Our transaction rate is affected by the validation protocol in the worst case scenario as we saw in~\Cref{sec:evaluation}.
 
