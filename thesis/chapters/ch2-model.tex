@@ -290,17 +290,22 @@ Concretely, we define the necessary properties as follows.
 \label{def:consensus}
 \textbf{\emph{Properties of the consensus protocol}}
 
-$\forall r \in \mathbb{N}$, the following properties must be satisfied.
+$\forall r \in \mathbb{N}$, the following properties must hold.
 \begin{enumerate}
     \item \emph{Agreement}:
-        If one honest node outputs a list of facilitators $\F_r$,
-        every other node honest decides on $\F_r$
+        If one correct node outputs a list of facilitators $\F_r$,
+        then every node outputs $\F_r$
     \item \emph{Validity}:
-        If any honest node outputs $\F_r$, then $|\F_r| > n$ and $|\F_r|$ must contain at least $n - t$ honest nodes.
+        If any correct node outputs $\F_r$, then 
+            \begin{enumerate}
+                \item $|\C_r| \ge N - t$ must hold for the $\C_r$ which was used to create $\F_r$,
+                \item $\F_r$ must contain at least $n - t$ honest nodes and
+                \item $|\F_r| = n$.
+            \end{enumerate}
     \item \emph{Fairness}:
         Every node with a CP block in $\C_r$ should have an equal probability of becoming a member of $\F_r$.
     \item \emph{Termination}:
-        At the end of the round, every node outputs some $\F_r$.
+        Every correct node eventually outputs some $\F_r$.
 \end{enumerate}
 \end{definition}
 These properties may look like Byzantine consensus properties (which we describe next in \Cref{sec:acs-background}) but they have some subtle differences.

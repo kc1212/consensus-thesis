@@ -1,71 +1,129 @@
-\chapter{Fault Tolerance and Security Analysis}
+\chapter{Analysis of Correctness and Performance}
 \label{ch:analysis}
 
 Up to this point we described our system specification in detail.
 Of course, specification along does not establish any truths.
-In this chapter, we prove two aspects of our system.
-First is correctness,
-where we show that the consensus protocol and the validation protocol satisfies their desired properties
-(\Cref{def:consensus} and \Cref{def:validation} respectively).
-The second is performance,
-where we prove the lower bound of our throughput and show that it out performs classical blockchain systems.
+In this chapter, we analyse two aspects of our system.
+First we show it has the desired properties.
+That is, the properties in \Cref{def:consensus} and \Cref{def:validation} should hold.
+Then we analyse the performance, especially the throughput,
+and show that it out performs classical blockchain systems.
 
 \section{Correctness in the Presense of Faults}
-Our first objective in this section is to establish truths regarding the correctness of our protocol.
-We do this in two parts.
-First we use mathematical induction to show that properties in \Cref{def:consensus} holds for all round.
-Building on top that, if \Cref{def:consensus} is true, then we can show that many properties in \Cref{def:validation} is true.
+Our first objective is to show that \Cref{def:consensus} holds for our consensus protocol.
+Then, building on top of it, we show \Cref{def:validation} holds for the validation protocol.
+The resulting theorem shows that only using CP blocks in the consensus algorithm implies consensus on TX blocks,
+in other words, implicit consensus.
 
+% Our first objective in this section is to establish truths regarding the correctness of our protocol.
+% We do this in two parts.
+% First we use mathematical induction to show that properties in \Cref{def:consensus} holds for all round.
+% Building on top that, if \Cref{def:consensus} is true, then we can show that many properties in \Cref{def:validation} is true.
 
-\subsection{Correctness of Consensus}
+\subsection{Analysis of the Consensus Protocol}
 
-We begin our analysis by establishing the fact that the $\textsf{get\_facilitator}(\cdot)$ is fair.
+We begin our analysis by establishing truths on the four properties in \Cref{def:consensus},
+namely agreement, validity, fairness and termination.
+Using these results, we use mathematical induction to show that they hold for all rounds.
+
 \begin{lemma}
-\label{lemma:fairness}
-% (Fairness of facilitator election)
-Every node with a CP block in $\C_r$, should have an equal probability to be elected as a facilitator.
+\label{lemma:agreement}
+For an arbitrary round $r$
+if $\F_{r}$ is known by all correct nodes and one correct node outputs a list of facilitators $\F_{r+1}$,
+then all correct nodes output $\F_{r+1}$.
 \end{lemma}
 \begin{proof}
-This directly follows from the random oracle model.
-Recall that the luck value is computed using $\textsf{H}(\C_r, || pk_i)$.
-Since $pk_i$ is unique for every node that has a CP block in $\C_r$, the output of $\textsf{H}(\cdot)$ is uniformly random.
-This implies that the ordered sequence by luck value is uniformly random.
+The argument follows from the protocol description.
+Given that $\F_r$ is known,
+correct nodes will send CP blocks to all members in $\F_r$.
+The ACS algorithm starts independently whenever the facilitator has $N - t$ valid CP blocks
+(recall from \Cref{sec:consensus-phase} that invalid blocks are ones with an invalid signature or has a duplicate signature).
+It cannot make progress until $n-t$ honest facilitators start algorithm,
+but this eventually happens because there are $N - t$ correct nodes and all correct facilitator eventually receives $N -t$ valid CP blocks.
+At the end of ACS, some $\C_{r+1}$ is created, and is broadcasted along with the signature of the facilitators.
+Due to the agreement property of ACS (\Cref{def:acs}),
+every correct node should receive at least $n - t$ valid signatures on the agreed $\C_{r+1}$.
+Thus they use $\C_{r+1}$ to generate a new CP block and compute new facilitators.
+Since $\textsf{get\_facilitators}(\cdot)$ is a deterministic algorithm and the input $\C_{r+1}$ is in agreement, the output $\F_{r+1}$ is also in agreement.
 \end{proof}
 
-
-Using \Cref{lemma:fairness}, we show that our consensus protocol satisfied \Cref{def:consensus}.
 \begin{lemma}
-\label{lemma:consensus}
-% (Correctness of consensus)
-$\forall r \in \mathbb{N}$, agreement, validity, fairness and termination holds.
+\label{lemma:validity}
+For an arbitrary round $r$,
+if $\F_r$ is known by all correct nodes and any correct node outputs $\F_{r+1}$,
+then (a) $|\C_{r+1}| \ge N - t$ must hold for the $\C_{r+1}$ which was used to create $\F_{r+1}$,
+(b) $\F_{r+1}$ must contain at least $n - t$ honest nodes and
+(c) $|\F_{r+1}| = n$.
 \end{lemma}
-
 \begin{proof}
-We proof by mathematical induction.
+The validity follows from the validity property of ACS and the definition of our model,
+namely $N \ge n + t$ and $n \ge 3t + 1$.
+Given $\F_r$, since $N \ge n + t$ , there is at least $n$ nodes that would send their CP block to $\F_r$.
+From the validity property of ACS, we know the output must contain the input of at least $n - 2t$ nodes.
+But $n -t$ facilitators must have received $N - t$ valid CP blocks, so $|\C_{r+1}| \ge N-t$, this proves (a).
+There are $n-t$ honest nodes in $\F_{r+1}$ follows from the model, this proves (b).
+Finally, since $N-t \ge (n+t) -t = n$ and $\textsf{get\_facilitators}(\cdot)$ outputs $n$ items, $|\F_{r+1}| = n$ and this proves (c).
+\end{proof}
 
-In the base case, agreement, validity fairness and termination follows directly from the bootstrap protocol, due to the bootstrap oracle.
-Note that the result is $\F_1$, which indicates the facilitators that are agreed in round 1 and are responsible for driving the ACS protocol in round 2.
+\begin{lemma}
+\label{lemma:fairness}
+For an arbitrary round $r$,
+if $\F_r$ is known by all correct nodes then
+every node with a CP block in $\C_{r+1}$, should have an equal probability to be elected as a facilitator in $\F_{r+1}$.
+\end{lemma}
+\begin{proof}
+We have already established that $|\C_{r+1}| \ge N - t \ge n$ from \Cref{lemma:validity}.
+Then the proof directly follows from the random oracle model.
+Recall that the luck value is computed using $\textsf{H}(\C_{r+1}, || pk_u)$.
+Since $pk_u$ is unique for every node that has a CP block in $\C_{r+1}$,
+the output of $\textsf{H}(\cdot)$ is uniformly random.
+This effectively generates a random permutation
+so every node has the same probability of being in the top $n$ for the ordered sequence,
+namely the output of $\textsf{get\_facilitators}(\cdot)$.
+\end{proof}
 
-For the inductive step, we assume that the properties hold for round $r$.
-Then, to start round $r + 1$, the honest nodes begin sending CP blocks to $\F_r$. % TODO but they don't send at the same time!
-Since the honest region in $\F_r$ waits for $D$ and $D \gg \Delta$,
-the CP blocks of the honest nodes are guaranteed to be received by at least $n - t$ facilitators.
-The agreement property of ACS (from \Cref{def:acs}) ensures that the $\C_{r + 1}$ is in consensus. 
-Observe that $\F_{r + 1}$ is computed using the deterministic function $\textsf{get\_facilitators}(\cdot)$.
-Thus agreement of $\F_{r + 1}$ follows directly from the agreement of ACS.
-The validity property of ACS ensures that $\C_{r + 1}$ contains the input of at least $n - 2t$ parties, but this is a quorum containing at least one honest facilitator,
-thus $\C_{r + 1}$ contains the CP blocks of all nodes.
-Due to the assumption that the adversary cannot corrupt more than $t$ nodes,
-validity of $\F_{r + 1}$ also follows from validity of ACS.
-Since all honest nodes are in $\C_{r + 1}$, the fairness property follows directly from \Cref{lemma:fairness}.
-Finally, the termination property holds because $D$ eventually elapses and then ACS eventually terminates
-(the totality property of ACS).
-This completes the proof.
+\begin{lemma}
+\label{lemma:termination}
+For an arbitrary round $r$,
+if $\F_r$ is known by all correct nodes then
+every correct node eventually outputs some $\F_{r + 1}$.
+\end{lemma}
+\begin{proof}
+This follows directly from the properties of the channel (eventual delivery)
+and the termination property of ACS.
+That is, $\F_r$ eventually receives all the CP blocks required to begin ACS.
+ACS eventually terminates.
+Finally the results are eventually dissemminated to all the nodes.
+\end{proof}
+
+From Lemmas \ref{lemma:agreement}, \ref{lemma:validity}, \ref{lemma:fairness} and \ref{lemma:termination},
+we have shown that the 4 properties of \Cref{def:consensus} holds when assuming the existance of some $\F_r$.
+Thus, to proof the whole of \Cref{def:consensus},
+we need to proof these 4 properties under the universal quantifier.
+We do this using mathematical induction.
+
+\begin{theorem}
+\label{theorem:consensus}
+For all rounds,
+the consensus protocol satisfies agreement, validity, fairness and termination (\Cref{def:consensus}).
+\end{theorem}
+\begin{proof}
+We proof using mathematical induction.
+
+In the base case, agreement, validity fairness and termination follows directly from the bootstrap protocol,
+due to the bootstrap oracle.
+Note that the result is $\F_1$, which indicates the facilitators that are agreed in round 1, who are responsible for driving the ACS protocol in round 2.
+
+For the inductive step,
+we assume that the 4 properties hold in round $r$ and prove that they also hold in round $r + 1$.
+Using Lemmas \ref{lemma:agreement}, \ref{lemma:validity}, \ref{lemma:fairness} and \ref{lemma:termination},
+it directly follows from Modus Poneus that these properties hold for $r + 1$.
+Due to the principals of mathematical induction, these properties hold for all $r$.
 \end{proof}
 
 \subsection{Correctness of Validation}
 The consensus protocol (on CP blocks and facilitators) is the backbone for consensus on transactions.
-In this section we build on top of \Cref{lemma:consensus} to show that most properties in \Cref{def:validation} can be satisfied.
+In this section we build on top of \Cref{theorem:consensus} to show that most (except liveness) properties in \Cref{def:validation} can be satisfied.
 
 \begin{lemma}
 % (Correctness of the validation protocol)
@@ -88,25 +146,31 @@ Without loss of generality, for some transaction $t$ with an agreed fragment $F$
 node $u$ decides \emph{valid} but node $v$ decides \emph{invalid}.
 Then there exist a fragment $F' = \{ \dots, t', c'\}$ which $u$ received that contains a valid pair of $t$---$t'$.
 There also exist a fragment $F'' = \{ \dots, t'', c''\}$ which $v$ received that does not contain or contains an invalid pair---$t''$.
-In both cases, the $\textsf{get\_validity}(\cdot)$ must have reached \Cref{line:valid-fragment}.
-Due to \Cref{lemma:consensus}, we have $c' = c''$, otherwise the result would be \emph{unknown}.
+In both cases, the $\textsf{get\_validity}(\cdot)$ function must have reached \Cref{line:valid-fragment}.
+Due to \Cref{theorem:consensus}, we have $c' = c''$, otherwise the result would be \emph{unknown}.
 Since $c' (= c'') = \langle \textsf{H}(t'), \dots \rangle$ we must have $\textsf{H}(t') = \textsf{H}(t'')$ and $t' \ne t''$ (because $t''$ is invalid).
-In other words, the sender of $F''$ must be able to create some $t''$ that has the same digest as $t'$.
-But we assumed that the adversary can only perform polynomial-time algorithm, but in order to find $t''$ it needs to query the random oracle exponentially many times.
-Thus we have a contradiction and this completes our proof.
+In other words, whoever sent $F''$ must be able to create some $t''$ that has the same digest as $t'$.
+But we assumed that the adversary can only perform polynomial-time algorithm,
+so in order to find $t''$ it needs to query the random oracle exponentially many times.
+Thus we have a contradiction and this completes the proof.
 \end{proof}
 
 \Cref{theorem:validation-agreement} is our first major result.
 It shows that consensus on CP blocks would lead to consensus on TX blocks when the nodes are running the validation protocol.
+Just like in our prior work~\cite{implicitconsensus}, we call this behaviour implicit consensus.
 One of the main advantages over running a consensus algorithm on all the transactions is that 
-the rate of transaction is no longer dependent on the consensus algorithm---ACS (up to $L$ transactions).
+the rate of transaction is no longer dependent on the consensus algorithm---ACS.
 This enables horizontal scalability where adding new nodes would lead to higher global transaction rate.
 In addition, a convenient consequence \Cref{theorem:validation-agreement} is unforgeability.
 That is, no polynomial time adversary is able to create two chains $F = \{ \dots, t, c\}$ $F' = \{ \dots, t', c\}$ with correct hash pointers and the same end of chain $c$.
 % Another way to think about it is if a transaction can be forged, then it cannot be agreed.
 
-However, not everything is perfect.
-Now we show a negative result, where the liveness property cannot be attained.
+\subsection{Impossibility of Liveness}
+While \Cref{theorem:validation-agreement} is a major result that allows significantly improved performance over traditional blockchain systems,
+it is not perfect.
+Now we show a negative result, where the liveness property of \Cref{def:validation} cannot be attained.
+Meaning that trasanctions with adversaries cannot always be validated.
+
 \begin{lemma}
 There exist a valid transactions that cannot be validated eventually.
 \end{lemma}
