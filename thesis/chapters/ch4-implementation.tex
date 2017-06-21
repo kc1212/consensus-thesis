@@ -21,7 +21,7 @@ The structure of the implementation is primarily made up of three modules---\tex
 We use liberasurecode\footnote{\url{https://github.com/openstack/liberasurecode}} as the Reed-Solomon error correcting code library, used in RBC.
 An implementation detail is that liberasurecode cannot create more than 32 code blocks\footnote{
   The 32 code blocks limitation is hardcoded in the source file, see
-  \url{https://github.com/openstack/liberasurecode/blob/0794b31c623e4cede76d66be730719d24debcca9/include/erasurecode/erasurecode.h#L35}
+  \url{https://github.com/openstack/liberasurecode/blob/0794b31c623e4cede76d66be730719d24debcca9/include/erasurecode/erasurecode.h\#L35}
 }.
 The \texttt{acs} module provides a small interface to the caller to start and stop the consensus process and also receive results.
 The \texttt{trustchain} module implements the Extended TrustChain data structure.

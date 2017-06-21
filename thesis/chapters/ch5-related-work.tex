@@ -45,12 +45,26 @@ Our system on the other hand does not have an incentive mechanism because we mak
 
 \section{Offchain Transactions}
 Offchain transactions make use of the fact that, if two or more parties frequently make transactions,
-then it is not necessary to store every transaction on the blockchain, the only useful information is the net settlement.
-The best examples are the lightning network~\cite{lightningnetwork} and full duplex channels~\cite{decker2015fast}.
+then it is not necessary to store every transaction on the blockchain, only the net settlement is necessary.
+The best examples are Lightning Network~\cite{lightningnetwork} and full duplex channels~\cite{decker2015fast}.
 These use the Bitcoin blockchain to store the net settlement and a payment channel to conduct offchain transactions.
 
-TODO explain payment channel
+Offchain transaction systems are implemented using multi-signature addresses~\cite{bitcoinmultisig} and Bitcoin contracts.
+If two parties wish to make transactions, they open a timelocked payment channel with a multi-signature Bitcoin address (for two parties it would be a 2-of-2 signature address).
+Transactions happen off the Bitcoin blockchain and are signed by both parties.
+These transactions have a timestamp and only contain the net amount since the start of the payment channel.
+Before the payment channel expires, the latest of such transactions is sent to the multi-signature address.
+If multiple transactions are sent to the payment channel, the latest one is used.
+After payment channel is closed, the net transaction is propagated to the Bitcoin blockchain.
 
+The advantages of such systems is that they act as add-ons to Bitcoin wish already has a large number of users.
+Thus, if enough of the network wish for it (by setting a new block version),
+then a large number of users will instantly benefit from it.
+It also shares the advantages of Bitcoin such as security and incentives.
+
+On the other hand, offchain transactions also suffers from the problem of Bitcoin.
+Proof-of-work is still problematic as it consumes an unreasonable amount of power.
+TODO more?
 
 \section{Permissioned Systems}
 
@@ -92,7 +106,7 @@ For instance, ByzCoin performs just below 1000 TPS with a thousand nodes whereas
 
 A major side effect of these hybrid systems is that they cannot guarantee correctness when there is a large number of malicious nodes.
 Our system has the same issue.
-For SCP, ByzCoin and OmniLedger, they all have some probability to elect more than $n$ Byzantine nodes into the committee.
+For SCP, ByzCoin and Solidus, they all have some probability to elect more than $n$ Byzantine nodes into the committee.
 This problem is especially difficult solve because the committee is always much smaller than the population size which has more than $t$ Byzantine nodes,
 thus electing more than $t$ nodes into the committee in always a possibility.
 Classical blockchain do not have this problem because they do not use Byzantine consensus.

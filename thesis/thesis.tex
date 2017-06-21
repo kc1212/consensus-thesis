@@ -11,16 +11,24 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
-\usepackage{cleveref}
 \usepackage{subcaption}
 \usepackage{rotating}
 \usepackage{framed}
-\usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage[style=numeric]{biblatex}
-\addbibresource{references.bib} 
 % \usepackage{times}
 
+% https://tex.stackexchange.com/questions/42343/how-to-add-a-navigation-window-to-a-latex-generated-pdf-document
+\usepackage{hyperref}
+\hypersetup{pdftex,colorlinks=true,allcolors=blue}
+\usepackage{hypcap}
+
+% https://tex.stackexchange.com/questions/1863/which-packages-should-be-loaded-after-hyperref-instead-of-before
+\usepackage{cleveref}  
+\usepackage{algorithm}
+
+
+\addbibresource{references.bib} 
 \algnewcommand\algorithmicupon{\textbf{Upon}}
 \algnewcommand\Upon{\item[\algorithmicupon]}
 
