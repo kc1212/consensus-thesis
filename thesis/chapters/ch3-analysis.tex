@@ -280,3 +280,62 @@ For instance, if $u$ and $v$ make $x$ transactions in a single round,
 then only one agreed fragment need to be exchanged as it contains all the transactions rather than $x$ agreed fragments.
 
 \section{Effect of A Highly Adverserial Environment}
+
+Our last study consideres the effect when the number of adversaries is more than $t$.
+This is useful because in practice it is difficult to guarantee that $t$ satisfied $n \ge 3t + 1$, especially when $N$ is large.
+Hence we are interested in the probability for this to happen under our facilitator election process.
+
+The problem can be formulated as follows.
+Suppose an urn contains $N$ balls, $t$ are black and $N-t$ are white.
+If $n$ balls are drawn uniformly at random without replacement,
+what is the probability that $\lfloor \frac{n-1}{3} \rfloor$ are black?
+The random variable $X$ in this case is the number of black balls, or the number of successful events.
+It follows the hypergeometric distribution since we pick balls \emph{without} replacement~\cite{skala2013hypergeometric}.
+Hence, we are interested in the following probability.
+$$
+1 - \sum_{k = 0}^{\lfloor \frac{n-1}{3} \rfloor} \Pr[X = k] = 
+1 - \sum_{k = 0}^{\lfloor \frac{n-1}{3} \rfloor} \frac{ \binom{t}{k} \binom{N-t}{n-k} }{ \binom{N}{n} }
+$$
+
+This is not in closed form,
+but we can visualise the effect in \Cref{fig:hypergeometric}.
+We set the population size $N$ to 2000
+and plot the probability of more than $\lfloor \frac{n-1}{3} \rfloor$ successful events for different numbers of draws.
+Evidently,
+if the number of black balls (traitors) is a third of the population (666 out of 2000)
+we have about 0.5 probability of electing more than $\lfloor \frac{n-1}{3} \rfloor$ black balls for sufficiently large $n$.
+Thus, we cannot expect the system to function correctly when 
+the expected value is close to the number of black balls that we can tolerate.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=1.0\textwidth]{hypergeometric}
+  \caption{Plot of the probability of selecting more than $\lfloor \frac{n-1}{3} \rfloor$ black balls for
+  different numbers of }
+  \label{fig:hypergeometric}
+\end{figure}
+
+On the other hand, due to the fact that hypergeometric distributions have light tails,
+that is ``faster-than-exponential fall-off''~\cite{skala2013hypergeometric},
+the probability for picking more than $\lfloor \frac{n-1}{3} \rfloor$ black balls when 
+the expected value is  much smaller than $\lfloor \frac{n-1}{3} \rfloor$ is small.
+For example, we can use tail inequality to bound the probability of picking more than $\lfloor \frac{n-1}{3} \rfloor$ black balls when only 5\% are black.
+The tail inequality is
+$$
+\Pr[X \ge E[X] + \tau n] \le e^{-2\tau^2n},
+$$
+where $E[X] = n/20$.
+We are interested in $\Pr[X \ge \lfloor \frac{n-1}{3} \rfloor + 1]$, so
+\begin{align*}
+\tau &= \frac{\lfloor \frac{n-1}{3} \rfloor + 1}{n} - \frac{1}{20} \\
+  &> \frac{\lfloor \frac{n-1}{3} \rfloor}{n} - \frac{1}{20} \\
+  &\ge \frac{1}{4} - \frac{1}{20} = \frac{1}{5} \quad \text{for $n \ge 4$}.
+\end{align*}
+Putting $\tau$ back into the tail inequality we get
+$$
+\Pr[X \ge \lfloor \frac{n-1}{3} \rfloor + 1] \le e^{-\frac{2}{25} n}.
+$$
+The bound is not tight, but it is clear that for sufficiently large $n$, the probability becomes vanishingly small.
+Hence, it is possible to use our system in practice when 5\% of the population are adversarial but $n \ge 3t + 1$ does not hold,
+as long as $n$ is large.
+
