@@ -1,44 +1,64 @@
 \chapter{Introduction}
 \label{ch:intro}
 
-Blockchains is one of the most prominent but also controversial technologies of our time.
-Never before did we have an incorruptable ledger that can be shared with mutually untrustful parties.
-% as long as the majority have a common interest
-The ledger in fact can contain any type of data.
-Thus enabling applications in myriad of fields,
-such as finance~\cite{todo}, heath care~\cite{todo}, logistics~\cite{todo}, energy~\cite{todo} and so on.
-However, not everyone is convinced on the practicality of blockchain systems.
-Bram Cohen, the inventor of BitTorrent said
-``It's getting a lot more media attention than the actual impact it's having so far.''~\cite{cohen}
-Forbes listed a few reasons on why we should be skeptical about blockchains~\cite{forbes},
-some of them include its accessibility for the layperson and its scalability issues.
+We live in a world where technologies have become vital for our welfare and success.
+The internet, for instance, gave us the ability of efficiently exchange information on a global scale.
+However, in contrast to its original design, the internet and in particular the world wide web is becoming increasingly centralised.
+The domain name system, certificate authorities, to name a few, carry enormous responsibilities and are a central point of failure.
+The  same can be said for many other services such are online marketplaces,
+cloud services, hospitality services and even our banking system.
+The 2008 financial crisis is an example of the banking system making poor choices which result in a
+decline in consumer wealth in the order of trillions~\cite{financialcrisis} and led to the European debt crisis.
 
-Scalability is indeed one of the key challenges we face in blockchain systems today.
-Bitcoin~\cite{bitcoin}, the largest permissionless\footnote{Explain permissionless} blockchain system
-in terms of market capitalisation~\cite{bitcoinmarketcap} has a maximum transaction rate of merely 7 transaction per second (TX/s).
-This is due to the consensus mechanism in Bitcoin, namely proof-of-work (PoW),
-miners can only create new blocks every 10 minutes and every block cannot be larger than 1 megabyte.
-Payment processors in use today such as Visa can handle transaction rates in the order of thousands~\cite{visa}.
-While Bitcoin may be a revolutionary phenomenon, it clearly cannot be ubiquitous in its current state.
+Ironically, also in 2008, Satoshi Nakamoto published the Bitcoin whitepaper~\cite{bitcoin}.
+Which, for the first time, gave us a simple banking system in the form of an distributed ledger.
+It needs no central control but still incorruptable even if there are malicious parties that aim to undermine the system.
+We call such a ledger a blockchain.
 
-An different approach is to not reach global consensus at all.
-For instance in TrustChain~\cite{multichain} and Tangle~\cite{tangle},
-nodes in the network only store their personal ledger.
-Since consensus is left out, nodes can perform transactions as fast as their machine and network allows.
-The downside of this approach is that it cannot prevent fraud (it is possible to detect fraud).
-To examplify, a malicious node Mallory may claim she has 3 units of currency to Alice,
-but in reality Mallory already spent all of it on Bob.
-If there is no global consensus and Bob and Alice never communicate,
-then the 3 units that Alice is about to receive is nonexistent.
+The primary innovations are (1) its consensus model, which prevents double spending,
+and (2) its incentive mechanism that encourages anyone (with adaquate hardware) to participate in the network and keep it running.
+The double spending problem can be seen as an inconsistency issue.
+For example, $C$ has 5 units of currency in her account.
+At some instant in time, $A$ sees that $C$ transferred 5 units to $A$ and $B$ sees that $C$ transferred 5 units to $B$.
+Hence, the transaction is inconsistent with respect to the observer.
+Bitcoin and many other blockchain systems solve the inconsistency problem with a consensus algorithm.
+The goal of the algorithm is reach agreement on a set of values, e.g. transactions, which eliminates inconsistencies.
+In Bitcoin's case, the consensus algorithm is called \emph{proof-of-work}.
+Where miners (parties that runs the Bitcoin network) collect transactions and compete in solving (using brute force) a puzzle.
+The first miner to solve it generates a block containing all the collected transactions.
+The miner is also rewarded with new coins and transaction fees.
+It is important to note that every block, that is the solution of the puzzle,
+depends on the previous block.
+Hence the name blockchain.
+Further, honest miners always work on the largest chain.
+Due to the difficulty of the puzzle,
+it is unlikely for more than one blockchain to exist in the network for a long period of time.
+Thus every party sees a consistent blockchain which solves the double spending problem.
+Further, due to the reward mechanism,
+people are incentivised to act as miners and keep the system running.
 
-The scalability property of TrustChain and Tangle are exceptionally desirable.
-The global consensus mechanism of Bitcoin and many other blockchain systems are also worthwhile for detecting or preventing fraud.
-These two properties may seem mutually exclusive, but in this work, we demonstrate the opposite.
-Specifically, we answer the following research question in the affirmative.
-\emph{Is it possible to design a blockchain fabric that can reach global consensus on the state of the system 
-and also scalable?} We define scalability as a property where if more nodes join the system, then the transaction rate should increases.
-% this is not completely true, there's a cap
+Bitcoin has had its ups and downs, but over it has grown into an enormous system.
+Its power consumption is as high as Republic of Ireland~\cite{o2014bitcoin}.
+Its market cap, at the time of writing, is over 40 Trillion USD~\cite{bitcoinmarketcap}.
+Many online marketplaces are using Bitcoin, for example Steam\footnote{\url{https://store.steampowered.com/}} and even Amazon\footnote{Not directly, but via \url{https://purse.io/}.}.
+Due to its success, people from many different disciplines began investigating in way to use blockchain technology.
+This includes finance~\cite{todo}, heath care~\cite{todo}, logistics~\cite{todo}, energy~\cite{todo} and so on.
 
+Sadly, as traditional blockchain systems began to gain popularity,
+their limitations also became apparent.
+Bitcoin has the infamous 7 transactions per second upper bound.
+This is due to the fact that blocks are fixed to 1 MB are only generated on average every 10 minutes.
+Since every Bitcoin transaction is at least 250 bytes, it computes to about 7 transactions per second.
+Due to this limitation, it is not uncommon to see a long backlog of about 20000 transactions on \url{https://blockchain.info}\footnote{\url{https://blockchain.info/unconfirmed-transactions/}}.
+A few months ago the backlog even reached 100000, which meant new transactions would take at least 11 hours to hit the blockchain~\cite{bitcoinbacklog}.
+The issue has plagued the Bitcoin community for some time and is the root cause for the block size debate, which some calls it a civil war~\cite{bitcoincivilwar}.
+Parties that are for the increase in block size argue that a larger block would improve the transaction rate.
+Parties against it argue that it would make mining more centralised because blocks take longer to propogate through the network and it does not solve the fundamental problem.
+A recent empirical study Croman et el.~\cite{croman2016scaling} has shown that simply increasing the block size may help.
+But given the bandwidth and latency constraints, it not possible to have more than 758 transactions per second and it may give some miner an unfair lead over others.
+Thus fundamental changes are necessary run at the scale of centralised payment processors such as Visa~\cite{visa}, which is in the order of tens of thousands transactions per second.
+
+In this work, we take the advice of Croman et el.~\cite{croman2016scaling} and Marko~\cite{vukolic2015quest} and rethink the blockchain architecture.
 Our primary insight came from observing the differences between how transactional systems work in the real world and how they work in blockchain systems like Bitcoin. 
 Take a restaurant owner for example, most of the time the customer is honest and pays the bill.
 There is no need for the customer or the restaurant owner to report the transaction to any central authority 
@@ -49,21 +69,18 @@ On the contrary, in blockchain systems, every transaction is effectively sent to
 which can be seen as a collective authority.
 This consequently lead to limited scalability because every transaction must be validated by the authority even when most of the transaction are legitimate.
 
-Using the aforementioned insight,
-we explore an alternative consensus model for blockchain systems where transactions themself do not reach consensus,
-but nevertheless verifiable at a later stage by any node in the network.
-Informally, out model works as follows.
-Every node stores its own blockchain and every block is one transaction, same as the TrustChain construction.
-We randomly selected nodes in every round, the selected ones are called facilitators.
-They reach consensus not on the individual transactions,
-but on the state of every chain represented by a single digest, we call this state the checkpoint.
-If a checkpoint of some node is in consensus, 
-then that node can proof to any other node that it holds a set of transactions that computes (form a chain) to the checkpoint.
-This immediately show that those transactions are tamper-proof.
+We describe and analyse the aforementioned idea in the remainder of this work.
+We begin with the problem description in~\Cref{ch:problem}.
+This is followed by a detailed formulation of the model in~\Cref{ch:model}. 
+Next, we analyse the correctness and performance of our design in~\Cref{ch:analysis}, this is where we present our key theorems.
+Implementation and experimental results are discussed in~\Cref{ch:implementation}.
+Finally, we compare our system with other state-of-the-art blockchain systems and conclude in Chapters \ref{ch:related} and \ref{ch:conclusion} respectively.
 
-We begin the detailed discussion by formulating the model \Cref{ch:model}. 
-Next, we analyse the correctness, security and performance of our design in \Cref{ch:analysis},
-this is where we present our theorems.
-Implementation and experimental results are discussed in \Cref{ch:implementation}.
-Finally, we compare our system with other state-of-the-art blockchain systems and conclude in Sections \ref{ch:related} and \ref{ch:conclusion} respectively.
+% However, not everyone is convinced on the practicality of blockchain systems.
+% Bram Cohen, the inventor of BitTorrent said
+% ``It's getting a lot more media attention than the actual impact it's having so far.''~\cite{cohen}
+% Forbes listed a few reasons on why we should be skeptical about blockchains~\cite{forbes},
+% some of them include its accessibility for the layperson and its scalability issues.
+
+
 

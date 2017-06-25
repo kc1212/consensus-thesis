@@ -4,8 +4,7 @@
 Having analysed our system both theoretically and experimentally,
 we dedicate this chapter on comparing our results with related work.
 Blockchain technology has seen a surge in recent years from both the industry and academia.
-There are many approaches and innovation.
-We classify by their consensus approach and divide them into the following categories: 
+We classify the various blockchain systems by their consensus approach and divide them into the following categories: 
 \begin{enumerate}
     \item classical blockchain systems,
     \item classical blockchain with offchain transactions,
@@ -13,6 +12,7 @@ We classify by their consensus approach and divide them into the following categ
     \item hybrid systems and
     \item blockchains without global consensus.
 \end{enumerate}
+A few systems from each of these categories are compared with our design.
 
 \section{Classical Blockchain Systems}
 This category represent systems with a probabilistic probabilistic consensus algorithm.
@@ -49,8 +49,8 @@ then it is not necessary to store every transaction on the blockchain, only the 
 The best examples are Lightning Network~\cite{lightningnetwork} and full duplex channels~\cite{decker2015fast}.
 These use the Bitcoin blockchain to store the net settlement and a payment channel to conduct offchain transactions.
 
-Offchain transaction systems are implemented using multi-signature addresses~\cite{bitcoinmultisig} and Bitcoin contracts.
-If two parties wish to make transactions, they open a timelocked payment channel with a multi-signature Bitcoin address (for two parties it would be a 2-of-2 signature address).
+Offchain transaction systems are implemented using multi-signature addresses~\cite{bitcoinmultisig} and hashed time-locked Bitcoin contracts~\cite{bitcointimelock}.
+If two parties wish to make transactions, they open a time-locked payment channel with a multi-signature Bitcoin address (for two parties it would be a 2-of-2 signature address).
 Transactions happen off the Bitcoin blockchain and are signed by both parties.
 These transactions have a timestamp and only contain the net amount since the start of the payment channel.
 Before the payment channel expires, the latest of such transactions is sent to the multi-signature address.
@@ -64,7 +64,11 @@ It also shares the advantages of Bitcoin such as security and incentives.
 
 On the other hand, offchain transactions also suffers from the problem of Bitcoin.
 Proof-of-work is still problematic as it consumes an unreasonable amount of power.
-TODO more?
+Further, sidechain transactions are limited only to an exchange of cryptocurrency,
+it is less general than typical Bitcoin transactions which may be a simple smart contract.
+Time-locked contracts have a strong dependency on timing, thus disputes may arise when the payment channel is just about to close.
+Our system is purely asynchronous and make no assumption on timing,
+in fact we assume the adversary has control of the message delivery time and order.
 
 \section{Permissioned Systems}
 
