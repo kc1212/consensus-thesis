@@ -1,40 +1,34 @@
 \chapter{System Architecture}
 \label{ch:model}
 
-The goals guiding our system design are as follows.
-\begin{itemize}
-    \item Performance and scalability,
-    \item application neutrality and
-    \item security.
-\end{itemize}
+% As was shown in~\Cref{ch:problem}, the requirements are the following.
+% \begin{itemize}
+%     \item Global consensus
+%     \item Security and fault tolerance
+%     \item Performance and scalability
+% \end{itemize}
 
-As mentioned in the Introduction, the primary goal is performance and scalability.
-Having a scalable blockchain system while still keeping global consensus
-allows the system to be ubiquitous and realise the full potential of blockchain.
+% As mentioned in the Introduction, the primary goal is performance and scalability.
+% Having a scalable blockchain system while still keeping global consensus
+% allows the system to be ubiquitous and realise the full potential of blockchain.
 
-The secondary goal is to design an application neutral system.
-In particular, it should act as a backbone that provides the building blocks of blockchain based applications.
-It should be possible to buld any kind of application on top our system.
-Further, we do not impose on a consensus algorithm, as long as it satisfies the properties of atomic broadcast which we describe in~\Cref{sec:overview-cons}.
+% The secondary goal is to design an application neutral system.
+% In particular, it should act as a backbone that provides the building blocks of blockchain based applications.
+% It should be possible to buld any kind of application on top our system.
+% Further, we do not impose on a consensus algorithm, as long as it satisfies the properties of atomic broadcast which we describe in~\Cref{sec:overview-cons}.
 
-Due to the nature of our system, we do not explicitly address the Sybil attack~\cite{douceur2002sybil}.
-Sybil defence mechanism always require some form of reputation score from the application.
-For example, social network based Sybil defence mechanims use graph structure of real-world relationships~\cite{yu2006sybilguard}.
-Online marketplaces such as Amazon use the rating of buyer and sellers.
-Thus it is not possible to design a Sybil defence mechanism with a application neutral framework.
-On the other hand, our system also has no restrictions on the Sybil defence technique
-and applications built on top of our system can use the best mechanism for their purpose.
 
-The third and final goal is security.
-Our system should be unaffected in the presence of powerful adversaries.
-In particular, adversaries are Byzantine meaning that they can have arbitrary behaviour.
-Thus anything is possible from simply ommitting messages to colluding with eachother in order to undermine the whole system.
+% The third and final goal is security.
+% Our system should be unaffected in the presence of powerful adversaries.
+% In particular, adversaries are Byzantine meaning that they can have arbitrary behaviour.
+% Thus anything is possible from simply ommitting messages to colluding with eachother in order to undermine the whole system.
 
-We begin the chapter with an intuitive overview of the architecture in \Cref{sec:system-overview}.
+The goal of this chapter is to detail our system specification.
+We begin our discussion with an intuitive overview of the architecture in \Cref{sec:system-overview}.
 Next, we give the formal description, starting with the model and assumptions in \Cref{sec:model-assumptions}.
 Then, the three protocols which make up the complete system,
 namely consensus protocol (\Cref{sec:cons-protocol}), transaction protocol (\Cref{sec:tx-protocol}) and validation protocol (\Cref{sec:vd-protocol}).
-Finally, the possible extensions are described in \Cref{sec:protocol-extensions}.
+Finally, some optimisations are described in \Cref{sec:optimisations}.
 
 
 \section{System Overview}

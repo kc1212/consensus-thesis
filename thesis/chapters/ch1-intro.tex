@@ -39,7 +39,7 @@ people are incentivised to act as miners and keep the system running.
 
 Bitcoin has had its ups and downs, but over it has grown into an enormous system.
 Its power consumption is as high as Republic of Ireland~\cite{o2014bitcoin}.
-Its market cap, at the time of writing, is over 40 Trillion USD~\cite{bitcoinmarketcap}.
+Its market cap, at the time of writing, is over 40 billion USD~\cite{bitcoinmarketcap}.
 Many online marketplaces are using Bitcoin, for example Steam\footnote{\url{https://store.steampowered.com/}} and even Amazon\footnote{Not directly, but via \url{https://purse.io/}.}.
 Due to its success, people from many different disciplines began investigating in way to use blockchain technology.
 This includes finance~\cite{todo}, heath care~\cite{todo}, logistics~\cite{todo}, energy~\cite{todo} and so on.
@@ -49,14 +49,30 @@ their limitations also became apparent.
 Bitcoin has the infamous 7 transactions per second upper bound.
 This is due to the fact that blocks are fixed to 1 MB are only generated on average every 10 minutes.
 Since every Bitcoin transaction is at least 250 bytes, it computes to about 7 transactions per second.
-Due to this limitation, it is not uncommon to see a long backlog of about 20000 transactions on \url{https://blockchain.info}\footnote{\url{https://blockchain.info/unconfirmed-transactions/}}.
+Due to this limitation, it is not uncommon to see a long backlog of about 20000 transactions\footnote{\url{https://blockchain.info/unconfirmed-transactions/}}.
 A few months ago the backlog even reached 100000, which meant new transactions would take at least 11 hours to hit the blockchain~\cite{bitcoinbacklog}.
 The issue has plagued the Bitcoin community for some time and is the root cause for the block size debate, which some calls it a civil war~\cite{bitcoincivilwar}.
 Parties that are for the increase in block size argue that a larger block would improve the transaction rate.
-Parties against it argue that it would make mining more centralised because blocks take longer to propogate through the network and it does not solve the fundamental problem.
-A recent empirical study Croman et el.~\cite{croman2016scaling} has shown that simply increasing the block size may help.
-But given the bandwidth and latency constraints, it not possible to have more than 758 transactions per second and it may give some miner an unfair lead over others.
-Thus fundamental changes are necessary run at the scale of centralised payment processors such as Visa~\cite{visa}, which is in the order of tens of thousands transactions per second.
+Parties against it argue that it would make mining more centralised because blocks take longer to propogate through the network.
+It also requires a hard fork (not backward compatible), which risks consensus failure and devaluation.
+A recent empirical study Croman et el.~\cite{croman2016scaling} has shown that increasing the block size may help.
+But given the bandwidth and latency constraints,
+it not possible to have more than 758 transactions per second.
+Even worse, it may give some miner an unfair lead over others.
+Thus fundamental changes are necessary run at the scale of centralised payment processors such as Visa~\cite{visa},
+which is in the order of tens of thousands transactions per second.
+
+What we have described is in fact the current state of Bitcoin.
+Many proposals exist with the aim to make Bitcoin more scalable.
+The most prominant is Seggregated Witness or SegWit~\cite{segwit}.
+It moves the signature data to the end of the block and changes the block size to 4 MB.
+The effect is that the first 1 MB of the block is still backward compatible, thus there is no need for a hard fork.
+It also solves the transaction malleability problem~\cite{bitcoinmalleability} and paves the way for offchain transactions via Lightning Network~\cite{lightningnetwork}.
+Although SegWit is implemented, it is still uncertain whether the Bitcoin network will adopt it.
+At the time of writing, there is only 35\% of the network signalling for adoptation,
+this is only a 10\% increase since November last year\footnote{\url{https://blockchain.info/charts/bip-9-segwit}}.
+Thus it may take years if ever for SegWit to be adopted.
+Even if it is adopted, it cannot reach the transaction rate of centralised systems.
 
 In this work, we take the advice of Croman et el.~\cite{croman2016scaling} and Marko~\cite{vukolic2015quest} and rethink the blockchain architecture.
 Our primary insight came from observing the differences between how transactional systems work in the real world and how they work in blockchain systems like Bitcoin. 
@@ -68,6 +84,18 @@ then the restaurant owner would report the incident to some central authority, e
 On the contrary, in blockchain systems, every transaction is effectively sent to the miners,
 which can be seen as a collective authority.
 This consequently lead to limited scalability because every transaction must be validated by the authority even when most of the transaction are legitimate.
+
+Using the aforementioned insight,
+we explore an alternative consensus model for blockchain systems where transactions themself do not reach consensus,
+but nevertheless verifiable at a later stage by any node in the network.
+Informally, out model works as follows.
+Every node stores its own blockchain and every block is one transaction.
+We randomly selected nodes in every round, the selected ones are called facilitators.
+They reach consensus not on the individual transactions,
+but on the state of every chain represented by a single digest, we call this state the checkpoint.
+If a checkpoint of some node is in consensus, 
+then that node can proof to any other node that it holds a set of transactions that computes (form a chain) to the checkpoint.
+This immediately show that those transactions are tamper-proof.
 
 We describe and analyse the aforementioned idea in the remainder of this work.
 We begin with the problem description in~\Cref{ch:problem}.
