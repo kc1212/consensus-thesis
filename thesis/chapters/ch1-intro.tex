@@ -11,20 +11,21 @@ The 2008 financial crisis is an example of the banking system making poor choice
 decline in consumer wealth in the order of trillions~\cite{financialcrisis} and led to the European debt crisis.
 
 Ironically, also in 2008, Satoshi Nakamoto published the Bitcoin whitepaper~\cite{bitcoin}.
-Which, for the first time, gave us a simple banking system in the form of an distributed ledger.
+Which, for the first time, gave us a simple banking system in the form of a distributed ledger.
 It needs no central control but still incorruptable even if there are malicious parties that aim to undermine the system.
 We call such a ledger a blockchain.
 
-The primary innovations are (1) its consensus model, which prevents double spending,
+The primary innovations are (1) its consensus model which prevents double spending,
 and (2) its incentive mechanism that encourages anyone (with adaquate hardware) to participate in the network and keep it running.
 The double spending problem can be seen as an inconsistency issue.
 For example, $C$ has 5 units of currency in her account.
 At some instant in time, $A$ sees that $C$ transferred 5 units to $A$ and $B$ sees that $C$ transferred 5 units to $B$.
-Hence, the transaction is inconsistent with respect to the observer.
+Hence the transaction is inconsistent with respect to the observer.
 Bitcoin and many other blockchain systems solve the inconsistency problem with a consensus algorithm.
-The goal of the algorithm is reach agreement on a set of values, e.g. transactions, which eliminates inconsistencies.
+The goal of the algorithm is reach agreement on a set of valid values, e.g. transactions. 
+This effectively eliminates inconsistencies.
 In Bitcoin's case, the consensus algorithm is called \emph{proof-of-work}.
-Where miners (parties that runs the Bitcoin network) collect transactions and compete in solving (using brute force) a puzzle.
+Where miners (parties that runs the Bitcoin network) collect transactions and compete in solving (using brute force) a difficult puzzle.
 The first miner to solve it generates a block containing all the collected transactions.
 The miner is also rewarded with new coins and transaction fees.
 It is important to note that every block, that is the solution of the puzzle,
@@ -34,8 +35,8 @@ Further, honest miners always work on the largest chain.
 Due to the difficulty of the puzzle,
 it is unlikely for more than one blockchain to exist in the network for a long period of time.
 Thus every party sees a consistent blockchain which solves the double spending problem.
-Further, due to the reward mechanism,
-people are incentivised to act as miners and keep the system running.
+% Further, due to the reward mechanism,
+% people are incentivised to act as miners and keep the system running.
 
 Bitcoin has had its ups and downs, but over it has grown into an enormous system.
 Its power consumption is as high as Republic of Ireland~\cite{o2014bitcoin}.
@@ -49,13 +50,13 @@ their limitations also became apparent.
 Bitcoin has the infamous 7 transactions per second upper bound.
 This is due to the fact that blocks are fixed to 1 MB are only generated on average every 10 minutes.
 Since every Bitcoin transaction is at least 250 bytes, it computes to about 7 transactions per second.
-Due to this limitation, it is not uncommon to see a long backlog of about 20000 transactions\footnote{\url{https://blockchain.info/unconfirmed-transactions/}}.
-A few months ago the backlog even reached 100000, which meant new transactions would take at least 11 hours to hit the blockchain~\cite{bitcoinbacklog}.
-The issue has plagued the Bitcoin community for some time and is the root cause for the block size debate, which some calls it a civil war~\cite{bitcoincivilwar}.
+Due to this limitation, it is not uncommon to see a long backlog of about 20,000 transactions\footnote{\url{https://blockchain.info/unconfirmed-transactions/}}.
+A few months ago the backlog even reached 100,000, which meant new transactions would take at least 11 hours to hit the blockchain~\cite{bitcoinbacklog}.
+This issue has plagued the Bitcoin community for some time and is the root cause for the block size debate, which some calls it a civil war~\cite{bitcoincivilwar}.
 Parties that are for the increase in block size argue that a larger block would improve the transaction rate.
 Parties against it argue that it would make mining more centralised because blocks take longer to propogate through the network.
 It also requires a hard fork (not backward compatible), which risks consensus failure and devaluation.
-A recent empirical study Croman et el.~\cite{croman2016scaling} has shown that increasing the block size may help.
+A recent empirical study by Croman et el.~\cite{croman2016scaling} has shown that increasing the block size may help.
 But given the bandwidth and latency constraints,
 it not possible to have more than 758 transactions per second.
 Even worse, it may give some miner an unfair lead over others.
@@ -97,7 +98,7 @@ If a checkpoint of some node is in consensus,
 then that node can proof to any other node that it holds a set of transactions that computes (form a chain) to the checkpoint.
 This immediately show that those transactions are tamper-proof.
 
-We describe and analyse the aforementioned idea in the remainder of this work.
+We describe and analyse our idea in the remainder of this work.
 We begin with the problem description in~\Cref{ch:problem}.
 This is followed by a detailed formulation of the model in~\Cref{ch:model}. 
 Next, we analyse the correctness and performance of our design in~\Cref{ch:analysis}, this is where we present our key theorems.
