@@ -227,14 +227,15 @@ For every unit of communication, we assume they take some non-negligible but con
 From our result in \Cref{sec:acs-complexity} and the fact that ACS runs in a constant number of rounds,
 it follows that ACS has a time complexity of $O(N)$.
 
-\subsection{Data Volume Requirement for Transactions}
+\subsection{Communication Cost for Transactions}
+\label{sec:communication-cost-for-tx}
 With our assumption on the time complexity of ACS,
 we are ready to analyse the amount of data required to be transmitted over a link per transaction,
-which we call the data volume per transaction.
+which we call the communication cost per transaction.
 % First, we define bandwidth as the ``amount of data a link or network path can deliver per unit of
 % time''~\cite{prasad2003bandwidth}.
 We know that to create and then validate a transaction,
-the data volume per transaction is of $O(l)$,
+the communication cost per transaction is of $O(l)$,
 where $l$ is the length of the agreed fragment.
 This can be seen from the fact that the largest message by far is the \texttt{vd\_resp} message,
 which contains the agreed fragment,
@@ -244,11 +245,12 @@ Then
 $$l = r_{\text{tx}} D_{\text{acs}},$$
 where $D_{\text{acs}}$ is the duration an instance of ACS.
 But from \Cref{sec:acs-time-complexity},
-we know that $D_{\text{acs}}$ is of $O(N)$, thus the data volume per transaction is $O(N)$.
+we know that $D_{\text{acs}}$ is of $O(N)$, thus the communication per transaction is $O(N)$.
 This is intuitive because consensus duration would be longer if there are more CP blocks, which means that the agreed fragments are longer (assuming nodes transact at a constant rate).
 The behaviour is also verified experimentally in \Cref{ch:implementation}.
 
 \subsection{Global Throughput}
+\label{sec:global-throughput}
 Using our results so far, we are able to analyse the global throughput.
 First we clarify the bandwidth definition, which is ``the data rate at which a network link or a network path can transfer''~\cite{prasad2003bandwidth}.
 Now, suppose every node has some fixed bandwidth per link $C$ and $N$ links.
