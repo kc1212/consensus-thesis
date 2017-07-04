@@ -70,12 +70,12 @@ Traditional blockchain systems may run in a network of thousands of nodes, but t
 On the other hand, as we will see in~\Cref{sec:acs-background}, Byzantine consensus algorithms performs well but only when in a small network.
 In this work we combine the ideas from both of these systems to create the first horizontally scalable blockchain fabric.
 
-\section{Non-goals}
-Due to the nature of our system, we do not explicitly address the Sybil attack~\cite{douceur2002sybil}.
-Sybil defence mechanism always require some form of reputation score from the application.
+\section{Limitations}
+Our work removes the transaction bound from the blockchain.
+However, the price to pay is that the Sybil attack~\cite{douceur2002sybil} prevention mechanism moves from the blockchain backbone to the application layer.
 For example, social network based Sybil defence mechanims use graph structure of real-world relationships~\cite{yu2006sybilguard}.
 Online marketplaces such as Amazon use the rating of buyer and sellers.
-Thus it is not possible to design a Sybil defence mechanism with a application neutral framework.
+Since our system is application neutral, we do not provide an explicit Sybil defence mechanism.
 On the other hand, our system also has no restrictions on the Sybil defence technique
 and applications built on top of our system can use the best mechanism for their purpose.
 

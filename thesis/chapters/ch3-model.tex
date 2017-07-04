@@ -23,13 +23,18 @@
 % In particular, adversaries are Byzantine meaning that they can have arbitrary behaviour.
 % Thus anything is possible from simply ommitting messages to colluding with eachother in order to undermine the whole system.
 
+We present a design which removes the transaction rate restrictions seen in traditional blockchain systems.
+This is done by combining the recent HoneyBadgerBFT~\cite{miller2016honey}
+(a purely asynchronous consensus algorithm for blockchain systems)
+with a modification of our prior work on TrustChain~\cite{trustchain}.
+The design is inspired by the essence the (early) Internet architecture as well as how transactions are performed in the real world.
+    
 The goal of this chapter is to detail our system specification.
 We begin our discussion with an intuitive overview of the architecture in \Cref{sec:system-overview}.
 Next, we give the formal description, starting with the model and assumptions in \Cref{sec:model-assumptions}.
 Then, the three protocols which make up the complete system,
 namely consensus protocol (\Cref{sec:cons-protocol}), transaction protocol (\Cref{sec:tx-protocol}) and validation protocol (\Cref{sec:vd-protocol}).
 Finally, some optimisations are described in \Cref{sec:optimisations}.
-
 
 \section{System Overview}
 \label{sec:system-overview}
@@ -644,16 +649,54 @@ But these fake pairs only pollutes the chain of $v$ and can never be validated b
 \section{Optimisations}
 \label{sec:optimisations}
 
-(Move to future work?)
+Up to this point,
+we have discussed our protocol in the context of the model and assumptions defined in \Cref{sec:model-assumptions}.
+In this section, 
+we explore a few optimisations which we can make if we relax our model.
+These relaxations do not have the same theoretical elegance as our original model.
+But they enable better performance and allow us to apply our design in the fully permissionless setting.
 
-Up to this point, we have discussed our protocol in the context of the model and assumptions defined in \Cref{sec:model-assumptions}.
-In this section, we remove a few assumptions and discuss how our architecture is adapted.
+\subsection{Use epidemic protocol instead of broadcast protocol}
+One of the final steps in our consensus protocol is to broadcast the consensus result and signatures to every other node (\Cref{sec:consensus-phase}).
+While this guarantees delivery (since we assumed reliable channel), it is wasteful.
+For example, if every facilitator is honest, a node would receive $n$ consensus results which are identical when only one is necessary.
 
-Gossip?
+An optimisation we can do is to use an epidemic protocol~\cite{eugster2004epidemic} (also known as gossiping)) instead of our broadcast approach.
+Typical epidemic protocols works as follows.
+Every node buffers every message it receives up to some buffer size $b$.
+Then it forwards the messages $t$ number of times.
+Every time the message is sent to $f$ random neighbours, $f$ is often called the fan-out.
+The upside of using epidemic protocol is a lower communication cost.
+This is especially true with a lazy push approach the node who just received a message would push the message ID to its $f$ random neighbours,
+and only push the full message if the neighbour explicitly requests for the message~\cite{leitao2007epidemic}.
+With this, nodes typically only need to receive one consensus result message instead of $n$.
 
-Churn?
+A down side of epidemic protocol is that it usually takes $O(\log N)$ time to infect the whole network,
+whereas broadcasting uses constant time.
+Another downside of some epidemic protocols (e.g. eager push) is that it is difficult to guarantee delivery.
+It is especially true when the parameters are not choosen correctly of if the network is not fully connected.
+If the delivery cannot be guaranteed, 
+then we cannot guarantee liveness in our consensus protocol because a future facilitator may miss the memo.
+Picking parameters are difficult in practice because the network configuration is unknown and the total number of nodes might also be unknown.
 
-Sybil?
+
+\subsection{Using timing assumption in the permissionless setting}
+Our model is purely asynchronous, where we make no timing assumptions anywhere in the protocol.
+In many applications, it is often fine to make timing assumptions.
+For example, TCP relies on timeout for its retransmission and the nLockTime property in Bitcoin transactions makes the transaction unspendable until some time in the future (either Unix time or block height)~\cite{bitcoindevguide}.
+One limitation of our system is that we use the parameter $N$ in our algorithms, which makes it unsuitable for the permissionless environment where users can join and leave at will.
+In this section we show how making a timing assumption would allow us to operate in the permissionless setting.
+
+At the start of our consensus phase (\Cref{sec:consensus-phase}), facilitators must wait for $N-f$ \text{cp\_msg} messages.
+This is the only place where we used $N$ as a parameter.
+To introduce timing, instead of waiting for $N-f$ messages, we wait for some time $D$,
+such that $D$ is sufficiently long for honest nodes to send their CP blocks to the facilitators.
+Again, choosing the parameter $D$ is difficult and depends on a number of factors such as the network condition, message size, and so on.
+Overestimating it would make agreed fragments much longer than usual.
+Underestimating it would lead to unfairness where users that are too late do not have a chance to be selected as a facilitator in the next round.
+Nevertheless, there is a significant gain for making the timing assumption and that is the ability to operate in the permissionless setting.
+
+TODO explain churn
 
 % \section{Universally Composable Framework}
 % \label{sec:uc-intro}

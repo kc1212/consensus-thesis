@@ -36,6 +36,10 @@ This creates a fully connected network for our experiment.
 It is certainly not ideal in real world scenarios where nodes may have limited resources (e.g. sockets).
 But as a prototype, it is sufficient to run a network of over a thousand nodes and experiment with it.
 
+Finally, the cryptography primitives we use are SHA256 for hash functions and Ed25519 for digital signatures.
+Both of which are provided by libnacl~\footnote{\url{https://pypi.python.org/pypi/libnacl}}.
+
+
 \section{Experimental Setup}
 \label{sec:experimental-setup}
 
