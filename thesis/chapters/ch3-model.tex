@@ -682,21 +682,32 @@ Picking parameters are difficult in practice because the network configuration i
 
 \subsection{Using timing assumption in the permissionless setting}
 Our model is purely asynchronous, where we make no timing assumptions anywhere in the protocol.
-In many applications, it is often fine to make timing assumptions.
+In many applications however, it is often fine to make timing assumptions.
 For example, TCP relies on timeout for its retransmission and the nLockTime property in Bitcoin transactions makes the transaction unspendable until some time in the future (either Unix time or block height)~\cite{bitcoindevguide}.
 One limitation of our system is that we use the parameter $N$ in our algorithms, which makes it unsuitable for the permissionless environment where users can join and leave at will.
 In this section we show how making a timing assumption would allow us to operate in the permissionless setting.
 
-At the start of our consensus phase (\Cref{sec:consensus-phase}), facilitators must wait for $N-f$ \text{cp\_msg} messages.
+At the start of our consensus phase (\Cref{sec:consensus-phase}), facilitators must wait for $N-f$ \texttt{cp\_msg} messages.
 This is the only place where we used $N$ as a parameter.
 To introduce timing, instead of waiting for $N-f$ messages, we wait for some time $D$,
 such that $D$ is sufficiently long for honest nodes to send their CP blocks to the facilitators.
 Again, choosing the parameter $D$ is difficult and depends on a number of factors such as the network condition, message size, and so on.
-Overestimating it would make agreed fragments much longer than usual.
+Overestimating it would make agreed fragments much longer than usual, which increases communication costs for validation.
 Underestimating it would lead to unfairness where users that are too late do not have a chance to be selected as a facilitator in the next round.
-Nevertheless, there is a significant gain for making the timing assumption and that is the ability to operate in the permissionless setting.
+Nevertheless, there is a significant gain for making the timing assumption and that is the ability to operate in the permissionless setting which we explain next.
 
-TODO explain churn
+Suppose a new node wish to join the network and the facilitators are known (this can be done with a public registry).
+It simply sends its latest CP block to the facilitators.
+Then, in the next round the node will have a chance to become a facilitator just like any existing node.
+To leave the network, nodes simply stop submitting CP blocks.
+There is a subtlety here which happens when the node is elected as a facilitator in the following round.
+In this case, the node must fulfill its oblication by completing the consensus protocol (but without proposing its own CP block) before leaving.
+Otherwise the $n \ge 3t + 1$ condition may be violated.
+
+% Another assumption we made in this work is the existance of a PKI.
+% This can also be removed with the introduction of timing by storing the public keys the consensus results,
+% much like in Bitcoin.
+
 
 % \section{Universally Composable Framework}
 % \label{sec:uc-intro}
