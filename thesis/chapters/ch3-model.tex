@@ -173,10 +173,11 @@ Finally, we use the random oracle model, i.e. calls to the random oracle are den
 where $\{0, 1\}^*$ denotes the space of finite binary strings and $\lambda$ is the security parameter~\cite{bellare1993random}.
 
 In our model we consider $N$ nodes, which is the population size.
-$n$ of them are facilitators, $t$ out of $n$ are malicious and the inequalities
-$n \ge 3t + 1$ and $N \ge n + t$ must hold.
-The first is from the FLP impossibility result TODO.
-The second is necessary due to our system design, which becomes clear in TODO.
+$n$ of them are facilitators, $t$ out of $n$ are malicious and the inequality
+$n \ge 3t + 1$ must hold.
+This is from the work of Pease, Shostak and Lamport, where they show a network of $n$ nodes cannot reach Byzantine agreement with $t \ge n/3$.
+Further, the inequality $N \ge n + t$ must also hold.
+This is due to our system design, which becomes clear in~\Cref{sec:consensus-phase}.
 
 Our threat model is as follows. 
 We use a restricted version of the adaptive corruption model.
@@ -703,6 +704,10 @@ To leave the network, nodes simply stop submitting CP blocks.
 There is a subtlety here which happens when the node is elected as a facilitator in the following round.
 In this case, the node must fulfill its oblication by completing the consensus protocol (but without proposing its own CP block) before leaving.
 Otherwise the $n \ge 3t + 1$ condition may be violated.
+
+\subsection{Privacy preserving validation protocol}
+TODO
+
 
 % Another assumption we made in this work is the existance of a PKI.
 % This can also be removed with the introduction of timing by storing the public keys the consensus results,

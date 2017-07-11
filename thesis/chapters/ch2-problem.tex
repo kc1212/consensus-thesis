@@ -34,12 +34,12 @@ The state can be a verifiable representation of all the transactions.
 As an extreme example, a single digest of the complete history can represent the state.
 It is even verifiable as long as there are nodes that stores the history.
 
-Traditional blockchain systems use PoW as the consensus algorithm.
-However, consensus algorithm and especially Byzantine\footnote{Byzantine means participants can experience arbitrary failure, more on this in~\Cref{sec:acs-background}.}
-consensus algorithms have existece since 1982,
-where it is first introduced by Lamport et el.~\cite{lamport1982byzantine}.
+Traditional blockchain systems use PoW as the consensus algorithm,
+but consensus algorithm and especially Byzantine\footnote{Byzantine means participants can experience arbitrary failure, more on this in~\Cref{sec:acs-background}.}
+consensus algorithms have existece since the 80s~\cite{pease1980reaching, lamport1982byzantine}.
 The Practical Byzantine Fault Tolerance (PBFT) algorithm introduced in 1999 by Castro and Liskov~\cite{castro1999practical} is widely regarded as the first high-performance consensus algorithm.
-Since then research in this area picked up pace and many more algorithms are introduced~\cite{abd2005fault, kotla2007zyzzyva}.
+The authors show that running PBFT in Network File System (NFS) was only 3\% slower than the standard unreplicated NFS.
+Since then, research in this area picked up pace and many more algorithms are introduced~\cite{abd2005fault, kotla2007zyzzyva}.
 With the introduction of Bitcoin's probabilistic consensus model, the field experienced a second renaissance.
 These include proof-of-stake protocols~\cite{bentov2016snow, micali2016algorand}, as well as protocols optimised for blockchain~\cite{liu2016xft, miller2016honey}.
 

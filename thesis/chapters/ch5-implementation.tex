@@ -75,23 +75,22 @@ we employ a discovery server to inform every node the IP addresses and port numb
 It is only run before the experiment and is not used during the experiment.
 
 
-\section{Communication Cost for Consensus}
+\section{Communication cost for a round}
 
-\begin{figure}[h]
+\begin{figure}[tb]
   \centering
-  \begin{subfigure}{\textwidth}
-    \includegraphics[width=\textwidth]{neighbour-fixed/consensus-communication-cost-vs-population}
-    \caption{Transactions are with fixed neighbours}
-    \label{fig:consensus-comms-fixed}
-  \end{subfigure}
-
-  \begin{subfigure}{\textwidth}
-    \includegraphics[width=\textwidth]{neighbour-random/consensus-communication-cost-vs-population}
-    \caption{Transactions are with random neighbours}
-    \label{fig:consensus-comms-random}
-  \end{subfigure}
-  \caption{Communication cost for consensus}
-  \label{fig:consensus-comms}
+  \makebox[\linewidth][c]{%
+    \begin{subfigure}[b]{.7\textwidth}
+      \includegraphics[width=1.0\textwidth]{neighbour-fixed/round-communication-cost-vs-population}
+      \caption{Transactions are with fixed neighbours}
+      \label{fig:consensus-comms-fixed}
+    \end{subfigure}%
+    \begin{subfigure}[b]{0.7\textwidth}
+      \includegraphics[width=1.0\textwidth]{neighbour-random/round-communication-cost-vs-population}
+      \caption{Transactions are with random neighbours}
+      \label{fig:consensus-comms-random}
+    \end{subfigure}%
+  }
 \end{figure}
 
 \Cref{fig:consensus-comms} show the relationship between communication cost and population.
