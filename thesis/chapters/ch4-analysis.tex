@@ -190,6 +190,7 @@ Thus, to stay relevant in the system, the adversary need to comply to the protoc
 % The result is some chain with a broken link.
 
 \section{Performance}
+\label{sec:performance-analysis}
 This section aims to analytically answer our research question.
 That is, does the global throughput increase linearly with respect to the population size?
 We begin by looking at the communication and time complexity of the consensus protocol,
@@ -197,7 +198,7 @@ and then the bandwidth requirement for a single transaction.
 We build on top of those results to analyse do the global throughput analysis.
 
 \subsection{Communication complexity of the consensus protocol}
-\label{sec:acs-complexity}
+\label{sec:cons-complexity}
 The consensus protocol can bee seen as three parts.
 Thus the communication complexity is the sum of these three parts.
 The first part is when every node sends their CP block to all the facilitators, which is $O(Nn)$ since there are $N$ nodes and $n$ facilitators.
@@ -224,21 +225,22 @@ Thus the combined communication complexity when $n$ is a constant is $O(N)$.
 % On the other hand, in many distributed algorithms, computational cost is small when compared to the communication cost.
 % But in our system, we are more interested in the effect of the message size.
 
-\subsection{Time complexity of the consensus protocol}
-\label{sec:acs-time-complexity}
+\subsection{Duration of the consensus protocol}
+\label{sec:cons-duration}
 In order to make arguments on bandwidth or throughput, which are concepts that depend on time,
-we must make some assumptions on the time complexity of consensus protocol.
-The time complexity we use here is not the same as what is typically used in distributed systems.
+we must make some assumptions regarding our computational model to make arguments on the duration of the consensus protocol.
+Note that it is not the same as the time complexity typically used in distributed systems.
 In analysis of distributed systems, time complexity is often in terms of the number of rounds.
 For example, ACS runs in a constant number of rounds because its subprotocols---reliable broadcast and binary Byzantine consensus---also run in a constant number of rounds.
 However, in practice, making a unit of communication always has some overhead associated with it, for example serialising and writing it to some network socket.
 Hence, for the remainder of our performance analysis, we add the following to our computational model.
 For every unit of communication, we assume they take some non-negligible but constant time to perform.
-Hence, from~\Cref{sec:acs-complexity}, it directly follows that the consensus protocol has a time complexity of $O(N)$.
+Hence, from~\Cref{sec:cons-complexity} and the fact that the consensus protocol uses a constant number of rounds,
+it follows that the consensus protocol has a duration of $O(N)$.
 
 \subsection{Communication Cost for Transactions}
 \label{sec:communication-cost-for-tx}
-With the analysis on the time complexity of consensus protocol,
+With the analysis on the duration of the consensus protocol,
 we are ready to analyse the amount of data required to be transmitted over a link per transaction,
 which we call the communication cost per transaction.
 % First, we define bandwidth as the ``amount of data a link or network path can deliver per unit of
@@ -253,7 +255,7 @@ If we assume that every node performs transactions at a constant rate of $r_{\te
 Then
 $$l = r_{\text{tx}} D_{\text{c}},$$
 where $D_{\text{c}}$ is the duration a round of the consensus protocol.
-But from \Cref{sec:acs-time-complexity},
+But from \Cref{sec:cons-duration},
 we know that $D_{\text{c}}$ is of $O(N)$, thus the communication cost per transaction is $O(N)$.
 This is intuitive because round duration would be longer if there are more CP blocks (more $N$), which means that the agreed fragments are longer (assuming nodes transact at a constant rate).
 The behaviour is also verified experimentally in \Cref{ch:implementation}.

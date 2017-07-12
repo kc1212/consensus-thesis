@@ -34,7 +34,7 @@ We begin our discussion with an intuitive overview of the architecture in \Cref{
 Next, we give the formal description, starting with the model and assumptions in \Cref{sec:model-assumptions}.
 Then, the three protocols which make up the complete system,
 namely consensus protocol (\Cref{sec:cons-protocol}), transaction protocol (\Cref{sec:tx-protocol}) and validation protocol (\Cref{sec:vd-protocol}).
-Finally, some optimisations are described in \Cref{sec:optimisations}.
+Finally, we discuss a few variations of our main design and their respective tradeoffs in \Cref{sec:tradeoffs}.
 
 \section{System Overview}
 \label{sec:system-overview}
@@ -471,6 +471,7 @@ It creates a new CP block and appends it to $u$'s chain.}
 \end{algorithm}
 
 \subsection{Relationship with $\alpha$-Synchroniser}
+TODO
 
 
 \section{Transaction Protocol}
@@ -647,15 +648,15 @@ Our validity requirement only requires that there is only one $t_{v, j}$ in the 
 The counterparty may create any number of fake pairs in a later consensus rounds.
 But these fake pairs only pollutes the chain of $v$ and can never be validated because the round is incorrect.
 
-\section{Optimisations}
-\label{sec:optimisations}
+\section{Design variations and tradeoffs}
+\label{sec:tradeoffs}
 
 Up to this point,
 we have discussed our protocol in the context of the model and assumptions defined in \Cref{sec:model-assumptions}.
 In this section, 
-we explore a few optimisations which we can make if we relax our model.
-These relaxations do not have the same theoretical elegance as our original model.
-But they enable better performance and allow us to apply our design in the fully permissionless setting.
+we explore a few design variations which we can make if we relax our model.
+These variations do not have the same theoretical elegance as our original model.
+But they enable better performance, allow us to apply our design in the fully permissionless setting and improves privacy.
 
 \subsection{Use epidemic protocol instead of broadcast protocol}
 One of the final steps in our consensus protocol is to broadcast the consensus result and signatures to every other node (\Cref{sec:consensus-phase}).
@@ -708,6 +709,8 @@ Otherwise the $n \ge 3t + 1$ condition may be violated.
 \subsection{Privacy preserving validation protocol}
 TODO
 
+\subsection{Global probabilistic fork detection}
+TODO
 
 % Another assumption we made in this work is the existance of a PKI.
 % This can also be removed with the introduction of timing by storing the public keys the consensus results,
