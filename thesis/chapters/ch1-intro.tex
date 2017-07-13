@@ -4,7 +4,7 @@
 We live in a world where technologies have become vital for our welfare and success.
 The internet, for instance, gave us the ability of efficiently exchange information on a global scale.
 However, in contrast to its original design, the internet and in particular the world wide web is becoming increasingly centralised.
-The domain name system, certificate authorities, to name a few, carry enormous responsibilities and are a central point of failure.
+The domain name system (root name server), certificate authorities (root CA), to name a few, carry enormous responsibilities and are a central point of failure.
 The  same can be said for many other services such are online marketplaces,
 cloud services, hospitality services and even our banking system.
 The 2008 financial crisis is an example of the banking system making poor choices which result in a
@@ -12,7 +12,7 @@ decline in consumer wealth in the order of trillions~\cite{financialcrisis} and 
 
 Ironically, also in 2008, Satoshi Nakamoto published the Bitcoin whitepaper~\cite{bitcoin}.
 Which, for the first time, gave us a simple banking system in the form of a distributed ledger.
-It needs no central control but still incorruptable even if there are malicious parties that aim to undermine the system.
+It needs no central control but still incorruptable with high probability even if there are malicious parties that aim to undermine the system.
 We call such a ledger a blockchain.
 
 The primary innovations are (1) its consensus model which prevents double spending,
@@ -21,7 +21,7 @@ The double spending problem can be seen as an inconsistency issue.
 For example, $C$ has 5 units of currency in her account.
 At some instant in time, $A$ sees that $C$ transferred 5 units to $A$ and $B$ sees that $C$ transferred 5 units to $B$.
 Hence the transaction is inconsistent with respect to the observer.
-Bitcoin and many other blockchain systems solve the inconsistency problem with a consensus algorithm.
+Bitcoin and many of its derivatives (e.g. Litecoin\footnote{\url{litecoin.org}} and Dogecoin\footnote{\url{dogecoin.org}}) solve the inconsistency problem with a consensus algorithm.
 The goal of the algorithm is reach agreement on a set of valid values, e.g. transactions. 
 This effectively eliminates inconsistencies.
 In Bitcoin's case, the consensus algorithm is called \emph{proof-of-work}.
@@ -31,8 +31,7 @@ The miner is also rewarded with new coins and transaction fees.
 It is important to note that every block, that is the solution of the puzzle,
 depends on the previous block.
 Hence the name blockchain.
-Further, honest miners always work on the largest chain.
-Due to the difficulty of the puzzle,
+Further, due to the difficulty of the puzzle and that the majority of the parties are honest,
 it is unlikely for more than one blockchain to exist in the network for a long period of time.
 Thus every party sees a consistent blockchain which solves the double spending problem.
 % Further, due to the reward mechanism,
@@ -43,11 +42,11 @@ Its power consumption is as high as Republic of Ireland~\cite{o2014bitcoin}.
 Its market cap, at the time of writing, is over 40 billion USD~\cite{bitcoinmarketcap}.
 Many online marketplaces are using Bitcoin, for example Steam\footnote{\url{https://store.steampowered.com/}} and even Amazon\footnote{Not directly, but via \url{https://purse.io/}.}.
 Due to its success, people from many different disciplines began investigating in way to use blockchain technology.
-This includes finance~\cite{finance}, heathcare~\cite{healthcare}, logistics~\cite{supplychain}, energy~\cite{energy} and so on.
+This includes finance~\cite{finance}, heathcare~\cite{healthcare}, logistics~\cite{supplychain} and energy~\cite{energy}.
 
 Sadly, as traditional blockchain systems began to gain popularity,
 their limitations also became apparent.
-Bitcoin has the infamous 7 transactions per second upper bound.
+Bitcoin has the infamous 7 transactions per second upper bound~\cite{vukolic2015quest}.
 This is due to the fact that blocks are fixed to 1 MB are only generated on average every 10 minutes.
 Since every Bitcoin transaction is at least 250 bytes, it computes to about 7 transactions per second.
 Due to this limitation, it is not uncommon to see a long backlog of about 20,000 transactions\footnote{\url{https://blockchain.info/unconfirmed-transactions/}}.

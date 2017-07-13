@@ -1,40 +1,41 @@
 \chapter{Problem Description}
 \label{ch:problem}
 
-Blockchain technology has many advantages over centralised systems.
-Its decentralised and democratic nature removes central point of control or failure.
+The decentralised and democratic nature of blockchain technology removes central point of control or failure.
 However, as we described in the Introduction, it faces a genuine scalability problem.
 In particular, proof-of-work based systems are unlikely to reach the transaction rate of Visa even with parameter tuning.
 What we wish to see is horizontal scalability.
 That is, by adding new nodes into the network, the global transaction rate should increase proportionally.
 Hence, the research question we answer in this  work is the following.
 \begin{displayquote}
-\emph{Is it possible to design a blockchain fabric that is fault tolerant, scalable and can reach global consensus?}
+\emph{How do we design a blockchain fabric that is fault tolerant, scalable and can reach global consensus?}
 \end{displayquote}
 
 In order to make sense of our research question, we must first define \emph{blockchain fabric}.
 Typical blockchain systems are application specific.
-For example, the application in Bitcoin (any many others) is digital cash, the application in Namecoin is domain name registration~\cite{namecoin} and the application in Siacoin is cloud storage~\cite{siacoin}.
-Underneath these applications lies the blockchain fabric, which we call the consensus protocol, and it is abstract over the application.
-In the case of Bitcoin it is proof-of-work (PoW) because PoW is not concerned with the structure of the transactions,
+For example, the application in Bitcoin (any many of its derivatives) is digital cash, the application in Namecoin is domain name registration~\cite{namecoin} and the application in Siacoin is cloud storage~\cite{siacoin}.
+Underneath these applications lies the blockchain fabric which has the goal of reaching consensus on transactions.
+In the case of Bitcoin it is proof-of-work (PoW).
+It is not concerned with the structure of the transactions,
 it works by simply treating transactions as a blob of data and hashes them with the previous block.
-Hence, we wish to design an application neutral system.
-It should act as a backbone that provides the building blocks of any blockchain based applications.
-Also, it should be possible to build any kind of application on top our system.
-We do not impose on a consensus algorithm, as long as it satisfies the properties of atomic broadcast which we describe in~\Cref{sec:overview-cons}.
+Hence, we focus on blockchain fabric rather than any specific application.
+Because it is the scalability bottleneck and is neccessary for any blockchain based application.
+% Also, it should be possible to build any kind of application on top our system.
+% We do not impose on a consensus algorithm, as long as it satisfies the properties of atomic broadcast which we describe in~\Cref{sec:overview-cons}.
 
-In the remainder of this chapter we expand on our research question and visit each of our requirement in detail and discuss our approach.
+In the remainder of this chapter we expand on our research question and visit each of our requirement in detail.
 
 \section{Global Consensus}
 
-The first objective is to reach consensus on a global \emph{state}.
-We emphasise the word state because in contrary to traditional blockchains,
-it does not neccessarily mean the set of all transactions that has ever happened.
-The state can be a verifiable representation of all the transactions.
-As an extreme example, a single digest of the complete history can represent the state.
-It is even verifiable as long as there are nodes that stores the history.
+% why consensus is important
+% The first objective is to reach consensus on a global \emph{state}.
+% We emphasise the word state because in contrary to traditional blockchains,
+% it does not neccessarily mean the set of all transactions that has ever happened.
+% The state can be a verifiable representation of all the transactions.
+% As an extreme example, a single digest of the complete history can represent the state.
+% It is even verifiable as long as there are nodes that stores the history.
 
-Traditional blockchain systems use PoW as the consensus algorithm,
+Early blockchain systems use PoW as the consensus algorithm,
 but consensus algorithm and especially Byzantine\footnote{Byzantine means participants can experience arbitrary failure, more on this in~\Cref{sec:acs-background}.}
 consensus algorithms have existece since the 80s~\cite{pease1980reaching, lamport1982byzantine}.
 The Practical Byzantine Fault Tolerance (PBFT) algorithm introduced in 1999 by Castro and Liskov~\cite{castro1999practical} is widely regarded as the first high-performance consensus algorithm.
@@ -43,8 +44,17 @@ Since then, research in this area picked up pace and many more algorithms are in
 With the introduction of Bitcoin's probabilistic consensus model, the field experienced a second renaissance.
 These include proof-of-stake protocols~\cite{bentov2016snow, micali2016algorand}, as well as protocols optimised for blockchain~\cite{liu2016xft, miller2016honey}.
 
-Our approach is to combine the vast literature in Byzantine fault tolerance research with blockchain technology,
-and introduce a new consensus model to record the global state.
+The first objective is to reach consensus on a global \emph{state} by standing on the shoulder of giants.
+Having consensus is essential in blockchain systems.
+It stops many types of malicious activities because agreed state must have the consent of the honest nodes in the network.
+We emphasise the word state because in contrary to traditional blockchains,
+it does not neccessarily mean the set of all transactions that has ever happened.
+The state can be a verifiable representation of all the transactions.
+As an extreme example, a single digest of the complete history can represent the state.
+It is even verifiable as long as there are nodes that stores the history.
+
+% Our approach is to combine the vast literature in Byzantine fault tolerance research with blockchain technology,
+% and introduce a new consensus model to record the global state.
 
 \section{Security and Fault Tolerance}
 
@@ -55,24 +65,29 @@ Thus anything is possible from simply ommitting messages to colluding with eacho
 This asppect usually comes for free when using a Byzantine fault tolerant consensus algorithm.
 
 There is another aspect of fault tolerance that is transaction verifiability.
-Recall that it is not neccessary to reach consensus on all the transactions in order to record the state.
-But when using some digest (or a set of digets) to represent the state, it is also important for the transactions to be verifiable.
-Otherwise adversaries could simply store invalid transactions in the state and they would never be detected.
+All transactions must be eventually verifiable to maintain system integrity.
+Further, the validation result must be consistent.
+For example, if two different honest nodes attempts verify the same transaction,
+it cannot be the case that one nodes thinks that the transaction is valid but the other thinks it is invalid.
+
+% Recall that it is not neccessary to reach consensus on all the transactions in order to record the state.
+% But when using some digest (or a set of digets) to represent the state, it is also important for the transactions to be verifiable.
+% Otherwise adversaries could simply store invalid transactions in the state and they would never be detected.
 
 \section{Performance and Scalability}
 
 The last but not least, the final objective is horizontal scalability.
 We wish to see the performance (global transaction rate) increase as more nodes join the network.
 BitTorrent~\cite{cohen2003incentives} is an example of such a system,
-where peers interact with eachother to exchange files without any global bottleneck.
+where peers interact with each other to exchange files without any global bottleneck.
 
 Traditional blockchain systems may run in a network of thousands of nodes, but the performance do not scale.
 On the other hand, as we will see in~\Cref{sec:acs-background}, Byzantine consensus algorithms performs well but only when in a small network.
 In this work we combine the ideas from both of these systems to create the first horizontally scalable blockchain fabric.
 
 \section{Limitations}
-Our work removes the transaction bound from the blockchain.
-However, the price to pay is that the Sybil attack~\cite{douceur2002sybil} prevention mechanism moves from the blockchain backbone to the application layer.
+Our work aims to significantly lower the transaction bound.
+However, the price to pay is that the Sybil attack~\cite{douceur2002sybil} prevention mechanism moves from the blockchain fabric to the application layer.
 For example, social network based Sybil defence mechanims use graph structure of real-world relationships~\cite{yu2006sybilguard}.
 Online marketplaces such as Amazon use the rating of buyer and sellers.
 Since our system is application neutral, we do not provide an explicit Sybil defence mechanism.

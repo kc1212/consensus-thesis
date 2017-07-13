@@ -5,7 +5,7 @@ Up to this point we described our system specification in detail.
 Of course, specification along does not establish any truths.
 In this chapter, we analyse two aspects of our system.
 First we show it has the desired properties.
-That is, the properties in \Cref{def:consensus} and \Cref{def:validation} should hold.
+That is, the properties of the consensus protocol and the validation protocol (\Cref{def:consensus} and \Cref{def:validation} respectively) should hold.
 Then we analyse the performance, especially the throughput,
 and show that it out performs classical blockchain systems.
 
@@ -117,7 +117,7 @@ Note that the result is $\F_1$, which indicates the facilitators that are agreed
 For the inductive step,
 we assume that the 4 properties hold in round $r$ and prove that they also hold in round $r + 1$.
 Using Lemmas \ref{lemma:agreement}, \ref{lemma:validity}, \ref{lemma:fairness} and \ref{lemma:termination},
-it directly follows from Modus Poneus that these properties hold for $r + 1$.
+it directly follows from modus ponens that these properties hold for $r + 1$.
 Due to the principals of mathematical induction, these properties hold for all $r$.
 \end{proof}
 

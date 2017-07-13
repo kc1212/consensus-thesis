@@ -11,7 +11,10 @@ Our experiment primarily focuses on the consensus duration and the throughput.
 \section{Implementation}
 \label{sec:implementation}
 
-The prototype implementation can be found on GitHub\footnote{\url{https://github.com/kc1212/consensus-thesis-code}}.
+The prototype implementation can be found on GitHub.
+\begin{displayquote}
+\url{https://github.com/kc1212/consensus-thesis-code}
+\end{displayquote}
 It is written in the event driven paradigm, using the Python programming language\footnote{\url{https://www.python.org/}} and
 the Twisted\footnote{\url{https://twistedmatrix.com/}} library for networking.
 
@@ -236,8 +239,7 @@ Note that the horizontal ``lines'' where no new validated transactions are made 
 On the other hand in~\Cref{fig:backlog-random}, the validation protocol clearly cannot ``keep up'' with the rate which the transactions are made.
 As a result, the global throughput is lower when transacting with random nodes than only with neighbours.
 
-
-\begin{figure}[h]
+\begin{figure}[tb]
   \centering
   \makebox[\linewidth][c]{%
   \begin{subfigure}[b]{0.7\textwidth}

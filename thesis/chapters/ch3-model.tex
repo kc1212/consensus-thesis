@@ -27,8 +27,8 @@ We present a design which removes the transaction rate restrictions seen in trad
 This is done by combining the recent HoneyBadgerBFT~\cite{miller2016honey}
 (a purely asynchronous consensus algorithm for blockchain systems)
 with a modification of our prior work on TrustChain~\cite{trustchain}.
-The design is inspired by the essence the (early) Internet architecture as well as how transactions are performed in the real world.
-    
+The design is inspired by (the distributed part of) the Internet architecture as well as how transactions are performed in the real world.
+
 The goal of this chapter is to detail our system specification.
 We begin our discussion with an intuitive overview of the architecture in \Cref{sec:system-overview}.
 Next, we give the formal description, starting with the model and assumptions in \Cref{sec:model-assumptions}.
@@ -146,7 +146,7 @@ Our subprotocol design gives us the highly desireable non-blocking property.
 In particular, we do not need to ``freeze'' the state of the chain for some communication to complete in order to create a block.
 For instance, a node may start the consensus protocol, and while it is running, create new transactions and validate old transactions.
 By the time the consensus protocol is done, the new CP block is added to whatever the state that the chain is in.
-It is not necessary to keep the chain immutable while the consensus protocol is running.
+It is not necessary to lock the chain while the consensus protocol is running and then unlock it afterwards.
 
 \section{Model and Assumptions}
 \label{sec:model-assumptions}
@@ -163,8 +163,8 @@ Further, we use $a || b$ to denote concatination of the binary representations o
 
 We assume purely asynchronous channels with eventual delivery.
 Thus in no circumstance do we make timing assumptions.
-The adversary has fully control of the delivery schedule and the message ordering.
-But they are not allowed to drop messages\footnote{
+The adversary has fully control of the delivery schedule and the message ordering of all messages.
+But they are not allowed to drop messages except for their own\footnote{
     Reliability can be achieved in unreliable networks by resending messages or using some error correction code.
 }.
 
@@ -186,9 +186,9 @@ That is, if a round has started, the corrupted nodes cannot changed until the ne
 The second restriction is that the adversary, presumably controlling all the corrupted nodes, is forgetful.
 Namely the adversary may learn the internal state such as the private key of a corrupted node,
 but if the node recovers, then the adversary must forget the private key.
-Otherwise the adversary can eventually learn all the private keys and sabotage the system.
+This is realistic because otherwise the adversary can eventually learn all the private keys and sabotage the system.
 Finally, we assume computational security.
-That is, the adversary can run polynomial-time algorithms but not exponential-time algorithms.
+That is, the adversary can run polynomial-time algorithms but not exponential-time algorithms efficiently.
 
 \section{Extended TrustChain}
 The primary data structure used in our system is the Extended TrustChain.
@@ -210,7 +210,7 @@ We describe each item in turn.
 \begin{enumerate}
 \item $\textsf{H}(b_{u, i - 1})$ is the hash pointer to the previous block.
 \item $seq_u$ is the sequence number which should equal $i$.
-\item $txid$ is the transaction identifier, it should be generated using a cryptographically secure random number generator by the initiator of the transaction.
+\item $txid$ is the transaction identifier, it should be generated using a cryptographically secure pseudo-random number generator by the initiator of the transaction.
 \item $pk_v$ is the public key of the counterparty $v$.
 \item $m$ is the transaction message.
 \item $sig_u$ is the signature created using $sk_u$ on the concatination of the binary representation of the five items above.
@@ -608,7 +608,7 @@ If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends 
 The desired properties of the validation protocol are as follows.
 \begin{definition}
 \label{def:validation}
-\textbf{\emph{Consensus on transactions}}
+\textbf{\emph{Properties of the validation protocol}}
 
 \begin{enumerate}
     \item \emph{Correctness}:
@@ -668,7 +668,7 @@ Typical epidemic protocols works as follows.
 Every node buffers every message it receives up to some buffer size $b$.
 Then it forwards the messages $t$ number of times.
 Every time the message is sent to $f$ random neighbours, $f$ is often called the fan-out.
-The upside of using epidemic protocol is a lower communication cost.
+The upside of using epidemic protocol is that the communication cost is distributed more evenly between nodes.
 This is especially true with a lazy push approach the node who just received a message would push the message ID to its $f$ random neighbours,
 and only push the full message if the neighbour explicitly requests for the message~\cite{leitao2007epidemic}.
 With this, nodes typically only need to receive one consensus result message instead of $n$.
@@ -676,7 +676,7 @@ With this, nodes typically only need to receive one consensus result message ins
 A down side of epidemic protocol is that it usually takes $O(\log N)$ time to infect the whole network,
 whereas broadcasting uses constant time.
 Another downside of some epidemic protocols (e.g. eager push) is that it is difficult to guarantee delivery.
-It is especially true when the parameters are not choosen correctly of if the network is not fully connected.
+It is especially true when the parameters are not choosen correctly in a network that is only partially connected (but every node is nevertheless reachable).
 If the delivery cannot be guaranteed, 
 then we cannot guarantee liveness in our consensus protocol because a future facilitator may miss the memo.
 Picking parameters are difficult in practice because the network configuration is unknown and the total number of nodes might also be unknown.
