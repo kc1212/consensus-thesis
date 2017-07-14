@@ -111,7 +111,7 @@ or CP blocks in our case.
 
 The high communication complexity of Byzantine consensus algorithms prohibits us from running it on a large network.
 Thus, for every round, we randomly select some node---called facilitators---to collect CP blocks from every other node and use them as the proposal.
-The facilitators are elected using a \emph{luck value}, which is computed using $H(\C_r || pk_u)$,
+The facilitators are elected using a \emph{luck value}, which is computed using $\textsf{H}(\C_r || pk_u)$,
 where $\C_r$ is the consensus result 
 (which can be seen as the set union of all the CP blocks collected by the facilitators)
 in round $r$ and $pk_u$ is the public key of node $u$.
@@ -708,6 +708,8 @@ Otherwise the $n \ge 3t + 1$ condition may be violated.
 
 \subsection{Privacy preserving validation protocol}
 TODO
+
+\subsection{Caching agreed fragments}
 
 \subsection{Global probabilistic fork detection}
 TODO

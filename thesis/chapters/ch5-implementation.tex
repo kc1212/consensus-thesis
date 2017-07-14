@@ -1,11 +1,16 @@
 \chapter{Implementation and Experimental Results}
 \label{ch:implementation}
 
-Henceforth, we evaluate out system experimentally and compare the results with the theoretical analysis.
+To build confidence of the horizontal scalability claim from our analytical results,
+we must verify the same property experimentally.
+Hence, we give an open source prototype implementation of our system.
+The nodes are capable of forming a network (tested up to 1500 nodes) and send transactions to each other,
+which allows us to confirm our analytical claims.
+
 We begin this chapter by a description of the implementation in \Cref{sec:implementation}.
-Then, we move on to describing our experimental setup in \Cref{sec:experimental-setup}.
-Finally, \Cref{sec:evaluation} presents our experimental results and our evaluation.
-Our experiment primarily focuses on the consensus duration and the throughput.
+Then, we move on to describing our experimental setup in \Cref{sec:experimental-setup} which includes a discussion on the system parameters and the physical infrastructure which we use.
+Finally, \Cref{sec:comms-cost-experiment} and onwards follows the same structure as the Performance analysis (\Cref{sec:performance-analysis}),
+where we analyse the performance experimentally rather than analytically.
 
 
 \section{Implementation}
@@ -15,8 +20,8 @@ The prototype implementation can be found on GitHub.
 \begin{displayquote}
 \url{https://github.com/kc1212/consensus-thesis-code}
 \end{displayquote}
-It is written in the event driven paradigm, using the Python programming language\footnote{\url{https://www.python.org/}} and
-the Twisted\footnote{\url{https://twistedmatrix.com/}} library for networking.
+It is written in the event driven paradigm, using the Python programming language\footnote{\url{https://www.python.org/}}.
+We use the Twisted\footnote{\url{https://twistedmatrix.com/}} library for networking.
 
 The structure of the implementation is primarily made up of three modules---\texttt{acs}, \texttt{trustchain} and \texttt{node}.
 \texttt{acs}, as its name suggests, implements ACS.
@@ -53,51 +58,58 @@ We investigate these properties under the following four parameters.
   \item The transaction rate $r_{\text{tx}}$ per node. This is not comparable to the others because it is fixed at 2 TX/s.
         Nevertheless, it is a good value because, as we show later,
         it hits a bottleneck in extreme cases which helps us understand the limitations of our design.
-  \item The number of facilitators $n \in \{ 12, 16, \dots, 32\}$.
+  \item The number of facilitators $n \in \{4, 8, \dots, 32\}$.
         Unfortunately, the maximum $n$ is 32 because the limitation in liberasurecode mentioned in \Cref{sec:implementation}.
-  \item The population size $N \in \{200, \dots, 1200\}$.
+  \item The population size $N \in \{200, 300, \dots, 1200\}$.
         $N$ stops at 1200 is due to our physical setup, which we describe next.
   \item The two modes of transaction.
-        The first mode or the ideal mode is that nodes only transact with their immediate neighbour. 
+        The first mode is the \emph{fixed-neighbour} mode where nodes only transact with their immediate neighbour which are predetermined. 
         This minimises the data volume per validated transaction because agreed fragment can be cached.
-        The second mode is in the other extreme, where every transaction is with a random node out of the $N$ nodes in the system,
-        thus the agreed fragment is unlikely to be cached.
+        The second mode is in the other extreme which we call the \emph{random-neighbour} mode,
+        where every transaction is with a random node out of the $N$ nodes in the system.
+        It is unlikely that the agreed fragments can be reused.
 \end{enumerate}
 
 The experiment is run on the DAS-5 (The Distributed ASCI Supercomputer 5\footnote{\url{https://www.cs.vu.nl/das5/}}).
-From now on, we use "machines" to refer to DAS-5 nodes and nodes to refer to a running instance in our system.
+From now on, we use ``machines'' to refer to DAS-5 nodes and ``nodes'' to refer to a running instance in our system.
 On DAS-5 we use up to 30 machine, for each machine we use 40 nodes.
 This gives us the aforementioned 1200 number.
 With this setup, we cannot run more nodes because the every machine only has 65535 ports available (minus the reserved ones).
 But 40 nodes each need 1200 TCP connections which is 48000 TCP connections per machine and that is inching close to the limit.
 While it is possible to have many more TCP connections per machine,
 but it requires additional network interface which is something we do not control on the DAS-5.
+Nevertheless, running the system with 1200 nodes gives a good indication of its scalability properties as we show later.
 
 To coordinate nodes on many different machine,
 we employ a discovery server to inform every node the IP addresses and port numbers of every other node.
 It is only run before the experiment and is not used during the experiment.
 
+Finally, since Bitcoin transactions are approximately 500 bytes~\cite{txsize},
+we use a uniformly random transaction size sampled between 400 and 600 bytes.
 
-\section{Communication cost for a round}
 
-The remainder of this chapter follows the same structure as the performance analysis in~\Cref{sec:performance-analysis},
-where we check our theoretical evaluation with our experimental results.
+\section{Communication cost for the consensus protocol}
+\label{sec:comms-cost-experiment}
+
+The remainder of this chapter follows the same structure as the performance analysis in~\Cref{sec:performance-analysis}.
+We check our analytical results experimentally and again demonstrate horizontal scalability.
 
 \begin{figure}[tb]
   \centering
   \makebox[\linewidth][c]{%
     \begin{subfigure}[b]{.7\textwidth}
       \includegraphics[width=\textwidth]{neighbour-fixed/round-communication-cost-vs-population}
-      \caption{Transactions are with fixed neighbours}
+      \caption{Transactions are with fixed neighbours.}
       \label{fig:round-comms-fixed}
     \end{subfigure}%
     \begin{subfigure}[b]{0.7\textwidth}
       \includegraphics[width=\textwidth]{neighbour-random/round-communication-cost-vs-population}
-      \caption{Transactions are with random neighbours}
+      \caption{Transactions are with random neighbours.}
       \label{fig:round-comms-random}
     \end{subfigure}%
   }
-  \caption{}
+  \caption{Communication cost for the consensus protocol per round increases linearly with population size.
+  The error bars are larger for higher population size or higher number of facilitators is because rounds take longer thus they are repeated fewer times.}
   \label{fig:round-comms}
 \end{figure}
 
@@ -106,20 +118,21 @@ where we check our theoretical evaluation with our experimental results.
   \makebox[\linewidth][c]{%
     \begin{subfigure}[b]{.7\textwidth}
       \includegraphics[width=\textwidth]{neighbour-fixed/round-duration-vs-population}
-      \caption{Transactions are with fixed neighbours}
+      \caption{Transactions are with fixed neighbours.}
       \label{fig:round-duration-fixed}
     \end{subfigure}%
     \begin{subfigure}[b]{0.7\textwidth}
       \includegraphics[width=\textwidth]{neighbour-random/round-duration-vs-population}
-      \caption{Transactions are with random neighbours}
+      \caption{Transactions are with random neighbours.}
       \label{fig:round-duration-random}
     \end{subfigure}%
   }
-  \caption{}
+  \caption{Round duration do not increase linearly with the population size. 
+  This is likely due to the additional hashing operation required for larger consensus result.}
   \label{fig:round-duration}
 \end{figure}
 
-\Cref{fig:round-comms} show the relationship between communication cost and population.
+\Cref{fig:round-comms} show the relationship between communication cost of the consensus protocol per round and population size.
 The most important aspect is that these results show a linear increase.
 This reinforces our analytical result in~\Cref{sec:cons-complexity}.
 Note that regardless of whether the transactions are performed with a random neighbour or with a fixed neighbour,
@@ -130,7 +143,7 @@ Finally, the rate for which the communication cost increases is higher when the 
 This is also expected because the ACS algorithm has a $n^2$ term in its communication complexity.
 
 We are also interested in how communication costs translate to time.
-Hence, for the same experiment we also record the duration in seconds, which is shown on the vertical axis instead of communication cost and plot as before (\Cref{fig:consensus-duration}).
+Hence, for the same experiment we also record the duration in seconds and the result is shown in~\Cref{fig:round-duration}.
 Interestingly, the duration is not entirely linear.
 We attribute this behaviour to the extra time needed to hash the CP blocks in the consensus result to compute the luck value.
 Since if $N$ increases, every node must also perform more hash operations.
@@ -139,29 +152,30 @@ Nevertheless, the difference is minor and there are ways to optimise the luck va
 For example, the luck value can be computed by the facilitators and are sent with the consensus result.
 Then the non-facilitator nodes simply checks that they are correct.
 
-\section{Communication Cost for Transaction and Validation}
+\section{Communication cost for transaction and validation protocols}
 
 \begin{figure}[h]
   \centering
   \makebox[\linewidth][c]{%
   \begin{subfigure}[b]{0.7\textwidth}
     \includegraphics[width=\textwidth]{neighbour-fixed/tx-communication-cost-vs-population}
-    \caption{Transactions are with fixed neighbours}
+    \caption{Transactions are with fixed neighbours.}
     \label{fig:tx-comms-fixed}
   \end{subfigure}%
   \begin{subfigure}[b]{0.7\textwidth}
     \includegraphics[width=\textwidth]{neighbour-random/tx-communication-cost-vs-population}
-    \caption{Transactions are with random neighbours}
+    \caption{Transactions are with random neighbours.}
     \label{fig:tx-comms-random}
   \end{subfigure}
   }
-  \caption{Communication cost per verified transaction}
+  \caption{Communication cost per verified transaction has similar (near linear) trend as~\Cref{fig:round-duration}.
+  Fluctuation for the fixed-neighbour mode exists because the cache mechanism is unpredictable.}
   \label{fig:tx-comms}
 \end{figure}
 
-Recall that in~\Cref{sec:communication-cost-for-tx} we argued that the communication cost per verified transaction is of $O(N)$.
-To verify the argument, we plot the relationship between the communication cost and population size in~\Cref{fig:tx-comms}.
-We observe a nearly linear relationship, which is due to the nearly linear relationship of the communication duration mentioned before.
+We argued that the communication cost per verified transaction is of $O(N)$ (\Cref{sec:communication-cost-for-tx}).
+To verify the argument, we plot the relationship between the communication cost of for every validated transaction and population size in~\Cref{fig:tx-comms}.
+We observe a near linear relationship, which is due to the near linear relationship of the communication duration mentioned before.
 Again, we believe the difference is minor and it is possible to remove the extra overhead.
 
 More interestingly, there is a large difference in communication cost between the two modes of transaction.
@@ -176,10 +190,11 @@ We send validation requests at the same rate as transactions.
 Upon receiving an (remote) agreed fragment, the caching mechanism inspects all the transactions in the agreed fragment and attempts to verify as many as it can,
 rather than just the transaction in the original validation request.
 However, it may be the case that the agreed fragments arrive later than the validation request interval.
-Then it is possible to have sent two or more validation requests for the transaction in the same local agreed fragment.
+Then it is possible to have sent two or more validation requests for some transactions in the same local agreed fragment.
 In this case, the remote would respond with two or more of the same agreed fragments,
 which results in extra (wasted) communication cost, and this is the source of the fluctuation seen in~\Cref{fig:tx-comms-fixed}.
-The result in~\Cref{fig:tx-comms-random} reinforces our argument because it is a lot more stable because for every transaction it is almost always the case that an agreed fragment is needed to validate it.
+The result in~\Cref{fig:tx-comms-random} reinforces our argument.
+It is a lot more stable because for every transaction it is almost always the case that an agreed fragment is needed to validate it.
 % It is interesting to note that some fluctuations exist in the graphs.
 % This is likely due to the way how the communication cost are recorded.
 % We maintain the total amount of data sent and received in a few variables.
@@ -195,12 +210,12 @@ The result in~\Cref{fig:tx-comms-random} reinforces our argument because it is a
   \makebox[\linewidth][c]{%
   \begin{subfigure}[b]{0.7\textwidth}
     \includegraphics[width=\textwidth]{neighbour-fixed/throughput-vs-population}
-    \caption{}
+    \caption{Transactions are with fixed neighbours.}
     \label{fig:global-throughput-fixed}
   \end{subfigure}%
   \begin{subfigure}[b]{0.7\textwidth}
     \includegraphics[width=\textwidth]{neighbour-random/throughput-vs-population}
-    \caption{}
+    \caption{Transactions are with random neighbours.}
     \label{fig:global-throughput-random}
   \end{subfigure}
   }
@@ -209,7 +224,7 @@ The result in~\Cref{fig:tx-comms-random} reinforces our argument because it is a
 \end{figure}
 
 
-The global throughput results are shown in~\Cref{fig:global-throughput}.
+Finally, the global throughput results are shown in~\Cref{fig:global-throughput}.
 Evidently, the throughput has a linear relationship with the population size.
 This result is a strong indication of the horizontal scalability which we aimed to achieve.
 It also matches with our analytical result.
@@ -220,18 +235,19 @@ That is, if the network is congested then the nodes may not have enough bandwidt
 
 For~\Cref{fig:global-throughput-fixed},
 the magnitude of our throughput may not be self-evident at first glance.
-Recall that we fixed our $r_\text{tx}$ to 2, but how is it possible to have around 4800 transactions per second for 1200 nodes (4 TX/s)?
+Recall that we fixed our $r_\text{tx}$ to 2, but how is it possible to have around 4800 transactions per second for 1200 nodes (which is 4 TX/s)?
 This is due to the way validated transactions are calculated.
-Transactions are between two parties, hence if every node makes two transactions per seoncd,
+Transactions are between two parties, hence if every node makes two transactions per second,
 every node also expects to receive two transactions per second.
 Hence, for every node, the TX blocks are created at 4 per second.
 Validation requests are sent at the same rate, which explains the magnitude.
 
 The difference in magnitude between \Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random} is also interesting.
 It is caused by the caching mechanism mentioned earlier.
-If an agreed fragment needs to be transmitted to validate every transaction then it puts a toll on the network infrastructure.
+If a new agreed fragment needs to be transmitted to validate every transaction then it puts a toll on the network infrastructure.
 The low transaction rate in~\Cref{fig:global-throughput-random} is caused by fact that the network infrastructure cannot keep up with our demand.
-We demonstrate this issue from a different perspective in~\Cref{fig:backlog}.
+
+We demonstrate the bottleneck issue from a different perspective in~\Cref{fig:backlog}.
 The graph is plotted by counting the number of transactions and the number of validated transactions every 5 seconds for one node running in a network of 1200 nodes and 32 facilitators.
 In~\Cref{fig:backlog-fixed}, the number of validated transaction changes as a step function.
 This means that transactions are validated in bursts, and the validation protocol can ``keep up'' with the transactions.
@@ -244,15 +260,17 @@ As a result, the global throughput is lower when transacting with random nodes t
   \makebox[\linewidth][c]{%
   \begin{subfigure}[b]{0.7\textwidth}
     \includegraphics[width=\textwidth]{neighbour-fixed/timeseries}
-    \caption{}
+    \caption{Transactions are with fixed neighbours.}
     \label{fig:backlog-fixed}
   \end{subfigure}%
   \begin{subfigure}[b]{0.7\textwidth}
     \includegraphics[width=\textwidth]{neighbour-random/timeseries}
-    \caption{}
+    \caption{Transactions are with random neighbours.}
     \label{fig:backlog-random}
   \end{subfigure}
   }
-  \caption{}
+  \caption{A limitation of our system is when nodes are transacting with many random nodes,
+  then the network cannot keep up with the large number of agreed fragments that need to be communicated between nodes.
+  Hence the slope of validated transactions grows at a slower rate in~\Cref{fig:backlog-random}.}
   \label{fig:backlog}
 \end{figure}
