@@ -1,4 +1,4 @@
-\chapter{System Architecture}
+\chapter{System architecture}
 \label{ch:model}
 
 % As was shown in~\Cref{ch:problem}, the requirements are the following.
@@ -36,7 +36,7 @@ Then, the three protocols which make up the complete system,
 namely consensus protocol (\Cref{sec:cons-protocol}), transaction protocol (\Cref{sec:tx-protocol}) and validation protocol (\Cref{sec:vd-protocol}).
 Finally, we discuss a few variations of our main design and their respective tradeoffs in \Cref{sec:tradeoffs}.
 
-\section{System Overview}
+\section{System overview}
 \label{sec:system-overview}
 The system consist of one data structure---Extended TrustChain,
 and three protocols---consensus protocol, transaction protocol and validation protocol.
@@ -100,7 +100,7 @@ From this point onwards, we use TrustChain to mean the Extended TrustChain unles
     \label{fig:trustchain-bad-cp}
 \end{figure}
 
-\subsection{Consensus Protocol}\label{sec:overview-cons}
+\subsection{Consensus protocol}\label{sec:overview-cons}
 
 % The consensus protocol uses an existing Byzantine consensus algorithm (explained in detail in \Cref{sec:xyz}) and runs it continuously in rounds.
 The consensus protocol can be seen as a technique of running infinitly many rounds of some 
@@ -121,7 +121,7 @@ because the output of a cryptographically secure hash function is unpredictable 
 A visual explaination can be found in \Cref{app:consensus-example},
 it walks through the steps needed for a node to be selected as a facilitator using an example.
 
-\subsection{Transaction and Validation}
+\subsection{Transaction and validation}
 The TX protocol is a simple request and response protocol.
 The nodes exchange one round of messages and create new TX blocks on their respective chains.
 Thus, as we mentioned before, one transaction should result in two TX blocks.
@@ -137,7 +137,7 @@ Intuitively, this works because it is hard (because a cryptographically secure h
 to create a different chain that begins and ends with the same two CP blocks but with a different middle section.
 
 
-\subsection{Combined Protocol}
+\subsection{Combined protocol}
 \label{sec:combined-protocol}
 The final protocol is essentially the concurrent composition of the three aforementioned protocols,
 all making use the Extended TrustChain data structure.
@@ -148,7 +148,7 @@ For instance, a node may start the consensus protocol, and while it is running, 
 By the time the consensus protocol is done, the new CP block is added to whatever the state that the chain is in.
 It is not necessary to lock the chain while the consensus protocol is running and then unlock it afterwards.
 
-\section{Model and Assumptions}
+\section{Model and assumptions}
 \label{sec:model-assumptions}
 
 This section and the ones following it give a technical treatment of what the content in System Overview.
@@ -204,7 +204,7 @@ The notation $b_{u, i}$ is generic over the block type.
 We assume there exist a function $\textsf{typeof}: B_u \rightarrow \{ \tau, \gamma \}$ that returns the type of the block,
 where $\tau$ represents the TX type and $\gamma$ represents the CP type.
 
-\subsection{Transaction Block}
+\subsection{Transaction block}
 The TX block is a six-tuple, i.e $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), seq_u, txid, pk_v, m, sig_u \rangle$.
 We describe each item in turn.
 \begin{enumerate}
@@ -227,7 +227,7 @@ Thus, given a TX block, these properties allow us to identify its pair.
 
 % TODO Node $v$ may cheat and create more than one pair for $t_{u, i}. we discuss later
 
-\subsection{Checkpoint Block}
+\subsection{Checkpoint block}
 
 The CP block is a five-tuple, 
 i.e. $c_{u, i} = \langle \textsf{H}(b_{u, i-1}), seq_u, \textsf{H}(\C_r), r, sig_u \rangle$,
@@ -240,14 +240,14 @@ where $\textsf{H}(\bot)$ can be interpreted as applying the hash function on an 
 The genesis block is unique because every node has a unique public and private key pair.
 
 
-\subsection{Consensus Result}
+\subsection{Consensus result}
 \label{sec:consensus-result}
 Our consensus protocol runs in rounds as discussed in \Cref{sec:system-overview}.
 Every round is identified by a round number $r$, which is incremented on every new round.
 The consensus result is a tuple, i.e. $\C_r = \langle r, C \rangle$,
 where $C$ is a set of CP blocks agreed by the facilitators of round $r$.
 
-\subsection{Chain Properties}
+\subsection{Chain properties}
 Here we define a few important properties which results from the interleaving nature of CP and TX blocks.
 
 If there exist a tuple $\langle c_{u,a}, c_{u, b} \rangle$ for a TX block $t_{u, i}$,
@@ -276,7 +276,7 @@ We define its function to be $\textsf{agreed\_fragment}(\cdot)$ which we use lat
 % $L$ should be sufficiently high so that busy nodes are not hindered by it.
 
 
-\section{Consensus Protocol}
+\section{Consensus protocol}
 \label{sec:cons-protocol}
 
 Our consensus protocol runs on top of Extended TrustChain.
@@ -317,7 +317,7 @@ we take a brief detour to give background on the asynchronous subset consensus.
 This is the primary building block of our protocol.
 % Starting with the bootstrap phase and then moving on to the actual consensus phase.
 
-\subsection{Background on Asynchronous Subset Consensus}
+\subsection{Background on asynchronous subset consensus}
 \label{sec:acs-background}
 
 The best way to explain asynchronous subset consensus (ACS) is to contrast it with the typical Byzantine consensus.
@@ -389,7 +389,7 @@ but it is infeasible for blockchain systems where thousands of nodes are involve
 % Thus the result of the consensus is the set union of all the legitimate proposals.
 
 
-\subsection{Bootstrap Phase}
+\subsection{Bootstrap phase}
 \label{sec:bootstrap}
 Now we have all the necessary information to describe our consensus protocol.
 We begin with the bootstrap phase and then move onto the actual consensus phase.
@@ -407,7 +407,7 @@ This concludes the bootstrap phase.
 In practice, the bootstrap oracle is most likely the software developer and some of the desired properties cannot be achieved.
 In particular, it is not possible to have the fairness property because it is unlikely that the developer knows the identity of every node in advance.
 
-\subsection{Consensus Phase}
+\subsection{Consensus phase}
 \label{sec:consensus-phase}
 The consensus phase begins when $\F_r$ is available to all the nodes.
 Note that $\F_r$ indicates the facilitators that were elected using result of round $r$ and are responsible for driving the ACS protocol in round $r + 1$.
@@ -470,11 +470,11 @@ It creates a new CP block and appends it to $u$'s chain.}
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Relationship with $\alpha$-Synchroniser}
+\subsection{Relationship with $\alpha$-synchroniser}
 TODO
 
 
-\section{Transaction Protocol}
+\section{Transaction protocol}
 \label{sec:tx-protocol}
 
 The TX protocol, shown in \Cref{alg:tx-proto}, is run by all nodes.
@@ -517,7 +517,7 @@ A key feature of the TX protocol is that it is non-blocking.
 At no time in \Cref{alg:new-tx} or \Cref{alg:tx-proto} do we need to hold the chain state and wait for some message to be delivered before committing a new block to the chain.
 This allows for high concurrency where we can call $\textsf{new\_tx}(\cdot)$ multiple times without waiting for the corresponding \texttt{tx\_resp} messages.
 
-\section{Validation Protocol}
+\section{Validation protocol}
 \label{sec:vd-protocol}
 
 Up to this point, we do not provide a mechanism to detect forks or other forms of tampering or forging.
@@ -525,7 +525,7 @@ The validation protocol aims to solve this issue.
 The protocol is also a request-response protocol, just like the transaction protocol.
 But before explaining the protocol itself, we first define what it means for a transaction to be valid.
 
-\subsection{Validity Definition}
+\subsection{Validity definition}
 A transaction can be in one of three states in terms of validity---\emph{valid}, \emph{invalid} and \emph{unknown}.
 Given a fragment $F_{v, j}$, the validity of the transaction $t_{u, i}$ is captured by the function $\textsf{get\_validity}(t, F)$ (\Cref{alg:get-validity}).
 The first four conditions (up to \Cref{line:valid-fragment}) essentially check whether the fragment is the one that the verifier needs.
@@ -566,10 +566,10 @@ The caller is $w$, it may be $u$ but this is not necessary.
     \EndIf \Comment $v$ has agreed fragment
     \State
 
-    \If{$|F_{v, j}| > L$}
-        \State \Return \emph{unknown}
-    \EndIf \Comment fragment not too long
-    \State
+    % \If{$|F_{v, j}| > L$}
+    %     \State \Return \emph{unknown}
+    % \EndIf \Comment fragment not too long
+    % \State
 
     % txid are equal now, but bad hash pointer
     \If{sequence number in $F_{v, j}$ is correct (sequential)}
@@ -601,7 +601,7 @@ The caller is $w$, it may be $u$ but this is not necessary.
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Validation Protocol}
+\subsection{Validation protocol}
 With the validity definition, we are ready to construct a protocol for determining the validity of transactions.
 The protocol is a simple response and request protocol (\Cref{alg:vd-proto}).
 If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends $\langle \texttt{vd\_req}, txid \rangle$ to $v$.
@@ -654,9 +654,8 @@ But these fake pairs only pollutes the chain of $v$ and can never be validated b
 Up to this point,
 we have discussed our protocol in the context of the model and assumptions defined in \Cref{sec:model-assumptions}.
 In this section, 
-we explore a few design variations which we can make if we relax our model.
-These variations do not have the same theoretical elegance as our original model.
-But they enable better performance, allow us to apply our design in the fully permissionless setting and improves privacy.
+we explore a few design variations which we can make, some of them require a relaxed version of our original model.
+They enable better performance, allow us to apply our design in the fully permissionless setting and improves privacy.
 
 \subsection{Use epidemic protocol instead of broadcast protocol}
 One of the final steps in our consensus protocol is to broadcast the consensus result and signatures to every other node (\Cref{sec:consensus-phase}).
@@ -706,13 +705,92 @@ There is a subtlety here which happens when the node is elected as a facilitator
 In this case, the node must fulfill its oblication by completing the consensus protocol (but without proposing its own CP block) before leaving.
 Otherwise the $n \ge 3t + 1$ condition may be violated.
 
-\subsection{Privacy preserving validation protocol}
-TODO
+\subsection{Privacy preserving validation protocol using compact blocks}
+\label{sec:compact}
+Our approach already has privacy preserving features in comparison to early blockchain systems.
+That is, the transactions for each node are only revealed during the validation protocol.
+Hence if two nodes never directly or indirectly interact with each other,
+their transactions are never revealed.
 
-\subsection{Caching agreed fragments}
+We can take our privacy-preserving property one step further by introducing another level of hash pointer indirection.
+The result is shown in~\Cref{fig:compact}.
+\begin{figure}
+    \includegraphics[width=0.7\textwidth]{compact}
+    \centering
+    \caption{The chain on the left represent direct chaining, where the digest in ``Prev'' is simply the digest of the previous block.
+    The chain on the right uses compact blocks, represented by the smaller squares.
+    Compact blocks also form a chain as before, but they each have a hash pointer to the full block, identified by ``Seq'' or ``Digest''.}
+    \label{fig:compact}
+\end{figure}
 
-\subsection{Global probabilistic fork detection}
-TODO
+Concretely, we introduce an additional block type,
+namely compact block.
+Such blocks only have three attributes,
+\begin{enumerate}
+\item Seq---the sequence number its corresponding block,
+\item Digest---the digest of its corresponding block, and
+\item Prev---the digest of the previous compact block.
+\end{enumerate}
+Each compact block has a corresponding full block (either a CP block or a TX block).
+The relationship is uniquely identified with Seq or Digest.
+Recall that our original validation protocol requires the nodes to send the full agreed fragment.
+With compact blocks, it is only necessary to send the compact version of the agreed fragment.
+The validation then proceeds in a similar fashion,
+provided that the pair of the to-be-validated TX block is known.
+
+The space saving of this approach of course depends on the size of the full blocks.
+If the full blocks are on average 500 bytes
+(which is the typical size of Bitcoin transactions ~\cite{txsize}),
+and the compact blocks are $32 + 32 + 8 = 72$ bytes
+(SHA256 digests are 32 bytes each and we use a 64 bit integer to represent the sequence number),
+then we have a 86\% saving in communication cost.
+
+%Using compact blocks, it is possible to reduce network communication costs in the validation protocol but also protect transaction privacy.
+
+\subsection{Optimising validation protocol using cached agreed fragments}
+\label{sec:caching}
+One more way to improve the efficiency of the validation protocol is to use a single agreed fragment to validate multiple transaction.
+Concretely, upon receiving an agreed fragment from node $A$,
+rather than validating a single transaction,
+we attempt to validate all transactions in the unknown state performed with $A$ in that fragment.
+
+For a node, the benefit of this technique is maximised when it only transacts with one other node.
+In this case, the communication of one fragment is sufficient to validate all transactions in that fragment.
+In the opposite extreme, if every transaction that the node makes is with another unique node,
+then the caching mechanism would have no effect.
+
+\subsection{Global fork detection}
+The validation algorithm guarantees that there are no forks within a single agreed fragment.
+This is sufficient for some applications such as proving the existance of some information.
+However, applications such as digital cash where every block depends on some previous block,
+then our scheme is not suitable.
+
+There are a variety of approaches to do global fork detection.
+First and the easiest solution is to simply ask for every agreed fragment from the one containing the genesis block up to the one that the to-be-proven TX block is in.
+If the hash pointers are correct and all the CP blocks are in consensus, then the verifier can be sure that there are no forks.
+We use this approach in our prior work on Implicit Consensus~\cite{implicitconsensus}.
+It may sound inefficient at first, but nodes can employ caching to minimise communication costs.
+In our work we call this ``spontaneous sharding''.
+
+The second approach is probabilistic but with only a constant communication overhead.
+For a node, observe that if every of its agreed fragment has a transaction with a honest node,
+then the complete chain is effectively validated in a distributed maner.
+The only way for an attacker to make a fork is to make sure that the agreed fragment containing the fork has no transactions with honest nodes.
+We claim such malicious behaviour is prevented probabilisticaly using a challenge-response protocol as follows.
+Suppose node $A$ wish to make a transaction with node $B$.
+$A$ first sends a challenge to $B$ asking it to proof that it holds a valid agreed fragment between some consensus round specified by $A$.
+If $B$ provides a correct proof, then they run the transaction protocol as usual.
+If $B$ provides an invalid proof or refuses to respond,
+then $A$ would refuse to make the transaction.
+The probability that an honest node catches out a malicious node is 
+$$p = \frac{f}{r},$$
+where $f$ is the number of bad agreed fragments and $r$ is the latest round number.
+If there are more nodes (say $n$) trying to make transactions with the malicious node,
+then the probability that the malicious node does gets caught at least once follows a binomial distribution
+$$\Pr[X > 0] = \sum_{k = 1}^{n}\binom{n}{k}p^k (1 - p)^{n - k}.$$
+
+% subtlety when fork happens on CP block
+
 
 % Another assumption we made in this work is the existance of a PKI.
 % This can also be removed with the introduction of timing by storing the public keys the consensus results,

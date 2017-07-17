@@ -1,4 +1,4 @@
-\chapter{Analysis of Correctness and Performance}
+\chapter{Analysis of correctness and performance}
 \label{ch:analysis}
 
 Up to this point we described our system specification in detail.
@@ -9,7 +9,7 @@ That is, the properties of the consensus protocol and the validation protocol (\
 Then we analyse the performance, especially the throughput,
 and show that it out performs classical blockchain systems.
 
-\section{Correctness in the Presense of Faults}
+\section{Correctness in the presense of faults}
 Our first objective is to show that \Cref{def:consensus} holds for our consensus protocol.
 Then, building on top of it, we show \Cref{def:validation} holds for the validation protocol.
 The resulting theorem shows that only using CP blocks in the consensus algorithm implies consensus on TX blocks,
@@ -20,7 +20,7 @@ in other words, implicit consensus.
 % First we use mathematical induction to show that properties in \Cref{def:consensus} holds for all round.
 % Building on top that, if \Cref{def:consensus} is true, then we can show that many properties in \Cref{def:validation} is true.
 
-\subsection{Analysis of the Consensus Protocol}
+\subsection{Analysis of the consensus protocol}
 
 We begin our analysis by establishing truths on the four properties in \Cref{def:consensus},
 namely agreement, validity, fairness and termination.
@@ -121,7 +121,7 @@ it directly follows from modus ponens that these properties hold for $r + 1$.
 Due to the principals of mathematical induction, these properties hold for all $r$.
 \end{proof}
 
-\subsection{Correctness of Validation}
+\subsection{Correctness of validation}
 The consensus protocol (on CP blocks and facilitators) is the backbone for consensus on transactions.
 In this section we build on top of \Cref{theorem:consensus} to show that most (except liveness) properties in \Cref{def:validation} can be satisfied.
 
@@ -165,7 +165,7 @@ In addition, a convenient consequence \Cref{theorem:validation-agreement} is unf
 That is, no polynomial time adversary is able to create two chains $F = \{ \dots, t, c\}$ $F' = \{ \dots, t', c\}$ with correct hash pointers and the same end of chain $c$.
 % Another way to think about it is if a transaction can be forged, then it cannot be agreed.
 
-\subsection{Impossibility of Liveness}
+\subsection{Impossibility of liveness}
 While \Cref{theorem:validation-agreement} is a major result that allows significantly improved performance over traditional blockchain systems,
 it is not perfect.
 Now we show a negative result, where the liveness property of \Cref{def:validation} cannot be attained.
@@ -238,7 +238,7 @@ For every unit of communication, we assume they take some non-negligible but con
 Hence, from~\Cref{sec:cons-complexity} and the fact that the consensus protocol uses a constant number of rounds,
 it follows that the consensus protocol has a duration of $O(N)$.
 
-\subsection{Communication Cost for Transactions}
+\subsection{Communication cost for transactions}
 \label{sec:communication-cost-for-tx}
 With the analysis on the duration of the consensus protocol,
 we are ready to analyse the amount of data required to be transmitted over a link per transaction,
@@ -260,7 +260,7 @@ we know that $D_{\text{c}}$ is of $O(N)$, thus the communication cost per transa
 This is intuitive because round duration would be longer if there are more CP blocks (more $N$), which means that the agreed fragments are longer (assuming nodes transact at a constant rate).
 The behaviour is also verified experimentally in \Cref{ch:implementation}.
 
-\subsection{Global Throughput}
+\subsection{Global throughput}
 \label{sec:global-throughput}
 Using our results so far, we are able to analyse the global throughput.
 First we clarify the bandwidth definition, which is ``the data rate at which a network link or a network path can transfer''~\cite{prasad2003bandwidth}.
@@ -297,7 +297,7 @@ We verify both of these claims experimentally in~\Cref{sec:evaluation}.
 % For instance, if $u$ and $v$ make $x$ transactions in a single round,
 % then only one agreed fragment need to be exchanged as it contains all the transactions rather than $x$ agreed fragments.
 
-\section{Effect of A Highly Adverserial Environment}
+\section{Effect of a highly adverserial environment}
 
 Our last study consideres the effect when the number of adversaries is more than $t$.
 This is useful because in practice it is difficult to guarantee that $t$ satisfied $n \ge 3t + 1$, especially when $N$ is large.

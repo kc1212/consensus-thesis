@@ -1,4 +1,4 @@
-\chapter{Implementation and Experimental Results}
+\chapter{Implementation and experimental results}
 \label{ch:implementation}
 
 To build confidence of the horizontal scalability claim from our analytical results,
@@ -20,6 +20,9 @@ The prototype implementation can be found on GitHub.
 \begin{displayquote}
 \url{https://github.com/kc1212/consensus-thesis-code}
 \end{displayquote}
+It implements the three protocols and the Extended TrustChain discussed in~\Cref{ch:model}.
+We also implement two optimisations---privacy preserving validation protocol using compact blocks (\Cref{sec:compact})
+and optimised validation protocol using cached agreed fragments (\Cref{sec:caching}).
 It is written in the event driven paradigm, using the Python programming language\footnote{\url{https://www.python.org/}}.
 We use the Twisted\footnote{\url{https://twistedmatrix.com/}} library for networking.
 
@@ -39,6 +42,7 @@ Since this is a prototype implementation, we only store the data structure in me
 Finally, the \texttt{node} module ties everything together.
 It implements the the consensus protocol, the transaction protocol and the validation protocol.
 
+
 Every node keeps a persistent TCP connection with every other node.
 This creates a fully connected network for our experiment.
 It is certainly not ideal in real world scenarios where nodes may have limited resources (e.g. sockets).
@@ -48,7 +52,7 @@ Finally, the cryptography primitives we use are SHA256 for hash functions and Ed
 Both of which are provided by libnacl~\footnote{\url{https://pypi.python.org/pypi/libnacl}}.
 
 
-\section{Experimental Setup}
+\section{Experimental setup}
 \label{sec:experimental-setup}
 
 The the goal of the experiment is to run the three protocols---consensus protocol,
@@ -204,7 +208,7 @@ It is a lot more stable because for every transaction it is almost always the ca
 % This does not always align with the time when a round finishes, thus some of the data may not represent reality accurately.
 %  TODO this can be fixed
 
-\section{Global Throughput}
+\section{Global throughput}
 \begin{figure}[h]
   \centering
   \makebox[\linewidth][c]{%

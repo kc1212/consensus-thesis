@@ -1,4 +1,4 @@
-\chapter{Related Work}
+\chapter{Related work}
 \label{ch:related}
 
 Having analysed our system both theoretically and experimentally,
@@ -14,7 +14,7 @@ We classify the various blockchain systems by their consensus approach and divid
 \end{enumerate}
 A few systems from each of these categories are compared with our design.
 
-\section{Classical Blockchain Systems}
+\section{Early blockchain systems}
 This category represent systems with a probabilistic probabilistic consensus algorithm.
 That is, transactions never reach consensus with a probability of 1.
 The typical examples are proof-of-work based systems such as Bitcoin, Ethereum and other Altcoins.
@@ -43,7 +43,7 @@ Our system risks going into erroneous state if the inequality $n \ge 3t + 1$ is 
 Classical blockchain systems also have an incentive mechanism, thus they do not depend on altruistic nodes and encourages participation.
 Our system on the other hand does not have an incentive mechanism because we make no assumptions on the application.
 
-\section{Offchain Transactions}
+\section{Offchain transactions}
 Offchain transactions make use of the fact that, if two or more parties frequently make transactions,
 then it is not necessary to store every transaction on the blockchain, only the net settlement is necessary.
 The best examples are Lightning Network~\cite{lightningnetwork} and full duplex channels~\cite{decker2015fast}.
@@ -70,7 +70,7 @@ Time-locked contracts have a strong dependency on timing, thus disputes may aris
 Our system is purely asynchronous and make no assumption on timing,
 in fact we assume the adversary has control of the message delivery time and order.
 
-\section{Permissioned Systems}
+\section{Permissioned systems}
 
 This category of systems use Byzantine consensus algorithms (discussed in \Cref{sec:acs-background}).
 In essence, they contain a fixed set of nodes, sometimes called validators,
@@ -92,7 +92,7 @@ We hope to design and implement smart contracts by adding additional logic to th
 Such functionalities we believe is better to be built into the backbone rather than having it as an add on.
 
 
-\section{Hybrid Systems}
+\section{Hybrid systems}
 Hybrid systems are very recent inventions.
 Just like our work, they are attempts on solving the problems of traditional blockchains.
 The main characteristic of these systems is that they use a classical blockchain technique,
@@ -116,7 +116,7 @@ thus electing more than $t$ nodes into the committee in always a possibility.
 Classical blockchain do not have this problem because they do not use Byzantine consensus.
 The permissioned systems work around this problem by trusting validators.
 
-\section{Blockchains Without Global Consensus}
+\section{Blockchains without global consensus}
 
 Tangle~\cite{tangle}, Corda~\cite{corda} and the original TrustChain~\cite{trustchain} do not use global consensus at all.
 By avoiding global consensus, they are able to achieve extreme scalability.
