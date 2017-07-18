@@ -470,8 +470,9 @@ It creates a new CP block and appends it to $u$'s chain.}
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Relationship with $\alpha$-synchroniser}
-TODO
+Our protocol has some similarities with synchronisers~\cite[Chapter 10]{podc} because it is effectively a technique to introduce synchrony in an asynchronous environment.
+If we consider the facilitators is a collective authority, then it can be seen as a synchroniser that sends pulse messages (in the form of \texttt{cons\_msg} and \texttt{cons\_sig}) to indicate the start of a new clock pulse.
+Every node then sends a completion messages (in the form of \texttt{cp\_msg}) to the collective authority to indicate that they are ready to start a new pulse.
 
 
 \section{Transaction protocol}
@@ -657,7 +658,7 @@ In this section,
 we explore a few design variations which we can make, some of them require a relaxed version of our original model.
 They enable better performance, allow us to apply our design in the fully permissionless setting and improves privacy.
 
-\subsection{Use epidemic protocol instead of broadcast protocol}
+\subsection{Using epidemic protocol to reduce communication cost}
 One of the final steps in our consensus protocol is to broadcast the consensus result and signatures to every other node (\Cref{sec:consensus-phase}).
 While this guarantees delivery (since we assumed reliable channel), it is wasteful.
 For example, if every facilitator is honest, a node would receive $n$ consensus results which are identical when only one is necessary.
