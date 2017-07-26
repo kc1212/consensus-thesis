@@ -503,13 +503,13 @@ Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 
     \begin{algorithmic}
         \Upon $\langle \texttt{tx\_req}, t_{v, j} \rangle$ from $v$
-        \State $txid, pk_v, m \gets t_{v, j}$ \Comment unpack the TX
+        \State $\langle \_, \_, txid, pk_v, m, \_ \rangle \gets t_{v, j}$
         \State $\textsf{new\_tx}(pk_u, m, txid)$
         \State store $t_{v, j}$ as the pair of $t_{u, h}$
         \State send $\langle \texttt{tx\_resp}, t_{u, h} \rangle$ to $v$
 
         \Upon $\langle \texttt{tx\_resp}, t_{v, j} \rangle$ from $v$
-        \State $txid, pk_v, m \gets t_{v, j}$ \Comment unpack the TX
+        \State $\langle \_, \_, txid, pk_v, m, \_ \rangle \gets t_{v, j}$
         \State store $t_{v, j}$ as the pair of the TX with identifier $txid$
     \end{algorithmic}
 \end{algorithm}
@@ -564,8 +564,8 @@ The caller is $w$, it may be $u$ but this is not necessary.
     \State $c_{v, b} \gets \textsf{last}(F_{v, j})$
     \If{$c_{v, a}$ or $c_{v, b}$ are not in consensus}
         \State \Return \emph{unknown}
-    \EndIf \Comment $v$ has agreed fragment
-    \State
+    \EndIf
+    \State \Comment $v$ has agreed fragment
 
     % \If{$|F_{v, j}| > L$}
     %     \State \Return \emph{unknown}
@@ -577,27 +577,26 @@ The caller is $w$, it may be $u$ but this is not necessary.
         \If{hash pointers in $F_{v, j}$ is wrong}
             \State \Return \emph{unknown}
         \EndIf
-    \EndIf \Comment correct TrustChain structure
-    \State
+    \EndIf
+    \State \Comment correct TrustChain structure
 
     \State $c_{u, b} \gets \textsf{last}(F_{u, i})$
     \If{$c_{u, b}$ is not created using the same $\C_r$ as $c_{v, b}$}
         \State \Return \emph{unknown}
-    \EndIf \Comment correct consensus round
-    \State
+    \EndIf
+    \State \Comment correct consensus round
     \label{line:valid-fragment}
-    \State $txid, pk_v, m \gets t_{u, i}$
+    \State $\langle \_, \_, txid, pk_v, m, \_ \rangle \gets t_{u, i}$
     \If{number of blocks of $txid$ in $F_{v, j} \ne 1$}
         \State \Return \emph{invalid}
-    \EndIf \Comment TX exists
-    \State 
+    \EndIf
+    \State \Comment TX exists 
 
-    \State $txid', pk'_u, m' \gets t_{v, j}$
+    \State $\langle \_, \_, txid', pk'_u, m', \_ \rangle \gets t_{v, j}$
     \If{$m \ne m' \vee pk_u \ne pk'_u$}
         \State \Return \emph{invalid}
-    \EndIf \Comment no tampering
-    \State
-
+    \EndIf
+    \State \Comment no tampering
     \State \Return \emph{valid}
 \end{algorithmic}
 \end{algorithm}

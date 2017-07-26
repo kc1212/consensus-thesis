@@ -45,13 +45,28 @@
 %\usetheme{Szeged}
 %\usetheme{Warsaw}
 
+\usepackage{amsfonts}
 \usepackage{graphicx}
 \graphicspath{{../figures/}}
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
 
-\title{Presentation Title}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\C}{\mathcal{C}}
+\renewcommand{\P}{\mathcal{P}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\E}{\mathcal{E}}
+
+\algnewcommand\algorithmicupon{\textbf{Upon}}
+\algnewcommand\Upon{\item[\algorithmicupon]}
+
+\algnewcommand\algorithmicsend{\textbf{Send}}
+\algnewcommand\Send{\item[\algorithmicsend]}
+
+\title{Blockchain Consensus Protocol with Horizontal Scalability}
 
 % A subtitle is optional and this may be deleted
-\subtitle{Optional Subtitle}
+% \subtitle{Optional Subtitle}
 
 \author{K.~Cong}
 % - Give the names in the same order as the appear in the paper.
@@ -66,7 +81,7 @@
 % - Keep it simple, no one is interested in your street address.
 
 % \date{Conference Name, 2013}
-\date{2017}
+\date{\today}
 % - Either use conference name or its abbreviation.
 % - Not really informative to the audience, more for people (including
 %   yourself) who are reading the slides online
@@ -84,12 +99,19 @@
 
 % Delete this, if you do not want the table of contents to pop up at
 % the beginning of each subsection:
-\AtBeginSubsection[]
+\AtBeginSubsection[] % Do nothing for \subsection*
 {
-  \begin{frame}<beamer>{Outline}
-    \tableofcontents[currentsection,currentsubsection]
+  % do nothing
+}
+
+\AtBeginSection[] % Do nothing for \section*
+{
+  \begin{frame}<beamer>
+  \frametitle{Outline}
+  \tableofcontents[currentsection]
   \end{frame}
 }
+
 
 % Let's get started
 \begin{document}
@@ -105,223 +127,312 @@
 
 % Section and subsections will appear in the presentation overview
 % and table of contents.
-\section{Background}
-
-\subsection{TrustChain}
-
-\begin{frame}{TrustChain}{}
-
-  \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{trustchain-good}
-  \centering
-  \caption{Every node has a chain. \emph{TX block} is a six-tuple: $t_{i,j} =
-    (\texttt{h}(b_{i,j-1}), h_s, h_r, s_s, s_r, m)$, one transaction results in
-    two TX blocks---\emph{a pair}.}
-  \end{figure}
-
-\end{frame}
-
-\begin{frame}{TrustChain}{}
-
-  \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{trustchain-bad}
-  \centering
-  \caption{Fork is two correctly signed TX blocks that belong to the same sender
-    and has the same hash pointer but involve different receivers. Only one TX
-    block may be in consensus.}
-  \end{figure}
-
-\end{frame}
-
-\begin{frame}{TrustChain}
+\section{Introduction}
+\subsection{Motivation}
+\begin{frame}{\subsecname}{}
   \begin{itemize}
-    \item Everyone has their own chain
-    \item Transactions are on arbitrary data $m$
-    % \item Transactions make the chains intertwined
-    \item Transactions are irrefutable due to hash pointers
-    \item No consensus (my thesis)
+    \item Blockchain systems offer an alternative to central authorities for the first time
+    \item Market cap and trade volume figures indicate they are here to stay
+    \item Early blockchain systems are not scalable (7 TX/s for Bitcoin)
+    \item Parameter tuning leads to centralisation
   \end{itemize}
 \end{frame}
 
-\section{My Thesis}
-\subsection{TrustChain with Checkpoints}
-\begin{frame}{TrustChain with Checkpoints}
+\subsection{Research question}
+\begin{frame}{\subsecname}
+    How do we design a \emph{blockchain consensus protocol} that is \emph{fault tolerant},
+    \emph{scalable} and can reach \emph{global consensus?}
+\end{frame}
 
+\subsection{Intuition}
+\begin{frame}{\subsecname}{}
+  \begin{itemize}
+    \item A restaurant owner does not report all of its transactions with an central authority
+    \item Ocassionally a customer may leave without paying and this event is reported to a central authority
+    \item Our blockchain system achieves scalability using the same idea
+  \end{itemize}
+\end{frame}
+
+\section{System architecture}
+\subsection{System model}
+\begin{frame}{\subsecname}
+  \begin{itemize}
+    \item Population size is $N$
+    \item $n$ nodes are facilitators, $t$ nodes are malicious (Byzantine)
+    \item $n \ge 3t + 1$
+    \item $N \ge n + t$
+    \item Purely asynchronous channels with eventual delivery
+    \item Public key infrastructure
+    \item Random oracle model
+    \item Application neutural
+  \end{itemize}
+\end{frame}
+
+\subsection{Architecture overview}
+\begin{frame}{\subsecname}
+  \begin{figure}[h]
+  \includegraphics[width=0.7\textwidth]{architecture}
+  \centering
+  \end{figure}
+\end{frame}
+
+\subsection{Extended TrustChain}
+\begin{frame}{\subsecname}
+  \begin{itemize}
+    \item Everyone has their own chain
+    \item Two types of blocks, transaction (TX) blocks and checkpoint (CP) blocks
+    \item A transaction involves two parties and results in two TX blocks
+    \item A CP block captures the chain state
+    \item TX and CP blocks are chained together using hash pointers
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\subsecname}
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{trustchain-bad-cp}
   \centering
-  \caption{CP block is a six-tuple: $c_{i,j} = (\texttt{h}(b_{i,j-1}),
-    \texttt{h}(\mathcal{C}_r), h, r, p, s)$, $\mathcal{C}_r$ is the consensus
-    result at round $r$, $p =$ promoter indicator, $s =$ signature.}
+  \caption{TX block is a six-tuple: $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), i, txid, pk_v, m, sig_u \rangle$.
+    CP block is a five-tuple: $c_{u, i} = \langle \textsf{H}(b_{u, i-1}), i, \textsf{H}(\C_r), r, sig_u \rangle$.}
   \end{figure}
-
 \end{frame}
 
-\subsection{Protocol Overview}
-\begin{frame}{Protocol Overview}
+\subsection{Consensus protocol}
+\begin{frame}{\subsecname overview}
   \begin{enumerate}
-    \item $n$ lucky nodes are selected at random to act as promoters.
-    \item Promoters run a BFT (Byzantine Fault Tolerant) consensus algorithm to
-      agree on a set of CP blocks.
-    \item Disseminate the consensus result (the CP blocks).
-    \item Repeat for next round.
-    \item Any interested node can validate that their transaction.
+    \item In round $r$, $n$ out of $N$ lucky nodes are selected at random to act as facilitators
+    \item Facilitators run a BFT (Byzantine Fault Tolerant) consensus algorithm to
+      agree on a set of CP blocks
+    \item Disseminate the consensus result $\C_r$, i.e. the CP blocks
+    \item Repeat
   \end{enumerate}
 \end{frame}
 
-\subsection{Promoter Registration}
-\begin{frame}{Promoter Registration}
+\begin{frame}{\subsecname properties}
+\label{def:consensus}
+$\forall r \in \mathbb{N}$, the following properties must hold.
+\begin{itemize}
+    \item \emph{Agreement}:
+        If one correct node outputs a list of facilitators $\F_r$,
+        then every node outputs $\F_r$
+    \item \emph{Validity}:
+        If any correct node outputs $\F_r$, then 
+            \begin{enumerate}
+                \item $|\C_r| \ge N - t$ must hold for the $\C_r$ which was used to create $\F_r$,
+                \item $\F_r$ must contain at least $n - t$ honest nodes and
+                \item $|\F_r| = n$.
+            \end{enumerate}
+    \item \emph{Fairness}:
+        Every node with a CP block in $\C_r$ should have an equal probability of becoming a member of $\F_r$.
+    \item \emph{Termination}:
+        Every correct node eventually outputs some $\F_r$.
+\end{itemize}
+\end{frame}
 
+\begin{frame}{\subsecname}
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{trustchain-1}
   \centering
-  \caption{We start in the state where $\mathcal{C}_{r - 1}$ has just been agreed but
-    not yet propagated.}
+  \caption{Suppose we are in a state where $\mathcal{C}_{r - 1}$ has just been agreed by some facilitators but not yet propagated.}
   \end{figure}
-
 \end{frame}
 
-\begin{frame}{Promoter Registration}
-
+\begin{frame}{\subsecname}
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{trustchain-2}
   \centering
-  \caption{Nodes receive consensus result and set promoters indicator $p$, then
-    send the new CP blocks to promoters of round $r$.}
+  \caption{Nodes receive consensus result $\mathcal{C}_{r - 1}$,
+    compute the new facilitators $\mathcal{F}_{r-1}$,
+    and send out the new CP blocks.}
   \end{figure}
-
 \end{frame}
 
-\begin{frame}{Promoter Registration}
-
+\begin{frame}{\subsecname}
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{trustchain-3}
   \centering
-  \caption{Transactions carry on as usual in round $r$. Note that our CP blocks
-    (round $r - 1$) has not reached consensus yet.}
+  \caption{Transactions carry on as usual in round $r$,
+  while facilitators are trying to reach consensus on the new CP blocks concurrently.}
   \end{figure}
-
 \end{frame}
 
-\begin{frame}{Promoter Registration}
-
+\begin{frame}{\subsecname}
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{trustchain-4}
   \centering
-  \caption{CP blocks at round $r-1$ should be in $\mathcal{C}_r$. If we're
-    lucky: $\texttt{h}(k_i || c_{i,j}) < T$, then we're responsible for
-    consensus of round $r + 1$.}
+  \caption{CP blocks at round $r-1$ should be in $\mathcal{C}_r$.
+  The first $n$ nodes ordered by $\textsf{H}(\mathcal{C}_r || pk)$ become $\mathcal{F}_r$.}
   \end{figure}
-
 \end{frame}
 
-\subsection{Consensus}
-\begin{frame}{Consensus}
-  \begin{enumerate}
-    \item Nodes send CP blocks to the promoters.
-    \item The promoters' identities are encoded in the consensus result.
-    \item Promoters run the some asynchronous BFT consensus algorithm to agree on
-      a set of CP blocks---$\mathcal{C}_r$.
-    \item $n \ge 3t + 1$ is the optimal for BFT consensus.
-    \item $\mathcal{C}_r$ and the signatures are disseminated.
-    \item Nodes create new CP blocks when they receive $t + 1$ good signatures and
-      $\mathcal{C}_r$.
-  \end{enumerate}
-
-  \begin{theorem}
-    Assuming the promoters satisfy $n \ge 3t + 1$. The promoter registration and
-    the consensus protocol satisfies agreement, total order and liveness.
-  \end{theorem}
+\subsection{Transaction protocol}
+\begin{frame}{\subsecname}
+\begin{itemize}
+\item Request (\texttt{tx\_req}) and response (\texttt{tx\_resp}) protocol
+\item Two TX blocks containing the same $txid$ are generated
+\item Non-blocking
+\end{itemize}
 \end{frame}
 
-\subsection{Validation}
+\begin{frame}{\subsecname}
+Create $t_{u, h}$ and send $\langle \texttt{tx\_req}, t_{u, h} \rangle$ to start a transaction.
+\vspace{5 mm}
+\begin{algorithmic}
+    \Upon $\langle \texttt{tx\_req}, t_{v, j} \rangle$ from $v$
+    \State $\langle \_, \_, txid, pk_v, m, \_ \rangle \gets t_{v, j}$ \Comment unpack $t_{v, j}$
+    \State $\textsf{new\_tx}(pk_u, m, txid)$ \Comment create and store $t_{u, i}$
+    \State store $t_{v, j}$ as the pair of $t_{u, h}$
+    \State send $\langle \texttt{tx\_resp}, t_{u, h} \rangle$ to $v$
 
-\begin{frame}{Validation}
-Assume node $u$ is aware of all the past consensus results $\mathcal{C}_r$.
-Suppose $u$ wish to validate $t_{i,j}$. It performs the following.
-
-\begin{enumerate}
-\item Determine the pair $t_{i', j'}$.
-\item Find the agreed enclosure for $t_{i,j}$ and $t_{i', j'}$ from
-  $\mathcal{C}_r$, otherwise return ``unknown''.
-%\item Find the smallest $c_{i', b}$ such that $b > j'$ is in consensus.
-\item Query $i$ and $i'$ for the agreed pieces and ensure hash pointers are
-  correct. Otherwise return ``unknown''.
-\item Check that $t_{i,j}$ and $t_{i', j'}$ are in the agreed pieces and are
-  created correctly using \texttt{newtx}. Otherwise return ``invalid''.
-\item Check the checkpoints $c_{i, k}$ and $c_{i', k'}$ that immediately follow
-  $t_{i,j}$ and $t_{i', j'}$ are in the agreed pieces and are created in the
-  same round, i.e. $\texttt{round}(c_{i, k}) = \texttt{round}(c_{i', k'})$.
-  Otherwise return ``invalid''.
-\item Return ``valid''.
-\end{enumerate}
+    \Upon $\langle \texttt{tx\_resp}, t_{v, j} \rangle$ from $v$  
+    \State $\langle \_, \_, txid, pk_v, m, \_ \rangle \gets t_{v, j}$ \Comment unpack $t_{v, j}$
+    \State store $t_{v, j}$ as the pair of the TX with identifier $txid$
+\end{algorithmic}
 \end{frame}
 
-\begin{frame}{Validation}
-  In essence, given a TX, ask the receiver to proof that it has a set of
-  transactions that produces some CP block, the CP block should be in the
-  consensus result and the pair of the TX should be in that set.
-
-  \begin{theorem}
-    If at least one party of every transaction is honest, then forking and other
-    forms of tampering is guaranteed to be detected if the malicious party is
-    alive.
-  \end{theorem}
-
-  \begin{block}{Question}
-    Given a starting digest and an ending digest, is it possible for the prover
-    to proof to the verifier that it has a set of blocks linked by hash pointers
-    that ``fits'' inside those digests in \emph{zero knowledge}.
-  \end{block}
+\subsection{Validation protocol}
+\begin{frame}{\subsecname overview}
+\begin{itemize}
+\item Request (\texttt{vd\_req}) and response (\texttt{vd\_resp}) protocol
+\item Transactions are in three states---\emph{valid}, \emph{invalid} and \emph{unknown}
+\item The goal is to identify which state a given transaction is in
+\end{itemize}
 \end{frame}
 
-\subsection{Implementation and Experimentation Results}
-\begin{frame}{Implementation (4 weeks ago)}
+\begin{frame}{\subsecname properties}
+\begin{itemize}
+    \item \emph{Correctness}:
+        The validation protocol outputs the correct result
+        according to the aforementioned validity definition.
+    \item \emph{Agreement}:
+        If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
+        then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
+    \item \emph{Liveness}:
+        Any valid transactions can be validated eventually.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Validity definition}
+\textbf{Function} $\textsf{get\_validity}()$ validates the transaction $t_{u, i}$
+\vspace{5 mm}
+\begin{algorithmic}
+    \State Check that $v$ sent the correct agreed fragment,
+    otherwise return \emph{unknown}.
+
+    \State
+    \State $\langle \_, \_, txid, pk_v, m, \_ \rangle \gets t_{u, i}$
+    \If{number of blocks of $txid$ in $F_{v, j} \ne 1$}
+        \State \Return \emph{invalid}
+    \EndIf
+    \State \Comment TX exists 
+
+    \State $\langle \_, \_, txid', pk'_u, m', \_ \rangle \gets t_{v, j}$
+    \If{$m \ne m' \vee pk_u \ne pk'_u$}
+        \State \Return \emph{invalid}
+    \EndIf
+    \State \Comment no tampering
+    \State \Return \emph{valid}
+\end{algorithmic}
+\end{frame}
+
+\begin{frame}{\subsecname}
+Send $\langle \texttt{vd\_req}, txid \rangle$ to $v$ to begin.
+\vspace{5 mm}
+\begin{algorithmic}
+    \Upon $\langle \texttt{vd\_req}, txid \rangle$ from $v$
+        \State $t_{u, i} \gets \text{the transaction identified by } txid$
+        \State $F_{u, i} \gets \textsf{agreed\_fragment}(t_{u, i})$
+        \State send $\langle \texttt{vd\_resp}, txid, F_{u, i} \rangle$ to $v$
+
+    \Upon $\langle \texttt{vd\_resp}, txid, F_{v, j} \rangle$ from $v$
+        \State $t_{u, i} \gets \text{the transaction identified by } txid$
+        \State set the validity of $t_{u, i}$ to $\textsf{get\_validity}(t_{u, i}, F_{v, j})$
+\end{algorithmic}
+\end{frame}
+
+\section{Analysis of correctness and performance}
+
+\subsection{Correctness of the consensus protocol}
+\begin{frame}{\subsecname}
+\begin{theorem}
+For all rounds,
+the consensus protocol satisfies agreement, validity, fairness and termination.
+\end{theorem}
+\begin{proof}(sketch)
+Because consensus result are eventually delivered and the properties of ACS,
+we get agreement, validity and termination.
+Fairness is from the fact that we model $\textsf{H}(\cdot)$ as a random oracle (RO) and the input to the RO is different for every node,
+thus the list of nodes ordered by $\textsf{H}(\C_r || pk )$ is a random permutation of those nodes.
+\end{proof}
+\end{frame}
+
+\subsection{Correctness of the validation protocol}
+\begin{frame}{\subsecname}
+\begin{theorem}
+If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
+then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
+\end{theorem}
+\begin{proof}(sketch)
+Proof by contradiction.
+For this attack to work, the adversary must be able to create two different fragments but with the same checkpoint enclosure.
+We model $\textsf{H}(\cdot)$ as a RO, so the adversary need to query the RO a exponential\footnote{In terms of the security parameter.} number of times.
+But the adversary can only query the RO a polynomial number of times.
+\end{proof}
+\end{frame}
+
+\subsection{Linear global throughput argument}
+\begin{frame}{\subsecname}
+\begin{itemize}
+  \item Throughput has a notion of time but our model is asynchronous
+  \item Additional assumptions needed to make the argument---every unit of communication takes a non-negligible amount of time to process
+  \item Bandwidth relation---$NC \ge r_{\text{tx}} l$, where $l$ is $O(N)$
+  \item If $r_\text{tx}$ satisfies the inequality, then LHS and RHS grows at the same rate,
+  thus we have linear global throughput
+\end{itemize}
+\end{frame}
+
+\section{Experimental results}
+\begin{frame}{Implementation and experiment setup}
   \begin{itemize}
-    \item Currently on going---using Python and Twisted
-    \item Completed BFT consensus algorithm
-    \item Completed local TrustChain with Checkpoints
-    \item Next step is networked TrustChain and validation protocol
+    \item Prototype implementation on Github\footnote{\url{https://github.com/kc1212/consensus-thesis-code}}
+    \item SHA256 for hash functions and Ed25519 for digital signature
+    \item Experiment on the DAS-5\footnote{\url{http://www.cs.vu.nl/das5/}}
   \end{itemize}
-\end{frame}
-
-\begin{frame}{Implementation}
-  \begin{itemize}
-    \item Completed BFT consensus algorithm, with erasure coding
-    \item Completed TrustChain with Checkpoints, with experiments on DAS5
-    \item Validation function is working
-    \item Next step is to build validation into a network protocol and do experiments
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Consensus duration vs population size (static neighbour)}
-  \begin{figure}[h]
-  \includegraphics[width=0.95\textwidth]{result-normal-cons-vs-pop}
-  \centering
-  \end{figure}
-\end{frame}
-
-\begin{frame}{Throughput vs population size (static neighbour)}
-  \begin{figure}[h]
-  \includegraphics[width=0.95\textwidth]{result-normal-throughput-vs-pop}
-  \centering
-  \end{figure}
-\end{frame}
-
-\begin{frame}{Consensus duration vs population size (random neighbour)}
-  \begin{figure}[h]
-  \includegraphics[width=0.95\textwidth]{result-rand-cons-vs-pop}
-  \centering
-  \end{figure}
 \end{frame}
 
 \begin{frame}{Throughput vs population size (random neighbour)}
   \begin{figure}[h]
-  \includegraphics[width=0.95\textwidth]{result-rand-throughput-vs-pop}
+  \includegraphics[width=1.0\textwidth]{neighbour-random/throughput-vs-population}
   \centering
   \end{figure}
 \end{frame}
 
+\begin{frame}{Throughput vs population size (fixed neighbour)}
+  \begin{figure}[h]
+  \includegraphics[width=1.0\textwidth]{neighbour-fixed/throughput-vs-population}
+  \centering
+  \end{figure}
+\end{frame}
+
+
+\section{Conclusion}
+\begin{frame}{\secname}
+    How do we design a \emph{blockchain consensus protocol} that is \emph{fault tolerant},
+    \emph{scalable} and can reach \emph{global consensus?}
+\begin{itemize}
+  \item[\checkmark] Fault tolerant up to $t$ nodes
+  \item[\checkmark] Horizontal scalability
+  \item[\checkmark] Global consensus
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Future work}
+\begin{itemize}
+\item Improve fault tolerance
+\item Improve fork detection
+\item Analyse the system in the permissionless environment
+\item Concrete application
+\end{itemize}
+\end{frame}
 
 \end{document}
 
