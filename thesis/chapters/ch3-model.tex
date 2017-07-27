@@ -258,8 +258,8 @@ then $\langle c_{u,a}, c_{u, b} \rangle$ is the \emph{enclosure} of $t_{u, i}$.
 Note that $c_{u, a}$ is the more recent CP block.
 Also, some TX blocks may not have any subsequent CP blocks, then its enclosure is $\bot$.
 
-If the enclosure of some TX block is $\langle c_{u,a}, c_{u, b} \rangle$,
-then its \emph{fragment} is defined as $\{ b_{u, i} : a \le i \le b \}$.
+If the enclosure of some TX block $t_{u, i}$ is $\langle c_{u,a}, c_{u, b} \rangle$,
+then its \emph{fragment} $F_{u, i}$ is defined as $\{ b_{u, i} : a \le i \le b \}$.
 For convenience, the function $\textsf{fragment}(\cdot)$ represents the fragment of some TX block if it exists, otherwise $\bot$.
 
 \emph{Agreed enclosure} is the same as enclosure with an extra constraint where the CP blocks must be in some consensus result $\C_r$ and also must be the smallest enclosure.
@@ -293,7 +293,7 @@ Concretely, we define the necessary properties as follows.
 $\forall r \in \mathbb{N}$, the following properties must hold.
 \begin{enumerate}
     \item \emph{Agreement}:
-        If one correct node outputs a list of facilitators $\F_r$,
+        If one correct node outputs a set of facilitators $\F_r$,
         then every node outputs $\F_r$
     \item \emph{Validity}:
         If any correct node outputs $\F_r$, then 
@@ -447,11 +447,11 @@ Thus, To guarantee authenticity, every facilitator sends an additional message t
 Upon receiving $\C_{r + 1}$ and at least $n - f$ valid signatures by some node $u$, $u$ performs two asks.
 First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1}, r + 1)$ (\Cref{alg:new-cp}).
 Second, it computes the new facilitators using $\textsf{get\_facilitator}(C, n)$ (\Cref{alg:facilitator})
-and updates its facilitator list to the result.
+and updates its facilitator set to the result.
 This concludes the consensus phase and brings us back to the beginning of the consensus phase.
 
 \begin{algorithm}
-\caption{Function $\textsf{get\_facilitator}(C, n)$ takes a list of CP blocks $C$ and an integer $n$,
+\caption{Function $\textsf{get\_facilitator}(C, n)$ takes a set of CP blocks $C$ and an integer $n$,
 sort evey element in $C$ by its luck value (the $\lambda$-expression), and outputs the smallest $n$ elements.}
 \label{alg:facilitator}
 \begin{algorithmic}
@@ -611,17 +611,17 @@ The desired properties of the validation protocol are as follows.
 \textbf{\emph{Properties of the validation protocol}}
 
 \begin{enumerate}
-    \item \emph{Correctness}:
-        The validation protocol outputs the correct result
-        according to the aforementioned validity definition.
     \item \emph{Agreement}:
         If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
         then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
+    \item \emph{Correctness}:
+        The validation protocol outputs the correct result
+        according to the aforementioned validity definition.
     % \item \emph{Unforgeability}:
     %     If some transaction is valid, it cannot be forged into an invalid transaction.
     %     If some transaction is invalid, it cannot be forged into a valid transaction.
     \item \emph{Liveness}:
-        Any valid transactions can be validated eventually.
+        Any valid (invalid) transactions is marked as valid (invalid) eventually.
 \end{enumerate}
 \end{definition}
 

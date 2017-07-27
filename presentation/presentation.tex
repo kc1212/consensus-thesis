@@ -63,6 +63,8 @@
 \algnewcommand\algorithmicsend{\textbf{Send}}
 \algnewcommand\Send{\item[\algorithmicsend]}
 
+\setbeameroption{show notes}
+
 \title{Blockchain Consensus Protocol with Horizontal Scalability}
 
 % A subtitle is optional and this may be deleted
@@ -86,19 +88,8 @@
 % - Not really informative to the audience, more for people (including
 %   yourself) who are reading the slides online
 
-% \subject{Theoretical Computer Science}
-% This is only inserted into the PDF information catalog. Can be left
-% out. 
+\titlegraphic{\includegraphics[width=4cm]{logo}}
 
-% If you have a file called "university-logo-filename.xxx", where xxx
-% is a graphic format that can be processed by latex or pdflatex,
-% resp., then you can add a logo as follows:
-
-% \pgfdeclareimage[height=0.5cm]{university-logo}{university-logo-filename}
-% \logo{\pgfuseimage{university-logo}}
-
-% Delete this, if you do not want the table of contents to pop up at
-% the beginning of each subsection:
 \AtBeginSubsection[] % Do nothing for \subsection*
 {
   % do nothing
@@ -118,6 +109,7 @@
 
 \begin{frame}
   \titlepage
+
 \end{frame}
 
 \begin{frame}{Outline}
@@ -128,28 +120,33 @@
 % Section and subsections will appear in the presentation overview
 % and table of contents.
 \section{Introduction}
-\subsection{Motivation}
-\begin{frame}{\subsecname}{}
+\begin{frame}{Motivation}
   \begin{itemize}
     \item Blockchain systems offer an alternative to central authorities for the first time
-    \item Market cap and trade volume figures indicate they are here to stay
+    \item Market cap (40 billion for Bitcoin) and trade volume figures indicate they are here to stay
     \item Early blockchain systems are not scalable (7 TX/s for Bitcoin)
     \item Parameter tuning leads to centralisation
   \end{itemize}
 \end{frame}
 
-\subsection{Research question}
-\begin{frame}{\subsecname}
+\begin{frame}{Research question}
     How do we design a \emph{blockchain consensus protocol} that is \emph{fault tolerant},
     \emph{scalable} and can reach \emph{global consensus?}
+    \note{
+      \begin{itemize}
+      \item Blockchain consensus protocol---independent of the application, like PoW (not PoS)
+      \item Byzantine fault tolerance---if some number of nodes are malicious then the system should continue to function
+      \item Horizontal scalability---if every node make transactions at the same rate, then the global throughput should increase
+      \item Global consensus---all node should agree on a global state, useful for some applications, e.g. digital cash
+      \end{itemize}
+    }
 \end{frame}
 
-\subsection{Intuition}
-\begin{frame}{\subsecname}{}
+\begin{frame}{Inspiration}
   \begin{itemize}
     \item A restaurant owner does not report all of its transactions with an central authority
     \item Ocassionally a customer may leave without paying and this event is reported to a central authority
-    \item Our blockchain system achieves scalability using the same idea
+    \item Our blockchain system achieves scalability using a similar idea
   \end{itemize}
 \end{frame}
 
@@ -164,8 +161,9 @@
     \item Purely asynchronous channels with eventual delivery
     \item Public key infrastructure
     \item Random oracle model
-    \item Application neutural
+    \item Computational security
   \end{itemize}
+  \note{At this point, explain facilitators are nodes that have some extra task to do, temporarily.}
 \end{frame}
 
 \subsection{Architecture overview}
@@ -174,14 +172,27 @@
   \includegraphics[width=0.7\textwidth]{architecture}
   \centering
   \end{figure}
+  \note{
+    \begin{itemize}
+    \item The primary data structure is the Extended TrustChain, extension of our prior work
+    \item The three protocols the tasks as their name suggests
+    \item They are independent and run concurrently
+    \item The only synchronisation happens via the Extended TrustChain
+    \item But in no part of those protocol do we lock the Extended TrustChain
+    \end{itemize}
+  }
 \end{frame}
 
 \subsection{Extended TrustChain}
 \begin{frame}{\subsecname}
   \begin{itemize}
-    \item Everyone has their own chain
-    \item Two types of blocks, transaction (TX) blocks and checkpoint (CP) blocks
-    \item A transaction involves two parties and results in two TX blocks
+    \item Everyone has their own chain and genesis block
+    \item Two types of blocks
+      \begin{enumerate}
+      \item Transaction (TX) block
+      \item Checkpoint (CP) block
+      \end{enumerate}
+    \item A transaction involves two parties and results in two TX blocks (a pair)
     \item A CP block captures the chain state
     \item TX and CP blocks are chained together using hash pointers
   \end{itemize}
@@ -189,30 +200,48 @@
 
 \begin{frame}{\subsecname}
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{trustchain-bad-cp}
+  \includegraphics[width=0.7\textwidth]{trustchain-good-cp}
   \centering
   \caption{TX block is a six-tuple: $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), i, txid, pk_v, m, sig_u \rangle$.
     CP block is a five-tuple: $c_{u, i} = \langle \textsf{H}(b_{u, i-1}), i, \textsf{H}(\C_r), r, sig_u \rangle$.}
   \end{figure}
+  \note{
+    \begin{itemize}
+      \item In this example there are three nodes
+      \item Squares are TX blocks and circles are CP blocks
+      \item Explain the block content in caption
+      \item The dotted line represent pairs of TX blocks
+      \item Geared with the understanding of our data structure, we are ready to talk about the consensus protocol
+    \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}{\subsecname:~fragment definition}
+\begin{itemize}
+\item A fragment $F_{u, i}$ is defined on a TX block $t_{u, i}$
+\item It is a section of the chain beginning and ending with CP blocks that contains the TX
+\end{itemize}
 \end{frame}
 
 \subsection{Consensus protocol}
-\begin{frame}{\subsecname overview}
+\begin{frame}{\subsecname:~overview}
   \begin{enumerate}
-    \item In round $r$, $n$ out of $N$ lucky nodes are selected at random to act as facilitators
-    \item Facilitators run a BFT (Byzantine Fault Tolerant) consensus algorithm to
-      agree on a set of CP blocks
+    \item Runs in rounds
+    \item In round $r$, $n$ out of $N$ act as facilitators
+    \item The facilitators collect CP blocks from all nodes
+    \item Facilitators run a Byzantine consensus algorithm to agree on a set of CP blocks
     \item Disseminate the consensus result $\C_r$, i.e. the CP blocks
+    \item From $\C_r$, new facilitators are computed
     \item Repeat
   \end{enumerate}
 \end{frame}
 
-\begin{frame}{\subsecname properties}
+\begin{frame}{\subsecname:~properties}
 \label{def:consensus}
 $\forall r \in \mathbb{N}$, the following properties must hold.
 \begin{itemize}
     \item \emph{Agreement}:
-        If one correct node outputs a list of facilitators $\F_r$,
+        If one correct node outputs a set of facilitators $\F_r$,
         then every node outputs $\F_r$
     \item \emph{Validity}:
         If any correct node outputs $\F_r$, then 
@@ -232,7 +261,7 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{trustchain-1}
   \centering
-  \caption{Suppose we are in a state where $\mathcal{C}_{r - 1}$ has just been agreed by some facilitators but not yet propagated.}
+  \caption{Suppose we are in a state where $\C_{r - 1}$ has just been agreed by some facilitators but not yet propagated.}
   \end{figure}
 \end{frame}
 
@@ -240,9 +269,9 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{trustchain-2}
   \centering
-  \caption{Nodes receive consensus result $\mathcal{C}_{r - 1}$,
-    compute the new facilitators $\mathcal{F}_{r-1}$,
-    and send out the new CP blocks.}
+  \caption{Nodes receive consensus result $\C_{r - 1}$,
+    first $n$ nodes ordered by $\textsf{H}(\C_r || pk)$ become $\F_{r-1}$,
+    send the new CP blocks to $\F_{r-1}$.}
   \end{figure}
 \end{frame}
 
@@ -259,8 +288,8 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
   \begin{figure}[h]
   \includegraphics[width=0.7\textwidth]{trustchain-4}
   \centering
-  \caption{CP blocks at round $r-1$ should be in $\mathcal{C}_r$.
-  The first $n$ nodes ordered by $\textsf{H}(\mathcal{C}_r || pk)$ become $\mathcal{F}_r$.}
+  \caption{$\F_{r-1}$ agree and disseminate $\C_r$,
+  CP blocks at round $r-1$ ($c_{a, 6}, c_{b, 4}, c_{c,8}$) should be in $\C_r$.}
   \end{figure}
 \end{frame}
 
@@ -290,37 +319,24 @@ Create $t_{u, h}$ and send $\langle \texttt{tx\_req}, t_{u, h} \rangle$ to start
 \end{frame}
 
 \subsection{Validation protocol}
-\begin{frame}{\subsecname overview}
+\begin{frame}{\subsecname:~overview}
 \begin{itemize}
 \item Request (\texttt{vd\_req}) and response (\texttt{vd\_resp}) protocol
-\item Transactions are in three states---\emph{valid}, \emph{invalid} and \emph{unknown}
-\item The goal is to identify which state a given transaction is in
-\end{itemize}
-\end{frame}
-
-\begin{frame}{\subsecname properties}
-\begin{itemize}
-    \item \emph{Correctness}:
-        The validation protocol outputs the correct result
-        according to the aforementioned validity definition.
-    \item \emph{Agreement}:
-        If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
-        then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
-    \item \emph{Liveness}:
-        Any valid transactions can be validated eventually.
+\item Transactions are in three states---\emph{valid}, \emph{invalid} and \emph{unknown}---defined by $\textsf{get\_validity}(\cdot)$
+\item The goal is to identify which state a given transaction is in satisfying the validation protocol properties
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Validity definition}
-\textbf{Function} $\textsf{get\_validity}()$ validates the transaction $t_{u, i}$
+\textbf{Function} $\textsf{get\_validity}(t_{u, i}, F)$ validates the transaction $t_{u, i}$
 \vspace{5 mm}
 \begin{algorithmic}
-    \State Check that $v$ sent the correct agreed fragment,
+    \State Check that $v$ sent the correct $F$,
     otherwise return \emph{unknown}.
 
     \State
     \State $\langle \_, \_, txid, pk_v, m, \_ \rangle \gets t_{u, i}$
-    \If{number of blocks of $txid$ in $F_{v, j} \ne 1$}
+    \If{number of blocks of $txid$ in $F \ne 1$}
         \State \Return \emph{invalid}
     \EndIf
     \State \Comment TX exists 
@@ -332,6 +348,21 @@ Create $t_{u, h}$ and send $\langle \texttt{tx\_req}, t_{u, h} \rangle$ to start
     \State \Comment no tampering
     \State \Return \emph{valid}
 \end{algorithmic}
+\end{frame}
+
+\begin{frame}{\subsecname:~properties}
+\begin{itemize}
+    \item \emph{Agreement}:
+        If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
+        then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
+    \item \emph{Correctness}:
+        The validation protocol outputs the correct result
+        according to the aforementioned validity definition.
+    \item \emph{Liveness}:
+        Any valid (invalid) transaction is marked as validated (invalid) eventually.
+\end{itemize}
+\note{Liveness is not possible in our case because malicious nodes can simply go offline or refuse to respond,
+but the other two properties are possible.}
 \end{frame}
 
 \begin{frame}{\subsecname}
@@ -358,7 +389,7 @@ For all rounds,
 the consensus protocol satisfies agreement, validity, fairness and termination.
 \end{theorem}
 \begin{proof}(sketch)
-Because consensus result are eventually delivered and the properties of ACS,
+Because consensus result are eventually delivered and the properties of Byzantine consensus,
 we get agreement, validity and termination.
 Fairness is from the fact that we model $\textsf{H}(\cdot)$ as a random oracle (RO) and the input to the RO is different for every node,
 thus the list of nodes ordered by $\textsf{H}(\C_r || pk )$ is a random permutation of those nodes.
@@ -368,7 +399,7 @@ thus the list of nodes ordered by $\textsf{H}(\C_r || pk )$ is a random permutat
 \subsection{Correctness of the validation protocol}
 \begin{frame}{\subsecname}
 \begin{theorem}
-If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
+If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction according to the validity definition,
 then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
 \end{theorem}
 \begin{proof}(sketch)
@@ -396,6 +427,10 @@ But the adversary can only query the RO a polynomial number of times.
     \item Prototype implementation on Github\footnote{\url{https://github.com/kc1212/consensus-thesis-code}}
     \item SHA256 for hash functions and Ed25519 for digital signature
     \item Experiment on the DAS-5\footnote{\url{http://www.cs.vu.nl/das5/}}
+      \begin{itemize}
+        \item Up to 30 machines
+        \item Each running 40 nodes
+      \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -411,8 +446,8 @@ But the adversary can only query the RO a polynomial number of times.
   \includegraphics[width=1.0\textwidth]{neighbour-fixed/throughput-vs-population}
   \centering
   \end{figure}
+\note{No need to request for fragment every time a TX needs to be validated. Upon receiving a fragment, validate as many TX as possible.}
 \end{frame}
-
 
 \section{Conclusion}
 \begin{frame}{\secname}
