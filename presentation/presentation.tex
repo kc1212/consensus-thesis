@@ -1,55 +1,25 @@
-% Copyright 2004 by Till Tantau <tantau@users.sourceforge.net>.
-%
-% In principle, this file can be redistributed and/or modified under
-% the terms of the GNU Public License, version 2.
-%
-% However, this file is supposed to be a template to be modified
-% for your own needs. For this reason, if you use this file as a
-% template and not specifically distribute it as part of a another
-% package/program, I grant the extra permission to freely copy and
-% modify this file as you see fit and even to delete this copyright
-% notice. 
+% TU Delft beamer template
+% Author: Erwin Walraven (initial version was created by Maarten Abbink)
+% Delft Universiy of Technology
 
 \documentclass{beamer}
-
-% There are many different themes available for Beamer. A comprehensive
-% list with examples is given here:
-% http://deic.uab.es/~iblanes/beamer_gallery/index_by_theme.html
-% You can uncomment the themes below if you would like to use a different
-% one:
-%\usetheme{AnnArbor}
-%\usetheme{Antibes}
-%\usetheme{Bergen}
-%\usetheme{Berkeley}
-%\usetheme{Berlin}
-%\usetheme{Boadilla}
-%\usetheme{boxes}
-%\usetheme{CambridgeUS}
-%\usetheme{Copenhagen}
-%\usetheme{Darmstadt}
-\usetheme{default}
-%\usetheme{Frankfurt}
-%\usetheme{Goettingen}
-%\usetheme{Hannover}
-%\usetheme{Ilmenau}
-%\usetheme{JuanLesPins}
-%\usetheme{Luebeck}
-%\usetheme{Madrid}
-%\usetheme{Malmoe}
-%\usetheme{Marburg}
-%\usetheme{Montpellier}
-%\usetheme{PaloAlto}
-%\usetheme{Pittsburgh}
-%\usetheme{Rochester}
-%\usetheme{Singapore}
-%\usetheme{Szeged}
-%\usetheme{Warsaw}
-
-\usepackage{amsfonts}
+\usepackage[english]{babel}
+\usepackage{calc}
+\usepackage[absolute,overlay]{textpos}
 \usepackage{graphicx}
 \graphicspath{{../figures/}}
+\usepackage{subfig}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{comment}
+\usepackage{MnSymbol,wasysym}
 \usepackage[noend]{algpseudocode}
 \usepackage{algorithm}
+
+\setbeamertemplate{navigation symbols}{} % remove navigation symbols
+\mode<presentation>{\usetheme{tud}}
 
 \newcommand{\A}{\mathcal{A}}
 \newcommand{\C}{\mathcal{C}}
@@ -63,11 +33,9 @@
 \algnewcommand\algorithmicsend{\textbf{Send}}
 \algnewcommand\Send{\item[\algorithmicsend]}
 
-\setbeameroption{show notes}
+% \setbeameroption{show notes}
 
-\title{Blockchain Consensus Protocol with Horizontal Scalability}
-
-% A subtitle is optional and this may be deleted
+\title{Blockchain Consensus Protocol with\\Horizontal Scalability}
 % \subtitle{Optional Subtitle}
 
 \author{K.~Cong}
@@ -84,11 +52,6 @@
 
 % \date{Conference Name, 2013}
 \date{\today}
-% - Either use conference name or its abbreviation.
-% - Not really informative to the audience, more for people (including
-%   yourself) who are reading the slides online
-
-\titlegraphic{\includegraphics[width=4cm]{logo}}
 
 \AtBeginSubsection[] % Do nothing for \subsection*
 {
@@ -130,8 +93,10 @@
 \end{frame}
 
 \begin{frame}{Research question}
+  \begin{block}{}
     How do we design a \emph{blockchain consensus protocol} that is \emph{fault tolerant},
     \emph{scalable} and can reach \emph{global consensus?}
+  \end{block}
     \note{
       \begin{itemize}
       \item Blockchain consensus protocol---independent of the application, like PoW (not PoS)
@@ -145,7 +110,7 @@
 \begin{frame}{Inspiration}
   \begin{itemize}
     \item A restaurant owner does not report all of its transactions with an central authority
-    \item Ocassionally a customer may leave without paying and this event is reported to a central authority
+    \item Occasionally a customer may leave without paying and this event is reported to a central authority
     \item Our blockchain system achieves scalability using a similar idea
   \end{itemize}
 \end{frame}
@@ -200,7 +165,7 @@
 
 \begin{frame}{\subsecname}
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{trustchain-good-cp}
+  \includegraphics[width=0.67\textwidth]{trustchain-good-cp}
   \centering
   \caption{TX block is a six-tuple: $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), i, txid, pk_v, m, sig_u \rangle$.
     CP block is a five-tuple: $c_{u, i} = \langle \textsf{H}(b_{u, i-1}), i, \textsf{H}(\C_r), r, sig_u \rangle$.}
@@ -259,7 +224,7 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
 
 \begin{frame}{\subsecname}
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{trustchain-1}
+  \includegraphics[width=0.67\textwidth]{trustchain-1}
   \centering
   \caption{Suppose we are in a state where $\C_{r - 1}$ has just been agreed by some facilitators but not yet propagated.}
   \end{figure}
@@ -267,17 +232,17 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
 
 \begin{frame}{\subsecname}
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{trustchain-2}
+  \includegraphics[width=0.67\textwidth]{trustchain-2}
   \centering
   \caption{Nodes receive consensus result $\C_{r - 1}$,
-    first $n$ nodes ordered by $\textsf{H}(\C_r || pk)$ become $\F_{r-1}$,
+    first $n$ nodes ordered by $\textsf{H}(\C_{r-1} || pk)$ become $\F_{r-1}$,
     send the new CP blocks to $\F_{r-1}$.}
   \end{figure}
 \end{frame}
 
 \begin{frame}{\subsecname}
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{trustchain-3}
+  \includegraphics[width=0.67\textwidth]{trustchain-3}
   \centering
   \caption{Transactions carry on as usual in round $r$,
   while facilitators are trying to reach consensus on the new CP blocks concurrently.}
@@ -286,7 +251,7 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
 
 \begin{frame}{\subsecname}
   \begin{figure}[h]
-  \includegraphics[width=0.7\textwidth]{trustchain-4}
+  \includegraphics[width=0.67\textwidth]{trustchain-4}
   \centering
   \caption{$\F_{r-1}$ agree and disseminate $\C_r$,
   CP blocks at round $r-1$ ($c_{a, 6}, c_{b, 4}, c_{c,8}$) should be in $\C_r$.}
@@ -353,7 +318,7 @@ Create $t_{u, h}$ and send $\langle \texttt{tx\_req}, t_{u, h} \rangle$ to start
 \begin{frame}{\subsecname:~properties}
 \begin{itemize}
     \item \emph{Agreement}:
-        If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
+        If any correct node decides on the validity of a transaction (except when it is \emph{unknown}),
         then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
     \item \emph{Correctness}:
         The validation protocol outputs the correct result
@@ -386,7 +351,7 @@ Send $\langle \texttt{vd\_req}, txid \rangle$ to $v$ to begin.
 \begin{frame}{\subsecname}
 \begin{theorem}
 For all rounds,
-the consensus protocol satisfies agreement, validity, fairness and termination.
+the consensus protocol satisfies agreement, validity, fairness and termination properties.
 \end{theorem}
 \begin{proof}(sketch)
 Because consensus result are eventually delivered and the properties of Byzantine consensus,
@@ -399,14 +364,15 @@ thus the list of nodes ordered by $\textsf{H}(\C_r || pk )$ is a random permutat
 \subsection{Correctness of the validation protocol}
 \begin{frame}{\subsecname}
 \begin{theorem}
-If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction according to the validity definition,
-then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
+  The validation protocol satisfies agreement and correctness properties.
 \end{theorem}
 \begin{proof}(sketch)
 Proof by contradiction.
 For this attack to work, the adversary must be able to create two different fragments but with the same checkpoint enclosure.
 We model $\textsf{H}(\cdot)$ as a RO, so the adversary need to query the RO a exponential\footnote{In terms of the security parameter.} number of times.
 But the adversary can only query the RO a polynomial number of times.
+Hence we have agreement.
+Correctness follows directly the use of the $\textsf{get\_validity}(\cdot)$ function.
 \end{proof}
 \end{frame}
 
@@ -436,14 +402,14 @@ But the adversary can only query the RO a polynomial number of times.
 
 \begin{frame}{Throughput vs population size (random neighbour)}
   \begin{figure}[h]
-  \includegraphics[width=1.0\textwidth]{neighbour-random/throughput-vs-population}
+  \includegraphics[width=0.9\textwidth]{neighbour-random/throughput-vs-population}
   \centering
   \end{figure}
 \end{frame}
 
 \begin{frame}{Throughput vs population size (fixed neighbour)}
   \begin{figure}[h]
-  \includegraphics[width=1.0\textwidth]{neighbour-fixed/throughput-vs-population}
+  \includegraphics[width=0.9\textwidth]{neighbour-fixed/throughput-vs-population}
   \centering
   \end{figure}
 \note{No need to request for fragment every time a TX needs to be validated. Upon receiving a fragment, validate as many TX as possible.}
@@ -451,12 +417,15 @@ But the adversary can only query the RO a polynomial number of times.
 
 \section{Conclusion}
 \begin{frame}{\secname}
+  \begin{block}{Research question}
     How do we design a \emph{blockchain consensus protocol} that is \emph{fault tolerant},
     \emph{scalable} and can reach \emph{global consensus?}
+  \end{block}
+Our system achieve the following
 \begin{itemize}
-  \item[\checkmark] Fault tolerant up to $t$ nodes
-  \item[\checkmark] Horizontal scalability
-  \item[\checkmark] Global consensus
+  \item Fault tolerant up to $t$ nodes
+  \item Horizontal scalability
+  \item Global consensus on CP blocks
 \end{itemize}
 \end{frame}
 
@@ -470,5 +439,4 @@ But the adversary can only query the RO a polynomial number of times.
 \end{frame}
 
 \end{document}
-
 
