@@ -167,8 +167,8 @@
   \begin{figure}[h]
   \includegraphics[width=0.67\textwidth]{trustchain-good-cp}
   \centering
-  \caption{TX block is a six-tuple: $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), i, txid, pk_v, m, sig_u \rangle$.
-    CP block is a five-tuple: $c_{u, i} = \langle \textsf{H}(b_{u, i-1}), i, \textsf{H}(\C_r), r, sig_u \rangle$.}
+  \caption*{TX block is a six-tuple: $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), i, txid, pk_v, m, sig_u \rangle$\\
+    CP block is a five-tuple: $c_{u, i} = \langle \textsf{H}(b_{u, i-1}), i, \textsf{H}(\C_r), r, sig_u \rangle$}
   \end{figure}
   \note{
     \begin{itemize}
@@ -226,7 +226,7 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
   \begin{figure}[h]
   \includegraphics[width=0.67\textwidth]{trustchain-1}
   \centering
-  \caption{Suppose we are in a state where $\C_{r - 1}$ has just been agreed by some facilitators but not yet propagated.}
+  \caption*{Suppose we are in a state where $\C_{r - 1}$ has just been agreed by some facilitators but not yet propagated.}
   \end{figure}
 \end{frame}
 
@@ -234,7 +234,7 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
   \begin{figure}[h]
   \includegraphics[width=0.67\textwidth]{trustchain-2}
   \centering
-  \caption{Nodes receive consensus result $\C_{r - 1}$,
+  \caption*{Nodes receive consensus result $\C_{r - 1}$,
     first $n$ nodes ordered by $\textsf{H}(\C_{r-1} || pk)$ become $\F_{r-1}$,
     send the new CP blocks to $\F_{r-1}$.}
   \end{figure}
@@ -244,7 +244,7 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
   \begin{figure}[h]
   \includegraphics[width=0.67\textwidth]{trustchain-3}
   \centering
-  \caption{Transactions carry on as usual in round $r$,
+  \caption*{Transactions carry on as usual in round $r$,
   while facilitators are trying to reach consensus on the new CP blocks concurrently.}
   \end{figure}
 \end{frame}
@@ -253,7 +253,7 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
   \begin{figure}[h]
   \includegraphics[width=0.67\textwidth]{trustchain-4}
   \centering
-  \caption{$\F_{r-1}$ agree and disseminate $\C_r$,
+  \caption*{$\F_{r-1}$ agree and disseminate $\C_r$,
   CP blocks at round $r-1$ ($c_{a, 6}, c_{b, 4}, c_{c,8}$) should be in $\C_r$.}
   \end{figure}
 \end{frame}
