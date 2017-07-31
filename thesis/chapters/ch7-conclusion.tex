@@ -1,4 +1,42 @@
 \chapter{Conclusion}
 \label{ch:conclusion}
 
+The research question we asked in~\Cref{ch:problem} is the following.
+\begin{displayquote}
+\emph{Is it possible to design a blockchain consensus protocol that is fault tolerant, scalable and can reach global consensus?}
+\end{displayquote}
+We answer it in the affirmative and our system achieves all the requirements.
+Fault tolerance is guaranteed if $n \ge 3t + 1$ from ACS.
+While $t$ may be small compared to the population size $N$,
+we show that the probability for the system to fail is low even when $n \ge 3t + 1$ does not hold as long as the proportion of malicious nodes is not close to a third of $N$.
+Horizontal scalability is demonstrated both analytically and experimentally.
+With 1200 nodes in the network we were able to achieve nearly 5000 TX/s---an order of magnitude improvement over Bitcoin.
+Finally, we achieve global consensus on transactions via consensus on checkpoint blocks.
+
+This work is the first step in building a new paradigm for blockchain consensus protocol.
+It has the potential to efficiently cultivate trust on the internet in the presence of faults without any central authority.
+We hope to improve our design by building a concrete application on top of it.
+
 \section{Future work}
+While our system has excellent scalability properties, it is not without limitations.
+Much of it is from the fact that it does not have a concrete application.
+We do not attempt to prevent the Sybil attack, spam or DoS because the accuracy of the defence depends on the understanding of the application.
+For instance, without any application it would be impossible to distinguish between a very active node from a spammer because the content of the transaction ($m$) carry no meaning.
+
+Our experiment is carried out in a somewhat idealised world (DAS-5).
+To understand our system further, we hope to experiment on a real platform with real users such as Tribler~\cite{pouwelse2008tribler}.
+For instance, the TrustChain in Tribler stores the number of bytes uploaded and downloaded between users, but it has no global consensus.
+It would be useful to integrate our consensus protocol into Tribler to prevent misreporting attacks.
+More importantly it gives us an opportunity to observe the characteristics of our system in the real world and how it evolves with new features or alterations.
+
+The fault tolerance property of our system is lower than that of typical blockchain systems,
+which usually aim for fewer than 50\%.
+For future work, we propose the following two ways to improve fault tolerance.
+First, use a reputation mechanism to select facilitators rather than simply selecting them randomly so that faulty nodes are less likely to be selected.
+This technique of course heavily depends on the application,
+for P2P file sharing systems the reputation score may be the number of bytes contributed to the network.
+Second, instead of using ACS we use a proof-of-stake (PoS) scheme which means that nodes with more stake in the system gets more vote.
+In an ideal PoS scheme, the system can tolerate any fault if the majority of the stake holders are honest.
+
+Finally, as mentioned in~\Cref{sec:permissionless}, we wish to evaluate our system (analytically and experimentally) in the permissionless settings.
+This would enable our protocol to be applied to a much wider range of applications.
