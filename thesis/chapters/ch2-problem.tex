@@ -1,9 +1,18 @@
 \chapter{Problem description}
 \label{ch:problem}
 
-The decentralised and democratic nature of blockchain technology removes central point of control or failure.
-However, as we described in the Introduction, it faces a genuine scalability problem.
-In particular, proof-of-work based systems are unlikely to reach a transaction rate suitable for ubiquitous use, even with parameter tuning.
+From the Introduction, we saw that early blockchain systems face a scalability problem.
+In particular, proof-of-work based systems are unlikely to reach a transaction rate suitable for ubiquitous use.
+Many attempts to fix the scalability problem exist in academia as well as the industry.
+In this chapter we describe the related work in the form of a mini taxonomy and identify areas for improvement and limitations.
+Then we state our research question which 
+
+\section{Related work and mini taxonomy}
+
+
+\section{Research question}
+
+% TODO fix
 What we wish to see is horizontal scalability.
 That is, by adding new nodes into the network, the global transaction rate should increase proportionally.
 Hence, the research question we answer in this  work is the following.
@@ -27,7 +36,7 @@ In the remainder of this chapter we expand on our research question and visit ea
 At the end of this chapter we describe some issues that we do not consider as a part of our design,
 which is the result of not focusing on any specific application.
 
-\section{Global consensus}
+\subsection{Global consensus}
 
 % why consensus is important
 % The first objective is to reach consensus on a global \emph{state}.
@@ -58,7 +67,7 @@ It is even verifiable as long as there are nodes that stores the history.
 % Our approach is to combine the vast literature in Byzantine fault tolerance research with blockchain technology,
 % and introduce a new consensus model to record the global state.
 
-\section{Security and fault tolerance}
+\subsection{Security and fault tolerance}
 
 The second objective is fault tolerance,
 where our system should be unaffected in the presence of powerful adversaries.
@@ -76,7 +85,7 @@ it cannot be the case that one nodes thinks that the transaction is valid but th
 % But when using some digest (or a set of digets) to represent the state, it is also important for the transactions to be verifiable.
 % Otherwise adversaries could simply store invalid transactions in the state and they would never be detected.
 
-\section{Performance and scalability}
+\subsection{Performance and scalability}
 
 The last but not least, the final objective is horizontal scalability.
 We wish to see the performance (global transaction rate) increase as more nodes join the network.
@@ -87,7 +96,7 @@ Early blockchain systems may run in a network of thousands of nodes, but the per
 On the other hand, as we will see in~\Cref{sec:acs-background}, Byzantine consensus algorithms performs well but only when in a small network.
 In this work, our goal is to overcome the limitations of early blockchain systems and Byzantine consensus algorithms to create a horizontally scalable blockchain.
 
-\section{Limitations}
+\subsection{Limitations}
 Our work aims to significantly lower the transaction bound.
 However, the price to pay is that the Sybil attack~\cite{douceur2002sybil} prevention mechanism moves from the blockchain consensus protocol to the application layer.
 For example, social network based Sybil defence mechanims use graph structure of real-world relationships~\cite{yu2006sybilguard}.

@@ -557,7 +557,7 @@ But before explaining the protocol itself, we first define what it means for a t
 
 \subsection{Validity definition}
 A transaction can be in one of three states in terms of validity---\emph{valid}, \emph{invalid} and \emph{unknown}.
-Given a fragment $F_{v, j}$, the validity of the transaction $t_{u, i}$ is captured by the function $\textsf{get\_validity}(t, F)$ (\Cref{alg:get-validity}).
+Given a fragment $F_{v, j}$, the validity of the transaction $t_{u, i}$ is captured by the function $\textsf{get\_validity}(t, F_u, F_v)$ (\Cref{alg:get-validity}).
 The first four conditions (up to \Cref{line:valid-fragment}) essentially check whether the fragment is the one that the verifier needs.
 If it is not, then the verifier cannot make any decision and return \emph{unknown}.
 This is likely to be the case for new transactions because $\textsf{agreed\_fragment}(\cdot)$ would be $\bot$.
@@ -572,63 +572,44 @@ In that case, it may seem that the counterparty, who is honest, purposefully omm
 But in reality, it was the malicious sender who did not follow the protocol.
 Thus, in such cases the whole transaction, identified by its $txid$ is marked as invalid.
 
-Further, the caller of $\textsf{get\_validity}(t_{u, i}, F_{v, i})$ is not necessarily 
+Further, the caller of $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ is not necessarily 
 $u$\footnote{In practice it often is because after completing the TX protocol the parties are incentivised to check that the counterparty ``did the right thing''.}
-Any node $w$ may call $\textsf{get\_validity}(t_u{u, i}, F_{v, i})$ as long as the caller $w$ has an agreed fragment of $t_{u, i}$---$F_{u, i}$.
+Any node $w$ may call $\textsf{get\_validity}(t_u{u, i}, F_{u, i}, F_{v, j})$ as long as the caller $w$ has an agreed fragment of $t_{u, i}$---$F_{u, i}$.
 $F_{u, i}$ may be readily available if $w = u$ or it may be from some other \texttt{vd\_resp} message, which we describe next in the validation protocol.
 
 \begin{algorithm}
-\caption{Function $\textsf{get\_validity}(t_{u, i}, F_{v, j})$ validates the transaction $t_{u, i}$.
+\caption{Function $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ validates the transaction represented by $t_{u, i}$.
+We assume $F_{u, i}$ is always correct and contains $t_{u, i}$.
 $F_{v, j}$ is the corresponding fragment received from $v$.}
-We assume there exist a valid $F_{u, i}$, namely the agreed fragment of $t_{u, i}$. 
-The caller is $w$, it may be $u$ but this is not necessary.
 \label{alg:get-validity}
 
 \begin{algorithmic}[1]
 
-    % \State $F_{u, i} \gets \textsf{agreed\_fragment}(t_{u, i})$
-    % \If{$F_{u, i} = \bot$}
-    %     \State \Return \emph{unknown}
-    % \EndIf \Comment $u$ has agreed fragment
-    % \State 
-
-    \State $c_{v, a} \gets \textsf{first}(F_{v, j})$
-    \State $c_{v, b} \gets \textsf{last}(F_{v, j})$
-    \If{$c_{v, a}$ or $c_{v, b}$ are not in consensus}
+    \If{$F_{v, j}$ is not a fragment created in the same round as $F_{u, i}$}
         \State \Return \emph{unknown}
     \EndIf
-    \State \Comment $v$ has agreed fragment
+    \State
 
-    % \If{$|F_{v, j}| > L$}
-    %     \State \Return \emph{unknown}
-    % \EndIf \Comment fragment not too long
-    % \State
-
-    % txid are equal now, but bad hash pointer
-    \If{sequence number in $F_{v, j}$ is correct (sequential)}
-        \If{hash pointers in $F_{v, j}$ is wrong}
-            \State \Return \emph{unknown}
-        \EndIf
-    \EndIf
-    \State \Comment correct TrustChain structure
-
-    \State $c_{u, b} \gets \textsf{last}(F_{u, i})$
-    \If{$c_{u, b}$ is not created using the same $\C_r$ as $c_{v, b}$}
-        \State \Return \emph{unknown}
-    \EndIf
-    \State \Comment correct consensus round
     \label{line:valid-fragment}
     \State $\langle \_, \_, txid, pk_v, m, \_ \rangle \gets t_{u, i}$
     \If{number of blocks of $txid$ in $F_{v, j} \ne 1$}
         \State \Return \emph{invalid}
     \EndIf
-    \State \Comment TX exists 
+    \State
 
-    \State $\langle \_, \_, txid', pk'_u, m', \_ \rangle \gets t_{v, j}$
-    \If{$m \ne m' \vee pk_u \ne pk'_u$}
+    \State $t_{v, j} \gets $ the TX block with $txid$ in $F_{v, j}$
+    \State $\langle \_, \_, txid', pk_u, m', \_ \rangle \gets t_{v, j}$ 
+
+    % message tampering
+    \If{$m \ne m' $} 
         \State \Return \emph{invalid}
     \EndIf
-    \State \Comment no tampering
+    \State
+
+    % signature tampering
+    \If{$t_{u, i} \text{ is not signed by } pk_u \vee t_{v, j} \text{ is not signed by } pk_v $}
+        \State \Return \emph{invalid}
+    \EndIf
     \State \Return \emph{valid}
 \end{algorithmic}
 \end{algorithm}
@@ -669,7 +650,9 @@ The desired properties of the validation protocol are as follows.
 
     \Upon $\langle \texttt{vd\_resp}, txid, F_{v, j} \rangle$ from $v$
         \State $t_{u, i} \gets \text{the transaction identified by } txid$
-        \State set the validity of $t_{u, i}$ to $\textsf{get\_validity}(t_{u, i}, F_{v, j})$
+        \If{$F_{u, i}$ and $F_{v, j}$ are available and $F_{u, i}$ is the agreed fragment of $t_{u, i}$}
+            \State set the validity of $t_{u, i}$ to $\textsf{get\_validity}(t_{u, i}, F_{u, j}, F_{v, j})$
+        \EndIf
 \end{algorithmic}
 \end{algorithm}
 
