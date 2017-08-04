@@ -23,8 +23,7 @@
 % In particular, adversaries are Byzantine meaning that they can have arbitrary behaviour.
 % Thus anything is possible from simply ommitting messages to colluding with eachother in order to undermine the whole system.
 
-We design a novel system in order to achieve our ambitious goals outline in~\Cref{ch:problem}.
-The system consist of three protocols---the consensus protocol, the transaction protocol and the validation protocol.
+Our system---Checkpoint Consensus consist of three protocols---the consensus protocol, the transaction protocol and the validation protocol.
 It is based on our prior work on TrustChain~\cite{multichain},
 where every node independently interact with each other via their own blockchain\footnote{It is originally called MultiChain but the name has changed to TrustChain}.
 
@@ -37,7 +36,7 @@ Finally, we discuss a few variations of our main design and their respective tra
 
 \section{System overview}
 \label{sec:system-overview}
-The architecture of our system is visualised in~\Cref{fig:architecture}.
+The Checkpoint Consensus architecture is visualised in~\Cref{fig:architecture}.
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.7\textwidth]{architecture}
@@ -150,7 +149,7 @@ to create a different chain that begins and ends with the same two CP blocks.
 
 \subsection{Combined protocol}
 \label{sec:combined-protocol}
-The final protocol is essentially the concurrent composition of the three aforementioned protocols,
+The final result is essentially the concurrent composition of the three aforementioned protocols,
 all making use the Extended TrustChain data structure.
 
 Our subprotocol design gives us the highly desireable non-blocking property.

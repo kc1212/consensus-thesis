@@ -101,14 +101,16 @@ but on the state of every chain represented by a single digest, we call this sta
 If a checkpoint of some node is in consensus, 
 then that node can proof to any other node that it holds a set of transactions that computes (form a chain) to the checkpoint.
 This immediately show that those transactions are tamper-proof.
+We call our protocol ``Checkpoint Consensus''.
 % TODO mention consensus and trade off?
 
 Our main contributions are the following.
 \begin{itemize}
-    \item We formally introduce a blockchain consensus protocol that uses individual hash chains on every node and achieves
-        horizontally scalable (through checkpoint blocks) for the first time.
-    \item We formally analyse our consensus protocol to ensure correctness as defined in our architecture.
-    \item We implement our consensus protocol with experiment with up to 1200 nodes,
+    \item We formally introduce a blockchain consensus protocol---Checkpoint Consensus.
+        It uses individual hash chains and checkpoints on every node to achieve
+        horizontally scalable for the first time.
+    \item We formally analyse Checkpoint Consensus to ensure correctness as defined in our architecture.
+    \item We implement Checkpiont Consensus with experiment with up to 1200 nodes,
         our results show strong evidence of horizontal scalability.
 \end{itemize}
 

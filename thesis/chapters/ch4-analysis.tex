@@ -147,13 +147,22 @@ this completes the validity proof.
 \end{proof}
 
 \Cref{theorem:validation-agreement} shows that agreement on CP blocks would lead to agreement on TX blocks when the nodes are running the validation protocol.
-Just like in our prior work~\cite{implicitconsensus}, we call this behaviour implicit consensus.
+Like in our prior work~\cite{implicitconsensus}, we call this behaviour implicit consensus.
 One of the main advantages of our scheme over running a consensus algorithm on all the transactions is that 
 the rate of transaction is no longer dependent on the consensus algorithm---ACS.
 This enables horizontal scalability where adding new nodes would lead to higher global transaction rate.
 In addition, a convenient consequence \Cref{theorem:validation-agreement} is unforgeability.
 That is, no polynomial time adversary is able to create two chains $F = \{ \dots, t, c\}$ $F' = \{ \dots, t', c\}$ with correct hash pointers and the same end of chain $c$.
 % Another way to think about it is if a transaction can be forged, then it cannot be agreed.
+
+A stronger version of the validity definition exists.
+That is, if two nodes are making transactions with each other,
+then the resulting transaction is always valid in addition to our current validity definition.
+Under our purely asynchronous model, we cannot guarantee this stronger version.
+Since the adversary can delay any message for any amount of time,
+it can make sure all \texttt{tx\_req} messages are delivered in a round later than the round which the message is sent.
+Effectively, the transaction pair would always be in different rounds and the validation protocol would not output \emph{valid}.
+We believe in a relaxed model, i.e. a weakly synchronous model, a stronger validity definition is possible.
 
 \subsection{Impossibility of liveness}
 \Cref{theorem:validation-agreement} is a major result that allows significantly improved performance over traditional blockchain systems,
@@ -343,5 +352,6 @@ the probability is maximum when the squared term is minimum at $\alpha = \lfloor
 The probability is minimum when the squared term is maximum at $\alpha = 0$.
 Hence, if $n$ is known, then we can pick a $\alpha$ such that the probability becomes small.
 On the other hand, if $\alpha$ is fixed, but small, we may increase $n$ to achieve the same.
-To put this into perspective, suppose $n = 1000$ and $\alpha = 1/20$, then the probability to draw more black balls than the threshold is only $2 \times 10^{-48}$.
-
+To put this into perspective,
+suppose $n = 1000$ and $\alpha = 1/5$, i.e. a fifth of the nodes are malicious.
+Then the probability to draw more black balls than the threshold is only $2.6 \times 10^{-16}$.
