@@ -63,12 +63,16 @@ Off-chain transaction systems are implemented using multi-signature addresses~\c
 In the simiplest case, 
 if two parties wish to make transactions,
 they open a payment channel in the form of of a multi-signature Bitcoin address (for two parties it would be a 2-of-2 signature address).
-Each of the party must also deposit some Bitcoins in the multi-signature address.
+Each of the party must also deposit some Bitcoins in the multi-signature address,
+this is called the opening transaction.
 Both parties keep the channel state which is not broadcasted to the network.
 The state is updated when the two parties make new transactions.
 The protocol disincentivises the parties from broadcasting old channel states.
 If this issue occurs, the counterparty can drain all the Bitcoins in the channel.
-After the payment channel is closed, the net transaction is broadcasted to the Bitcoin blockchain.
+To close the channel, the parties simply boradcast the latest net settlement to the Bitcoin network,
+this is called the closing transaction.
+Effectively, only two transactions need to be broadcasted to the Bitcoin network---the opening and the closing transaction,
+even if the two parties made thousands or millions of transactions in between.
 The two-party scheme can be extended to a network of channels,
 which allows two parties to make off-chain transactions without an open channel as long as they are connected by nodes that do.
 
