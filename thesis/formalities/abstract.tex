@@ -29,8 +29,26 @@ Dr. ir. J. A. Pouwelse                  & Delft University of Technology \\
 Dr. Z. Erkin                            & Delft University of Technology \\
 \end{tabular}
 
-\begin{abstract} %de abstract bevat alleen een korte samenvatting van de inhoud van het onderzoek
-TODO ABSTRACT
+\begin{abstract}
+% what's the problem?
+Blockchain systems have the potential to decentralise many traditionally centralised system.
+However, scalability remains a key challenge.
+Without a horizontally scalable solution, blockchain system remain unsuitable for ubiquitous use.
+% what's the solution?
+We design a novel blockchain system which we call CheckpointConsensys.
+Each node in our system maintain individual hash chains,
+which only stores transactions that involve the node.
+Consensus is reached on special blocks called checkpoint blocks rather than on all the transactions.
+Checkpoint blocks are effectively a hash pointer to the individual hash chains,
+thus a single checkpoint block may represent a large set of transaction blocks.
+The consensus protocol does not imply transaction validity.
+Hence we include a validation protocol which allows nodes to verify that the counterparty correctly recorded the transaction.
+% how good is the solution?
+We implement a CheckpointConsensys prototype and evaluate it experimentally.
+Our results show strong indication of horizontal scalability even in the worst case,
+where every transaction is with a randomly selected node.
+For 1200 nodes, we were able to perform almost 5000 transactions per second,
+orders of magnitude higher than the 7 transaction per second limit of Bitcoin.
 \end{abstract}
 
 \clearpage
