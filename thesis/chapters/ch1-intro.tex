@@ -39,8 +39,13 @@ Thus every party sees a consistent blockchain which solves the double spending p
 
 Bitcoin has had its ups and downs, but over it has grown into an enormous system.
 Its power consumption is as high as Republic of Ireland~\cite{o2014bitcoin}.
-Its market cap, at the time of writing, is over 40 billion USD~\cite{bitcoinmarketcap}.
-% TODO add graph
+Its market capitalisation, at the time of writing, is over 60 billion USD~\cite{bitcoinmarketcap} and growing (\Cref{fig:market-cap}).
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{market-cap}
+\caption{Market capitalisation and price of Bitcoin, graph is extracted from~\cite{bitcoinmarketcap}.}
+\label{fig:market-cap}
+\end{figure}
 Many online marketplaces are using Bitcoin, for example Steam\footnote{\url{https://store.steampowered.com/}} and even Amazon\footnote{Not directly, but via \url{https://purse.io/}.}.
 Due to its success, people from many different disciplines began investigating in way to use blockchain technology.
 This includes finance~\cite{finance}, heathcare~\cite{healthcare}, logistics~\cite{supplychain} and energy~\cite{energy}.
@@ -52,12 +57,10 @@ This is due to the fact that blocks are fixed to 1 MB are only generated on aver
 Since every Bitcoin transaction is at least 250 bytes, it computes to about 7 transactions per second.
 Due to this limitation, it is not uncommon to see a long backlog of about 20,000 transactions\footnote{\url{https://blockchain.info/unconfirmed-transactions/}}.
 A few months ago the backlog even reached 100,000, which meant new transactions would take at least 11 hours to be written to the blockchain~\cite{bitcoinbacklog}.
-% TODO update below
 This issue has plagued the Bitcoin community for some time and is the root cause for the block size debate, which some calls it a civil war~\cite{bitcoincivilwar}.
 Parties that are for the increase in block size argue that a larger block would improve the transaction rate.
 Parties against it argue that it would make mining more centralised because blocks take longer to propogate through the network.
 It also requires a hard fork (not backward compatible), which risks consensus failure and devaluation.
-% TODO update the above
 A recent empirical study by Croman et el.~\cite{croman2016scaling} has shown that increasing the block size may help.
 But given the bandwidth and latency constraints,
 it is not possible to have more than 758 transactions per second.
@@ -65,19 +68,17 @@ Even worse, it may give some miner an unfair lead over others.
 Thus fundamental changes are necessary run at the scale of centralised payment processors such as Visa,
 which is in the order of tens of thousands transactions per second~\cite{visa}.
 
-% TODO update
 What we have described is in fact the current state of Bitcoin.
 Many proposals exist with the aim to make Bitcoin more scalable.
 The most prominant is Seggregated Witness or SegWit~\cite{segwit}.
-It moves the signature data to the end of the block and changes the block size to 4 MB.
+It moves the signature data to the end of the block and uses a variable block size up to 4 MB.
 The effect is that the first 1 MB of the block is still backward compatible, thus there is no need for a hard fork.
 It also solves the transaction malleability problem~\cite{bitcoinmalleability} and paves the way for offchain transactions via Lightning Network~\cite{lightningnetwork}.
-Although SegWit is implemented, it is still uncertain whether the Bitcoin network will adopt it.
-At the time of writing, there is only 35\% of the network signalling for adoptation,
-this is only a 10\% increase since November last year\footnote{\url{https://blockchain.info/charts/bip-9-segwit}}.
-Thus it may take years if ever for SegWit to be adopted.
-Even if it is adopted, it cannot reach the transaction rate of centralised systems.
-% https://www.bloomberg.com/news/articles/2017-07-10/bitcoin-risks-splintering-as-civil-war-enters-critical-month
+However, some fear SegWit is not enough and wish to see a hard fork that uses ``Adjustable Blocksize Cap'' that increase the block size up to 8 MB\footnote{\url{https://www.bitcoinabc.org/}}.
+The ongoing civil war resulted in a Bitcoin fork, called Bitcoin Cash\footnote{\url{https://www.bitcoincash.org/}}.
+At the time of writing, it is too early to speculate how these proposals and forks may affect the scalability properties of Bitcoin.
+But the conclusion that we can draw from the scalability debate is that the Bitcoin design is fundamentally not scalable,
+and it is highly non-trivial to ``patch'' the problem.
 
 In this work, we take the advice of Croman et el.~\cite{croman2016scaling} and Marko~\cite{vukolic2015quest} and rethink the blockchain architecture.
 Our primary insight came from observing the differences between how transactional systems work in the real world and how they work in blockchain systems like Bitcoin. 
@@ -101,15 +102,15 @@ but on the state of every chain represented by a single digest, we call this sta
 If a checkpoint of some node is in consensus, 
 then that node can proof to any other node that it holds a set of transactions that computes (form a chain) to the checkpoint.
 This immediately show that those transactions are tamper-proof.
-We call our protocol CheckpointConsensys.
+We call our protocol Checo, derived from \emph{che}ckpoint \emph{co}nsensus.
 % TODO mention consensus and trade off?
 
 Our main contributions are the following.
 \begin{itemize}
-    \item We formally introduce a blockchain system---CheckpointConsensys.
+    \item We formally introduce a blockchain system---Checo.
         It uses individual hash chains and checkpoints on every node to achieve
         horizontally scalable for the first time.
-    \item We formally analyse CheckpointConsensys to ensure correctness as defined in our architecture.
+    \item We formally analyse Checo to ensure correctness as defined in our architecture.
     \item We implement Checkpiont Consensus with experiment with up to 1200 nodes,
         our results show strong evidence of horizontal scalability.
 \end{itemize}

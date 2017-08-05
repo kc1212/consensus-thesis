@@ -200,14 +200,6 @@ In this case, the remote would respond with two or more of the same agreed fragm
 which results in extra (wasted) communication cost, and this is the source of the fluctuation seen in~\Cref{fig:tx-comms-fixed}.
 The result in~\Cref{fig:tx-comms-random} reinforces our argument.
 It is a lot more stable because for every transaction it is almost always the case that an agreed fragment is needed to validate it.
-% It is interesting to note that some fluctuations exist in the graphs.
-% This is likely due to the way how the communication cost are recorded.
-% We maintain the total amount of data sent and received in a few variables.
-% On every message that is sent or received, we increment the relevent variable by the size of the message.
-% However, it is infeasible to log the values every time a message is sent or received as there is simply too much data for our build server to hold.
-% Therefore we only log every 5 seconds.
-% This does not always align with the time when a round finishes, thus some of the data may not represent reality accurately.
-%  TODO this can be fixed
 
 \section{Linear global throughput}
 \begin{figure}[h]
