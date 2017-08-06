@@ -1,11 +1,11 @@
 \chapter{Implementation and experimental results}
 \label{ch:implementation}
 
-To build confidence of the horizontal scalability claim from our analytical results,
+To build up the confidence of the horizontal scalability claim from our analytical results,
 we must verify the same property experimentally.
 Hence, we give an open source prototype implementation of our system.
 Our implementation runs on a network with over 1000 node.
-Each node send transactions to each other autonomously, 
+Each node sends transactions to each other autonomously, 
 which allows us to evaluate our analytical claims.
 
 We begin this chapter with a description of the implementation in \Cref{sec:implementation}.
@@ -29,7 +29,7 @@ We use the Twisted\footnote{\url{https://twistedmatrix.com/}} library for networ
 
 The structure of the implementation is primarily made up of three modules---\texttt{acs}, \texttt{trustchain} and \texttt{node}.
 \texttt{acs}, as its name suggests, implements ACS.
-ACS uses erasure code in one of its subprotocols (reliable broadcast).
+ACS uses erasure code in one of its sub-protocols (reliable broadcast).
 Thus we use the liberasurecode\footnote{\url{https://github.com/openstack/liberasurecode}} library for its Reed-Solomon error correcting code functionality.
 An implementation detail is that liberasurecode cannot create more than 32 code blocks\footnote{
   The 32 code blocks limitation is hardcoded in the source file, see
@@ -40,7 +40,7 @@ The \texttt{trustchain} module implements the Extended TrustChain data structure
 It also provides the essential algorithm necessary to interact with Extended TrustChain such as 
 $\textsf{new\_tx}(\cdot)$, $\textsf{new\_cp}(\cdot)$ and $\textsf{agreed\_fragment}(\cdot)$.
 Finally, the \texttt{node} module ties everything together.
-It implements the the consensus protocol, the transaction protocol and the validation protocol.
+It implements the consensus protocol, the transaction protocol and the validation protocol.
 
 
 Every node keeps a persistent TCP connection with every other node.
@@ -55,7 +55,7 @@ Both of which are provided by libnacl~\footnote{\url{https://pypi.python.org/pyp
 \section{Experimental setup}
 \label{sec:experimental-setup}
 
-The the goal of the experiment is to run the three protocols---consensus protocol,
+The goal of the experiment is to run the three protocols---consensus protocol,
 transaction protocol and validation protocol---simultaneously and analyse the communication cost, the consensus duration and the global throughput.
 We investigate these properties under the following four parameters.
 \begin{enumerate}
@@ -64,11 +64,11 @@ We investigate these properties under the following four parameters.
         it hits a bottleneck in extreme cases which helps us understand the limitations of our design.
   \item The number of facilitators $n \in \{4, 8, \dots, 32\}$.
         The maximum $n$ is 32 because the limitation in liberasurecode mentioned in \Cref{sec:implementation},
-        but our results give a good dindication of how our system may function for larger numbers of $n$.
+        but our results give a good indication of how our system may function for larger numbers of $n$.
   \item The population size $N \in \{200, 300, \dots, 1200\}$.
         $N$ stops at 1200 is due to our physical setup, which we describe next.
   \item The two modes of transaction.
-        The first mode is the \emph{fixed-neighbour} mode where nodes only transact with their immediate neighbour which are predetermined. 
+        The first mode is the \emph{fixed-neighbour} mode where nodes only transact with their immediate neighbour which is predetermined. 
         This minimises the data volume per validated transaction because agreed fragment can be cached.
         The second mode is in the other extreme which we call the \emph{random-neighbour} mode,
         where every transaction is with a random node out of the $N$ nodes in the system.
@@ -77,15 +77,15 @@ We investigate these properties under the following four parameters.
 
 The experiment is run on the DAS-5\footnote{\url{https://www.cs.vu.nl/das5/}}.
 From now on, we use ``machines'' to refer to DAS-5 nodes and ``nodes'' to refer to a running instance in our system.
-On DAS-5 we use up to 30 machine, for each machine we use up to 40 nodes.
+On DAS-5 we use up to 30 machines, for each machine we use up to 40 nodes.
 This gives us the aforementioned 1200 number.
 With this setup, we cannot run more nodes because the every machine only has 65535 ports available (minus the reserved ones).
 But 40 nodes each need 1200 TCP connections which is 48000 TCP connections per machine and that is inching close to the limit.
-While it is possible to have many more TCP connections per machine,
+While it is possible to have more TCP connections per machine,
 but it requires additional network interface which is something we do not control on the DAS-5.
 Nevertheless, running the system with 1200 nodes gives a good indication of its scalability properties as we show later.
 
-To coordinate nodes on many different machine,
+To coordinate nodes on many different machines,
 we employ a discovery server to inform every node the IP addresses and port numbers of every other node.
 It is only run before the experiment and is not used during the experiment.
 
@@ -132,27 +132,27 @@ We check our analytical results experimentally and demonstrate horizontal scalab
       \label{fig:round-duration-random}
     \end{subfigure}%
   }
-  \caption{Round duration do not increase linearly with the population size. 
+  \caption{Round duration does not increase linearly with the population size. 
   This is likely due to the additional hashing operation required for larger consensus result.}
   \label{fig:round-duration}
 \end{figure}
 
-\Cref{fig:round-comms} show the relationship between the communication cost of the consensus protocol per round and the population size.
+\Cref{fig:round-comms} shows the relationship between the communication cost of the consensus protocol per round and the population size.
 The most important aspect is that these results show a linear increase.
 This reinforces our analytical result in~\Cref{sec:cons-complexity}.
 Note that regardless of whether the transactions are performed with a random neighbour or with a fixed neighbour,
-the magnitude of the communication cost are similar.
+the magnitude of the communication cost is similar.
 Both peak at about 100 MB.
 This is expected because the consensus protocol is decoupled from the transaction protocol and the validation protocol.
-Finally, the rate for which the communication cost increases is higher when the number of facilitators are higher.
-This is also expected because the ACS algorithm has a $n^2$ term in its communication complexity.
+Finally, the rate for which the communication cost increases is higher when the number of facilitators is higher.
+This is also expected because the ACS algorithm has an $n^2$ term in its communication complexity.
 
 We are also interested in how communication costs translate to time.
-Hence, for the same experiment we record the duration in seconds and the result is shown in~\Cref{fig:round-duration}.
+Hence, for the same experiment, we record the duration in seconds and the result is shown in~\Cref{fig:round-duration}.
 Interestingly, the duration is not entirely linear.
 We attribute this behaviour to the extra time needed to hash the CP blocks in the consensus result to compute the luck value.
 Since if $N$ increases, every node must also perform more hash operations.
-These result do not conform to analytical result in~\Cref{sec:cons-duration}.
+These results do not conform to analytical result in~\Cref{sec:cons-duration}.
 Nevertheless, the difference is minor and there are ways to optimise the luck value computation.
 For example, the luck value can be computed by the facilitators and are sent with the consensus result.
 Then the non-facilitator nodes simply use it if there are enough signatures.
@@ -192,7 +192,7 @@ Hence the communication cost we see in~\Cref{fig:tx-comms-random} is much higher
 
 Some fluctuations exist in~\Cref{fig:tx-comms-fixed}, this is due to our caching mechanism.
 We send validation requests at the same rate as transactions.
-Upon receiving an (remote) agreed fragment, the caching mechanism inspects all the transactions in the agreed fragment and attempts to verify as many as it can,
+Upon receiving a (remote) agreed fragment, the caching mechanism inspects all the transactions in the agreed fragment and attempts to verify as many as it can,
 rather than just the transaction in the original validation request.
 However, it may be the case that the agreed fragments arrive later than the validation request interval.
 Then it is possible to have sent two or more validation requests for some transactions in the same local agreed fragment.
@@ -242,7 +242,7 @@ Validation requests are sent at the same rate, which explains the magnitude.
 
 The difference in magnitude between \Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random} is caused by the caching mechanism mentioned earlier.
 If a new agreed fragment needs to be transmitted to validate every transaction then it puts a toll on the network infrastructure.
-The low transaction rate in~\Cref{fig:global-throughput-random} is caused by fact that the network infrastructure cannot keep up with our demand.
+The low transaction rate in~\Cref{fig:global-throughput-random} is caused by the fact that the network infrastructure cannot keep up with our demand.
 
 We demonstrate the bottleneck issue from a different perspective in~\Cref{fig:backlog}.
 The graph is plotted by counting the number of transactions and the number of validated transactions every 5 seconds for one node running in a network of 1200 nodes and 32 facilitators.
@@ -274,8 +274,8 @@ As a result, the global throughput is lower when transacting with random nodes t
 
 \section{Communication cost with varying number of facilitators}
 Up to this point we focused on the effect of communication cost, throughput and so on with respect to the population size.
-In this section we consider a varying number of facilitators,
-which gives us an insight on our system performance may perform when the number of facilitators are higher than 32.
+In this section, we consider a varying number of facilitators,
+which gives us an insight into our system performance may perform when the number of facilitators is higher than 32.
 
 \begin{figure}[tb]
   \centering
@@ -291,7 +291,7 @@ which gives us an insight on our system performance may perform when the number 
     \label{fig:facilitators-comms-random}
   \end{subfigure}
   }
-  \caption{The communication cost of the consensus protocol increase polynomially with respect to the number of facilitators as expected from the ACS communication complexity.}
+  \caption{The communication cost of the consensus protocol increases polynomially with respect to the number of facilitators as expected from the ACS communication complexity.}
   \label{fig:facilitators-comms}
 \end{figure}
 

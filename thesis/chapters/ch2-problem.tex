@@ -134,7 +134,7 @@ This design is primarily for permissionless system because the PoW leader electi
 Some examples are SCP~\cite{luu2015scp}, ByzCoin~\cite{kogias2016enhancing} and Solidus~\cite{abraham2016solidus}.
 
 This technique overcomes the early blockchain scalability issue by delegating the transaction validation to the Byzantine consensus protocol (e.g. PBFT in ByzCoin~\cite{kogias2016enhancing}).
-A major trade-off of such systems is that they cannot guarantee correctness when there is a large number of malicious nodes (but less than a majority).
+A major tradeoff of such systems is that they cannot guarantee correctness when there is a large number of malicious nodes (but less than a majority).
 For SCP, ByzCoin and Solidus, they all have some probability to elect more than $t$ Byzantine nodes into the committee,
 where $t$ is typically just under a third of the committee size (a lower bound of Byzantine consensus~\cite{pease1980reaching}).
 This problem is especially difficult to solve because the committee is always much smaller than the population size which has more than $t$ Byzantine nodes.

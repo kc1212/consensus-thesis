@@ -23,9 +23,9 @@
 % In particular, adversaries are Byzantine meaning that they can have arbitrary behaviour.
 % Thus anything is possible from simply ommitting messages to colluding with eachother in order to undermine the whole system.
 
-Our system---Checo consist of three protocols---the consensus protocol, the transaction protocol and the validation protocol.
+Our system consists of three protocols---the consensus protocol, the transaction protocol and the validation protocol.
 It is based on our prior work on TrustChain~\cite{multichain},
-where every node independently interact with each other via their own blockchain\footnote{It is originally called MultiChain but the name has changed to TrustChain}.
+where every node independently interacts with each other via their own blockchain\footnote{It is originally called MultiChain but the name has changed to TrustChain}.
 
 The goal of this chapter is to detail our system specification.
 We begin our discussion with an intuitive overview of the architecture in \Cref{sec:system-overview}.
@@ -43,10 +43,10 @@ The architecture is visualised in~\Cref{fig:architecture}.
 \caption{Overview of the system architecture}
 \label{fig:architecture}
 \end{figure}
-It consist of one data structure---Extended TrustChain, and three protocols.
+It consists of one data structure---Extended TrustChain, and three protocols.
 The protocols have distinct roles which are evident from their names.
 They run concurrently and do not interact with each other.
-The only synchronisation happens on the Extended TrustChain layer, where all the protocols read and write from it.
+The only synchronization happens on the Extended TrustChain layer, where all the protocols read and write from it.
 We first describe each component individually, starting with Extended TrustChain, and then explain how they fit together.
 
 \subsection{Extended TrustChain}
@@ -75,7 +75,7 @@ An example of is shown in \Cref{fig:trustchain-bad}.
     Thus we have three nodes and three corresponding chains in this example.
     The arrows represent hash pointers and the dotted lines represent references.
     The blocks at the ends of one dotted line are pairs of each other.
-    The red block after $t_{b, 5}$ indicate a fork.}
+    The red block after $t_{b, 5}$ indicates a fork.}
     \label{fig:trustchain-bad}
 \end{figure}
 
@@ -84,19 +84,19 @@ then every chain effectively forms a singly linked list.
 However, if a node violates the rules, then a \emph{fork} may happen.
 That is, there may be more than one TX block with a hash pointer pointing back to the same block.
 In \Cref{fig:trustchain-bad}, node $b$ (in the middle chain) created two TX blocks that both point to $t_{b, 5}$.
-If this is a ledger system it can be seen as a double spend, where the currency accumulated up until $t_{b, 5}$ are spent twice.
+If this is a ledger system it can be seen as a double spend, where the currency accumulated up until $t_{b, 5}$ is spent twice.
 
 \subsubsection*{Extended TrustChain}
 We are now ready to explain the Extended TrustChain.
 The primary difference is the introduction of a new type of block---checkpoint (CP) block.
-In contract to TX blocks, CP blocks do not store transactions or contain references.
+In contrast to TX blocks, CP blocks do not store transactions or contain references.
 Their purpose is to capture the state of the chain and the state of the whole system.
 In particular, the state of the chain is captured with a hash pointer.
 The state of the whole system is captured in the content of the CP block,
 namely as a digest of the latest \emph{consensus result} which we explain in \Cref{sec:overview-cons}.
 A visual representation is shown in \Cref{fig:trustchain-bad-cp}.
 
-From this point onwards, we use TrustChain to mean the Extended TrustChain unless explicitly clarified.
+From this point on, we use TrustChain to mean the Extended TrustChain unless explicitly clarified.
 
 \begin{figure}
     \includegraphics[width=0.9\textwidth]{trustchain-bad-cp}
@@ -111,8 +111,8 @@ From this point onwards, we use TrustChain to mean the Extended TrustChain unles
 \label{sec:overview-cons}
 
 % The consensus protocol uses an existing Byzantine consensus algorithm (explained in detail in \Cref{sec:xyz}) and runs it continuously in rounds.
-The consensus protocol can be seen as a technique of running infinitly many rounds of some 
-Byzantine consensus algorithm\footnote{More accuratly it is ACS or asynchronous subset consensus, we describe ACS in \Cref{sec:acs-background}.},
+The consensus protocol can be seen as a technique of running infinitely many rounds of some 
+Byzantine consensus algorithm\footnote{More accurately it is ACS or asynchronous subset consensus, we describe ACS in \Cref{sec:acs-background}.},
 starting a new execution immediately after the previous one is completed.
 This is necessary because blockchain systems always need to reach consensus on new values proposed by nodes in the system,
 or CP blocks in our case.
@@ -128,7 +128,7 @@ because the output of a cryptographically secure hash function is unpredictable 
 Finally, the elected facilitators run a Byzantine consensus algorithm to agree on a set of CP blocks.
 The next round begins when the new facilitators are computed from these CP blocks.
 
-A visual explaination can be found in \Cref{app:consensus-example},
+A visual explanation can be found in \Cref{app:consensus-example},
 it walks through the steps needed for a node to be selected as a facilitator using an example.
 
 \subsection{Transaction and validation}
@@ -136,10 +136,11 @@ The TX protocol is a simple request and response protocol.
 The nodes exchange one round of messages and create new TX blocks on their respective chains.
 Thus, as we mentioned before, one transaction should result in two TX blocks.
 
-The consensus and transaction protocol by themselves do not provide a mechanism to detect forks or other forms of tamperaing.
+The consensus and transaction protocol by themselves do not provide a mechanism to detect forks or other forms of tampering.
 Thus we need a validation protocol to counteract malicious behaviour.
-When a node wish to validate one of its TX, it asks the counterparty for the \emph{agreed fragment} of the TX.
-An agreed fragment of a TX is a section of the chain beginning and ending with CP blocks that contains the TX and are in consensus.
+When a node wishes to validate one of its TX, it asks the counterparty for the \emph{agreed fragment} of the TX.
+An agreed fragment of a TX block is a section of the chain beginning and ending with CP blocks that contain the TX block,
+the CP blocks must also be in consensus.
 Upon the counterparty's response, the node checks that the CP blocks are indeed in consensus,
 the hash pointers are valid and his TX is actually in the fragment.
 The TX is valid if these conditions are satisfied.
@@ -152,7 +153,7 @@ to create a different chain that begins and ends with the same two CP blocks.
 The final result is essentially the concurrent composition of the three aforementioned protocols,
 all making use the Extended TrustChain data structure.
 
-Our subprotocol design gives us the highly desireable non-blocking property.
+Our sub-protocol design gives us the highly desirable non-blocking property.
 In particular, we do not need to ``freeze'' the state of the chain for some communication to complete in order to create a block.
 For instance, a node may start the consensus protocol, and while it is running, create new transactions and validate old transactions.
 By the time the consensus protocol is done, the new CP block is added to whatever the state that the chain is in.
@@ -169,22 +170,22 @@ For notational clarity, we use the following convention (adapted from~\cite{mill
 \item Sans serif (e.g. $\textsf{fn}(\cdot)$) denotes a function.
 \item Monospace (e.g. $\texttt{ack}$) denotes message type.
 \end{itemize}
-Further, we use $a || b$ to denote concatination of the binary representations of $a$ and $b$.
+Further, we use $a || b$ to denote concatenation of the binary representations of $a$ and $b$.
 
 We assume purely asynchronous channels with eventual delivery.
 Thus in no stage of our protocol do we make timing assumptions.
-The adversary has fully control of the delivery schedule and the message ordering of all messages.
+The adversary has full control of the delivery schedule and the message ordering of all messages.
 But they are not allowed to drop messages except for their own\footnote{
     Reliability can be achieved in unreliable networks by resending messages or using some error correction code.
 }.
 
-We assume there exist a Public Key Infrastructure (PKI), and nodes are identified by their unique and permanent public key.
+We assume there exists a Public Key Infrastructure (PKI), and nodes are identified by their unique and permanent public key.
 Finally, we use the random oracle (RO) model, i.e. calls to the random oracle are denoted by $\textsf{H}: \{0, 1\}^* \rightarrow \{0, 1\}^\lambda$,
 where $\{0, 1\}^*$ denotes the space of finite binary strings and $\lambda$ is the security parameter.
 Under the RO model, the probability of successfully computing the inverse of the hash function is negligible with respect to $\lambda$~\cite{bellare1993random}.
 
 % TODO big N does not follow our convention
-In our model we consider $N$ nodes, which is the population size.
+In our model, we consider $N$ nodes, which is the population size.
 $n$ of them are facilitators, $t$ out of $n$ are malicious and the inequality
 $n \ge 3t + 1$ must hold.
 This is from the work of Pease, Shostak and Lamport, where they show a network of $n$ nodes cannot reach Byzantine agreement with $t \ge n/3$~\cite{pease1980reaching}.
@@ -194,9 +195,9 @@ This is due to our system design, which becomes clear in~\Cref{sec:consensus-pha
 Our threat model is as follows. 
 We use a restricted version of the adaptive corruption model.
 The first restriction is that corrupted node can only change across rounds.
-That is, if a round has started, the corrupted nodes cannot changed until the next round.
+That is, if a round has started, the corrupted nodes cannot change until the next round.
 The second restriction is that the adversary, presumably controlling all the corrupted nodes, is forgetful.
-Namely the adversary may learn the internal state such as the private key of a corrupted node,
+Namely, the adversary may learn the internal state such as the private key of a corrupted node,
 but if the node recovers, then the adversary must forget the private key.
 This is realistic because otherwise the adversary can eventually learn all the private keys and sabotage the system.
 
@@ -211,7 +212,7 @@ There are two types of blocks, TX blocks and CP blocks.
 If $T_u$ is the set of all TX blocks in $B_u$ and $C_u$ is the set of all CP blocks is $B_u$,
 then it must be the case that $T_u \cup C_u = B_u$ and $T_u \cap C_u = \varnothing$.
 The notation $b_{u, i}$ is generic over the block type.
-We assume there exist a function $\textsf{typeof}: B_u \rightarrow \{ \tau, \gamma \}$ that returns the type of the block,
+We assume there exists a function $\textsf{typeof}: B_u \rightarrow \{ \tau, \gamma \}$ that returns the type of the block,
 where $\tau$ represents the TX type and $\gamma$ represents the CP type.
 
 \begin{definition}
@@ -225,7 +226,7 @@ We describe each item in turn.
 \item $txid$ is the transaction identifier, it should be generated using a cryptographically secure pseudo-random number generator by the initiator of the transaction.
 \item $pk_v$ is the public key of the counterparty $v$.
 \item $m$ is the transaction message.
-\item $sig_u$ is the signature created using $sk_u$ on the concatination of the binary representation of the five items above.
+\item $sig_u$ is the signature created using $sk_u$ on the concatenation of the binary representation of the five items above.
 \end{enumerate}
 The fact that we have no constraint on the content of $m$ is in alignment with our design goal---application neutrality.
 
@@ -265,7 +266,7 @@ The consensus result is a tuple, i.e. $\C_r = \langle r, C \rangle$,
 where $C$ is a set of CP blocks agreed by the facilitators of round $r$.
 \end{definition}
 
-Here we define an important properties which results from the interleaving nature of CP and TX blocks.
+Here we define an important property which results from the interleaving nature of CP and TX blocks.
 It is used in our validation protocol.
 \begin{definition}
 \textbf{\emph{Enclosure and agreed enclosure}}
@@ -310,7 +311,7 @@ It uses an unmodified asynchronous subset consensus (ACS) algorithm as the key b
 The objectives of the protocol are to
     allow honest nodes always make progress (in the form of creating new CP blocks),
     compute correct consensus result in every round
-    and have unbiased election of facilitators.
+    and have an unbiased election of facilitators.
 Concretely, we define the necessary properties as follows.
 \begin{definition}
 \label{def:consensus}
@@ -356,7 +357,7 @@ We adapt the description from~\cite[Chapter 17]{podc}.
 
 There are $n$ nodes, of which at most $t$ might experience Byzantine fault.
 Node $i$ starts with an input value $v_i$.
-The nodes must decide for one of  those values, satisfying the the following.
+The nodes must decide for one of  those values, satisfying the following.
 \begin{enumerate}
     \item \emph{Agreement:}
         If a correct node outputs $v$, then every node outputs $v$.
@@ -367,7 +368,7 @@ The nodes must decide for one of  those values, satisfying the the following.
 \end{enumerate}
 \end{definition}
 A node under Byzantine fault means that it can have arbitrary behaviour.
-For example not sending message or colluding with other Byzantine nodes to undermine the entire system.
+For example not sending a message or colluding with other Byzantine nodes to undermine the entire system.
 Note that the decision is on a single value.
 This is in contrast to ACS which we describe next.
 
@@ -379,7 +380,7 @@ Concretely, ACS needs to satisfy the following properties (adapted from~\cite{mi
 \textbf{\emph{Asynchronous subset consensus}}
 
 There are $n$ nodes, of which at most $t$ might experience Byzantine fault.
-Node $i$ starts with an non-empty set of input values $C_i$.
+Node $i$ starts with a non-empty set of input values $C_i$.
 The nodes must decide an output $C$, satisfying the following.
 \begin{enumerate}
     \item \emph{Agreement:}
@@ -392,13 +393,13 @@ The nodes must decide an output $C$, satisfying the following.
 \end{enumerate}
 \end{definition}
 
-ACS has the nice property of censorship resiliance when compared to other consensus algorithms.
+ACS has the nice property of censorship resilience when compared to other consensus algorithms.
 For instance, Hyperledger and Tendermint uses a variant of Practical Byzantine Fault Tolerance (PBFT)~\cite{castro1999practical} as their consensus algorithm.
-In PBFT, a leader is elected, if the leader is malicious but follows the protocol, then it can selectivly filter transactions.
-In contract, every party in ACS are involved in the proposal phase,
+In PBFT, a leader is elected, if the leader is malicious but follows the protocol, then it can selectively filter transactions.
+In contrast, every party in ACS are involved in the proposal phase,
 and it guarantees that if $n - 2t$ parties propose the same transaction, then it must be in the agreed output.
 Thus, if some value is submitted to at least $n - 2t$ nodes, it is guaranteed to be in the consensus result.
-For a detailed description of ACS we refer to the HoneyBadgerBFT work~\cite{miller2016honey}.
+For a detailed description of ACS, we refer to the HoneyBadgerBFT work~\cite{miller2016honey}.
 To understand the remainder of this work, the knowledge of~\Cref{def:acs} is sufficient.
 
 The main drawback with ACS and also Byzantine consensus algorithms is the high message complexity.
@@ -426,7 +427,7 @@ The goal of the bootstrap phase is to give us a starting point in the cycle.
 
 To bootstrap, imagine that there is some bootstrap oracle, that initiates the code on every node.
 The code satisfies all the properties in \Cref{def:consensus}.
-Namely every node has the same set of valid facilitators $\F_1$ that are randomly choosen.
+Namely, every node has the same set of valid facilitators $\F_1$ that are randomly chosen.
 This concludes the bootstrap phase.
 For any future rounds, the consensus phase is used.
 
@@ -443,22 +444,23 @@ There are two scenarios in the consensus phase.
 First, if node $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, h} \rangle$ to all the facilitators.
 Second, if the node is a facilitator, it waits until $N - t$ messages of type \texttt{cp\_msg} are received.
 % Second if the node is a facilitator, it waits for some duration $D$ and collect messages of type \texttt{cp\_msg}, where $D \gg \Delta$.
-Invalid messages are removed, namely blocks with invalid signatures and blocks signed by the same key.
+Invalid messages are removed.
+That is blocks with invalid signatures and blocks signed by the same key.
 With the sufficient number of \texttt{cp\_msg} messages,
 it begins the ACS algorithm and some $\C'_{r + 1}$ should be agreed upon by the end of it.
 Duplicates and blocks with invalid signatures are again removed from $\C'_{r+1}$ and we call the final result $\C_{r+1}$.
 We have to remove invalid blocks a second time (after ACS) because the adversary may send different CP blocks to different facilitators,
 which results in invalid blocks in the ACS output, but not in any of the inputs.
 
-At the core of the consensus phase is the ACS protocol.
+The core of the consensus phase is the ACS protocol.
 While any ACS protocol that satisfies the standard definition will work,
 we use a simplification of HoneyBadgerBFT~\cite{miller2016honey} as our ACS protocol
-because it is a consensus algorithms designed for blockchain systems.
+because it is a consensus algorithm designed for blockchain systems.
 We do not use the full HoneyBadgerBFT due to the following.
 First, the transactions in HoneyBadgerBFT are first queued in a buffer and the main consensus algorithm starts only when the buffer reaches an optimal size.
 We do not have an infinite stream of CP blocks, thus buffering is unsuitable.
 Second, HoneyBadgerBFT uses threshold encryption to hide the content of the transactions.
-But we do not reach consensus on transactions, only CP blocks, so hiding CP blocks is meaningless for us as it contains no transactional information.
+But we do not reach consensus on transactions, only CP blocks, so hiding CP blocks is meaningless for us as it contains no transaction information.
 
 Continuing, when $\F_{r}$ reaches agreement on $\C_{r+1}$,
 they immediately broadcast two messages to all the nodes---
@@ -470,7 +472,7 @@ and there are no signatures in $\C_{r + 1}$.
 If a non-facilitator sees some $\C_{r + 1}$, it cannot immediately trust it because it may have been forged.
 Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_{r + 1}$.
 
-Upon receiving $\C_{r + 1}$ and at least $n - f$ valid signatures by some node $u$, $u$ performs two asks.
+Upon receiving $\C_{r + 1}$ and at least $n - f$ valid signatures by some node $u$, $u$ performs two tasks.
 First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1}, r + 1)$ using \Cref{alg:new-cp}.
 Second, it computes the new facilitators using $\textsf{get\_facilitator}(\C_{r + 1}, n)$ using \Cref{alg:facilitator},
 and updates its facilitator set to the result.
@@ -498,8 +500,8 @@ then sorts the CP blocks $C$ by the luck value (the $\lambda$-expression), and o
 \end{algorithm}
 
 
-Our protocol has some similarities with synchronisers~\cite[Chapter 10]{podc} because it is effectively a technique to introduce synchrony in an asynchronous environment.
-If we consider the facilitators as a collective authority, then it can be seen as a synchroniser that sends pulse messages (in the form of \texttt{cons\_msg} and \texttt{cons\_sig}) to indicate the start of a new clock pulse.
+Our protocol has some similarities with synchronizers~\cite[Chapter 10]{podc} because it is effectively a technique to introduce synchrony in an asynchronous environment.
+If we consider the facilitators as a collective authority, then it can be seen as a synchronizer that sends pulse messages (in the form of \texttt{cons\_msg} and \texttt{cons\_sig}) to indicate the start of a new clock pulse.
 Every node then sends a completion messages (in the form of \texttt{cp\_msg}) to the new collective authority to indicate that they are ready for the next pulse.
 
 
@@ -508,7 +510,7 @@ Every node then sends a completion messages (in the form of \texttt{cp\_msg}) to
 
 The TX protocol, shown in \Cref{alg:tx-proto}, is run by all nodes.
 It is also known as True Halves, first described by Veldhuisen~\cite[Chapter~3.2]{truehalves}.
-Node that wish to initiate a transaction calls $\textsf{new\_tx}(pk_v, m, txid)$ (\Cref{alg:new-tx}) with the intended counterparty $v$ identified by $pk_v$ and message $m$.
+Nodes that wish to initiate a transaction calls $\textsf{new\_tx}(pk_v, m, txid)$ (\Cref{alg:new-tx}) with the intended counterparty $v$ identified by $pk_v$ and message $m$.
 $txid$ should be a uniformly distributed random value, i.e. $txid \in_R \{0, 1\}^{256}$.
 Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 
@@ -567,12 +569,12 @@ If enough information is available at a later time, then the verifier will outpu
 
 Note that the validity is on a transaction (two TX blocks with the same $txid$), rather than on one TX block owned by a single party.
 It is defined this way because the malicious sender may create new TX blocks in their own chain but never send \texttt{tx\_req} messages.
-In that case, it may seem that the counterparty, who is honest, purposefully ommitted TX blocks.
+In that case, it may seem that the counterparty, who is honest, purposefully omitted TX blocks.
 But in reality, it was the malicious sender who did not follow the protocol.
-Thus, in such cases the whole transaction, identified by its $txid$ is marked as invalid.
+Thus, in such cases, the whole transaction identified by its $txid$ is marked as invalid.
 
 Further, the caller of $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ is not necessarily 
-$u$\footnote{In practice it often is because after completing the TX protocol the parties are incentivised to check that the counterparty ``did the right thing''.}
+$u$\footnote{In practice, it often is because after completing the TX protocol the parties are incentivised to check that the counterparty ``did the right thing''.}
 Any node $w$ may call $\textsf{get\_validity}(t_u{u, i}, F_{u, i}, F_{v, j})$ as long as the caller $w$ has an agreed fragment of $t_{u, i}$---$F_{u, i}$.
 $F_{u, i}$ may be readily available if $w = u$ or it may be from some other \texttt{vd\_resp} message, which we describe next in the validation protocol.
 
@@ -633,7 +635,7 @@ The desired properties of the validation protocol are as follows.
     %     If some transaction is valid, it cannot be forged into an invalid transaction.
     %     If some transaction is invalid, it cannot be forged into a valid transaction.
     \item \emph{Liveness}:
-        Any valid (invalid) transactions is marked as valid (invalid) eventually.
+        Any valid (invalid) transaction is marked as valid (invalid) eventually.
 \end{enumerate}
 \end{definition}
 
@@ -659,7 +661,7 @@ We make two remarks.
 First, just like the TX protocol, we do not block at any part of the protocol.
 Second, suppose some $F_{v, j}$ validates $t_{u, i}$, then that does not imply that $t_{u, i}$ only has one pair $t_{v, j}$.
 Our validity requirement only requires that there is only one $t_{v, j}$ in the correct consensus round.
-The counterparty may create any number of fake pairs in a later consensus rounds.
+The counterparty may create any number of fake pairs in later consensus rounds.
 But these fake pairs only pollutes the chain of $v$ and can never be validated because the round is incorrect.
 
 \section{Design variations and tradeoffs}
@@ -686,10 +688,10 @@ This is especially true with a lazy push approach where the node who just receiv
 and only push the full message if the neighbour explicitly requests the message~\cite{leitao2007epidemic}.
 With this, nodes typically only need to receive one consensus result message instead of $n$.
 
-A down side of epidemic protocol is that it usually takes $O(\log N)$ time to infect the whole network,
+A down side of an epidemic protocol is that it usually takes $O(\log N)$ time to infect the whole network,
 whereas broadcasting uses constant time.
 Another downside of some epidemic protocols (e.g. eager push) is that it is difficult to guarantee delivery.
-It is especially true when the parameters are not choosen correctly in a network that is only partially connected (but every node is nevertheless reachable).
+It is especially true when the parameters are not chosen correctly in a network that is only partially connected (but every node is nevertheless reachable).
 If the delivery cannot be guaranteed, 
 then we cannot guarantee liveness in our consensus protocol because a future facilitator may miss the memo.
 Picking parameters are difficult in practice because the network configuration is unknown and the total number of nodes might also be unknown.
@@ -698,7 +700,7 @@ Picking parameters are difficult in practice because the network configuration i
 \subsection{Using timing assumption in the permissionless setting}
 \label{sec:permissionless}
 Our model is purely asynchronous, where we make no timing assumptions anywhere in the protocol.
-In many applications however, it is often fine to make timing assumptions.
+However, in many applications it is often fine to make timing assumptions.
 For example, TCP relies on timeout for its retransmission and the \texttt{nLockTime} property in Bitcoin transactions makes the transaction unspendable until some time in the future (either Unix time or block height)~\cite{bitcoindevguide}.
 One limitation of our system is that we use the parameter $N$ in our algorithms, which makes it unsuitable for the permissionless environment where users can join and leave at will.
 In this section we show how making a timing assumption would allow us to operate in the permissionless setting.
@@ -715,11 +717,11 @@ Nevertheless, there is a significant gain for making the timing assumption and t
 
 Suppose a new node wish to join the network and the facilitators are known (this can be done with a public registry).
 It simply sends its latest CP block to the facilitators.
-Then, in the next round the node will have a chance to become a facilitator just like any existing node.
+Then, in the next round, the node will have a chance to become a facilitator just like any existing node.
 To leave the network, nodes simply stop submitting CP blocks.
 There is a subtlety here which happens when the node is elected as a facilitator in the following round.
-In this case, the node must fulfill its obligation by completing the consensus protocol, but without proposing its own CP block, before leaving.
-Otherwise the $n \ge 3t + 1$ condition may be violated.
+In this case, the node must fulfil its obligation by completing the consensus protocol, but without proposing its own CP block, before leaving.
+Otherwise, the $n \ge 3t + 1$ condition may be violated.
 
 \subsection{Privacy preserving validation protocol using compact blocks}
 \label{sec:compact}
@@ -754,21 +756,21 @@ With compact blocks, it is only necessary to send the compact version of the agr
 The validation then proceeds in a similar fashion,
 provided that the pair of the to-be-validated TX block is known.
 
-The space saving of this approach of course depends on the size of the full blocks.
+The space saving of this approach depends on the size of the full blocks.
 If the full blocks are on average 500 bytes
 (which is the typical size of Bitcoin transactions ~\cite{txsize}),
 and the compact blocks are $32 + 32 + 8 = 72$ bytes
-(SHA256 digests are 32 bytes each and we use a 64 bit integer to represent the sequence number),
+(SHA256 digests are 32 bytes each and we use a 64-bit integer to represent the sequence number),
 then the saving in communication cost is 86\%.
 
 %Using compact blocks, it is possible to reduce network communication costs in the validation protocol but also protect transaction privacy.
 
 \subsection{Optimising validation protocol using cached agreed fragments}
 \label{sec:caching}
-One more way to improve the efficiency of the validation protocol is to use a single agreed fragment to validate multiple transaction.
+One more way to improve the efficiency of the validation protocol is to use a single agreed fragment to validate multiple transactions.
 Concretely, upon receiving an agreed fragment from node $A$,
 rather than validating a single transaction,
-we attempt to validate all transactions in the unknown state performed with $A$ in that fragment.
+we attempt to validate all transactions with $A$ in the unknown state in that fragment.
 
 For a node, the benefit of this technique is maximised when it only transacts with one other node.
 In this case, the communication of one fragment is sufficient to validate all transactions in that fragment.
@@ -777,25 +779,25 @@ then the caching mechanism would have no effect.
 
 \subsection{Global fork detection}
 The validation algorithm guarantees that there are no forks within a single agreed fragment.
-This is sufficient for some applications such as proving the existance of some information.
+This is sufficient for some applications such as proving the existence of some information.
 However, for applications such as digital cash where every block depends on one or more previous blocks,
 our scheme is not suitable.
-For such applications we need to guarantee that there are no forks from the genesis block leading up to the TX block of interest.
+For such applications, we need to guarantee that there are no forks from the genesis block leading up to the TX block of interest.
 
 There are a variety of approaches to do global fork detection.
 First and the easiest solution is to simply ask for every agreed fragment from the one containing the genesis block up to the one that the to-be-proven TX block is in.
 If the hash pointers are correct and all the CP blocks are in consensus, then the verifier can be sure that there are no forks.
 We use this approach in our prior work on Implicit Consensus~\cite{implicitconsensus}.
 It may sound inefficient at first, but nodes employ caching to minimise communication costs.
-In our work we call this effect ``spontaneous sharding''.
+In our work, we call this effect ``spontaneous sharding''.
 
 The second approach is probabilistic but with only a constant communication overhead.
-For a node, observe that if all of its agreed fragment has a transaction with a honest node,
-then the complete chain is effectively validated in a distributed maner.
+For a node, observe that if all of its agreed fragment has a transaction with an honest node,
+then the complete chain is effectively validated in a distributed manner.
 The only way for an attacker to make a fork is to make sure that the agreed fragment containing the fork has no transactions with honest nodes.
-Such malicious behaviour is prevented probabilisticaly using a challenge-response protocol as follows.
+Such malicious behaviour is prevented probabilistically using a challenge-response protocol as follows.
 Suppose node $A$ wish to make a transaction with node $B$.
-$A$ first sends a challenge to $B$ asking it to proof that it holds a valid agreed fragment between some consensus round specified by $A$.
+$A$ first sends a challenge to $B$ asking it to prove that it holds a valid agreed fragment between some consensus round specified by $A$.
 If $B$ provides a correct proof, then they run the transaction protocol as usual.
 If $B$ provides an invalid proof or refuses to respond,
 then $A$ would refuse to make the transaction.
@@ -951,7 +953,7 @@ $$\Pr[X > 0] = \sum_{k = 1}^{n}\binom{n}{k}p^k (1 - p)^{n - k}.$$
 
 % \subsection{Discussion}
 
-% \subsubsection{Global clock for synchronisation}
+% \subsubsection{Global clock for synchronization}
 % Where there is no Byzantine corruption, we conjecture that our protocol runs in the asynchronous setting.
 % However, security of many Byzantine consensus algorithms, especially the one we adopted---HoneyBadgerBFT,
 % fall apart when there is dynamic corruption.

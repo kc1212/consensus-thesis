@@ -1,13 +1,13 @@
 \chapter{Conclusion}
 \label{ch:conclusion}
 
-In this work we introduced an application neutrual blockchain system which we call Checo.
+In this work we introduced an application neutral blockchain system which we call Checo.
 We add checkpoint block to the existing TrustChain data structure for use in our consensus protocol.
 The round based consensus protocol uses ACS as a building block to reach consensus on checkpoint blocks.
 The consensus result lets nodes elect new facilitators and create new checkpoint blocks.
-Node make transactions via the transaction protocol,
+Nodes make transactions via the transaction protocol,
 which is adapted from an existing work called True Halves.
-We introduce a validation protocol which ensure that if agreed fragments for some transaction exists,
+We introduce a validation protocol which ensures that if agreed fragments for some transaction exists,
 then nodes reach agreement on the validity of that transaction.
 The novelty of the validation protocol is that it uses point-to-point communication,
 i.e. nodes only validate the transactions of interest,
@@ -36,23 +36,23 @@ We hope to improve our design by building a concrete application on top of it.
 While our system has excellent scalability properties, it is not without limitations.
 Much of it is from the fact that it does not have a concrete application.
 We do not attempt to prevent the Sybil attack, spam or DoS because the accuracy of the defence depends on the understanding of the application.
-For instance, without any application it would be impossible to distinguish between a very active node from a spammer because the content of the transaction ($m$) carry no meaning.
+For instance, without any application, it would be impossible to distinguish between a very active node from a spammer because the content of the transaction ($m$) carry no meaning.
 
 Our experiment is carried out in a somewhat idealised world (DAS-5).
-To understand our system further, we hope to experiment on a real platform with real users such as Tribler~\cite{pouwelse2008tribler}.
+To understand our system further, we hope to experiment with a real platform with real users such as Tribler~\cite{pouwelse2008tribler}.
 For instance, the TrustChain in Tribler stores the number of bytes uploaded and downloaded between users, but it has no global consensus.
 It would be useful to integrate our consensus protocol into Tribler to prevent misreporting attacks.
-More importantly it gives us an opportunity to observe the characteristics of our system in the real world and how it evolves with new features or alterations.
+More importantly, it gives us an opportunity to observe the characteristics of our system in the real world and how it evolves with new features or alterations.
 
-The fault tolerance property is adaquate for permissioned systems where nodes have relatively more trust between each other.
-However, it is not adaquate for permissionless systems,
+The fault tolerance property is adequate for permissioned systems where nodes have relatively more trust between each other.
+However, it is not adequate for permissionless systems,
 which usually aim to tolerate fault that involve a minority of the network,
 which can be just shy of 50\%.
 For future work, we propose the following two ways to improve fault tolerance.
 First, use a reputation mechanism to select facilitators rather than simply selecting them randomly so that faulty nodes are less likely to be selected.
 This technique of course heavily depends on the application,
 for P2P file sharing systems the reputation score may be the number of bytes contributed to the network.
-Second, instead of using ACS we use a proof-of-stake (PoS) scheme which means that nodes with more stake in the system gets more vote.
+Second, instead of using ACS we use a proof-of-stake (PoS) scheme which means that nodes with more stake in the system get more vote.
 In an ideal PoS scheme, the system can tolerate any fault if the majority of the stake holders are honest.
 
 Finally, as mentioned in~\Cref{sec:permissionless}, we wish to evaluate our system (analytically and experimentally) in the permissionless settings.

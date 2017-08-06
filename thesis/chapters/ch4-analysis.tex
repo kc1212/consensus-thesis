@@ -1,17 +1,16 @@
 \chapter{Analysis of correctness and performance}
 \label{ch:analysis}
 
-Up to this point we described our system specification in detail.
+Up to this point, we described our system specification in detail.
 Of course, specification alone does not establish any truths.
 In this chapter, we evaluate our system analytically.
-First we show it has the desired properties.
+First, we show it has the desired properties.
 That is, the properties of the consensus protocol and the validation protocol (\Cref{def:consensus} and \Cref{def:validation} respectively) should hold.
 Then we analyse the performance, especially the throughput,
-and show that it out performs classical blockchain systems.
-Finally, we consider the case where the $n \ge 3t + 1$ assumption is violated,
-and show the effect of it in our system.
+and show that it out performs early blockchain systems.
+Finally, we consider the case where the $n \ge 3t + 1$ assumption is violated and show the effect of it in our system.
 
-\section{Correctness in the presense of faults}
+\section{Correctness in the presence of faults}
 Our first objective is to show that \Cref{def:consensus} holds for our consensus protocol.
 Then, building on top of it, we show \Cref{def:validation} holds for the validation protocol.
 The resulting theorem shows that only using CP blocks in the consensus algorithm implies consensus on TX blocks.
@@ -41,7 +40,7 @@ The ACS algorithm starts independently whenever the facilitator has $N - t$ vali
 (recall from \Cref{sec:consensus-phase} that invalid blocks are ones with an invalid signature or has a duplicate signature).
 It cannot make progress until $n-t$ honest facilitators start algorithm,
 but this eventually happens because there are $N - t$ correct nodes and all correct facilitator eventually receives $N -t$ valid CP blocks.
-At the end of ACS, some $\C_{r+1}$ is created, and is broadcasted along with the signature of the facilitators.
+At the end of ACS, $\C_{r+1}$ is created and then broadcasted along with the signature of the facilitators.
 Due to the agreement property of ACS (\Cref{def:acs}),
 every correct node should receive at least $n - t$ valid signatures on the agreed $\C_{r+1}$.
 Thus they use $\C_{r+1}$ to generate a new CP block and compute new facilitators.
@@ -70,7 +69,7 @@ Finally, since $N-t \ge (n+t) -t = n$ and $\textsf{get\_facilitators}(\cdot)$ ou
 \label{lemma:fairness}
 For an arbitrary round $r$,
 if $\F_r$ is known by all correct nodes then
-every node with a CP block in $\C_{r+1}$, should have an equal probability to be elected as a facilitator in $\F_{r+1}$.
+every node with a CP block in $\C_{r+1}$ should have an equal probability to be elected as a facilitator in $\F_{r+1}$.
 \end{lemma}
 \begin{proof}
 We already established that $|\C_{r+1}| \ge N - t \ge n$ from \Cref{lemma:validity}.
@@ -94,11 +93,11 @@ This follows directly from the properties of the channel (eventual delivery)
 and the termination property of ACS.
 That is, $\F_r$ eventually receives all the CP blocks required to begin ACS,
 and then ACS eventually terminates.
-Finally, the results are eventually dissemminated to all the nodes.
+Finally, the results are eventually disseminated to all the nodes.
 \end{proof}
 
 From Lemmas \ref{lemma:agreement}, \ref{lemma:validity}, \ref{lemma:fairness} and \ref{lemma:termination},
-we have shown that the 4 properties of \Cref{def:consensus} holds when assuming the existance of some $\F_r$.
+we have shown that the 4 properties of \Cref{def:consensus} holds when assuming the existence of some $\F_r$.
 Thus, to proof the whole of \Cref{def:consensus},
 we need to proof these 4 properties under the universal quantifier.
 We do this using mathematical induction.
@@ -123,7 +122,7 @@ Due to the principals of mathematical induction, these properties hold for all $
 
 \subsection{Correctness of the validation protocol}
 The consensus protocol (on CP blocks and facilitators) is the backbone for consensus on transactions.
-In this section we build on top of \Cref{theorem:consensus} to show that the properties except liveness in \Cref{def:validation} can be satisfied.
+In this section, we build on top of \Cref{theorem:consensus} to show that the properties except for liveness in \Cref{def:validation} can be satisfied.
 
 \begin{theorem}
 \label{theorem:validation-agreement}
@@ -134,8 +133,8 @@ The validation protocol satisfies agreement and validity properties.
 We proof the agreement property by contradiction.
 Without loss of generality, suppose for some transaction with TX block $t$,
 node $u$ decides \emph{valid} but node $v$ decides \emph{invalid}.
-Then there exist a fragment $F' = \{ \dots, t', c'\}$ which $u$ received that contains a valid pair of $t$---$t'$.
-There also exist a fragment $F'' = \{ \dots, t'', c''\}$ which $v$ received that does not contain or contains an invalid pair---$t''$.
+Then there exists a fragment $F' = \{ \dots, t', c'\}$ which $u$ received that contains a valid pair of $t$---$t'$.
+There also exists a fragment $F'' = \{ \dots, t'', c''\}$ which $v$ received that does not contain or contains an invalid pair---$t''$.
 In both cases, the $\textsf{get\_validity}(\cdot)$ function must have reached \Cref{line:valid-fragment}.
 Due to \Cref{theorem:consensus}, we have $c' = c''$, otherwise the result would be \emph{unknown}.
 Since $c' (= c'') = \langle \textsf{H}(t'), \dots \rangle$ we must have $\textsf{H}(t') = \textsf{H}(t'')$ and $t' \ne t''$ (because $t''$ is invalid).
@@ -149,7 +148,7 @@ this completes the validity proof.
 \Cref{theorem:validation-agreement} shows that agreement on CP blocks would lead to agreement on TX blocks when the nodes are running the validation protocol.
 Like in our prior work~\cite{implicitconsensus}, we call this behaviour implicit consensus.
 One of the main advantages of our scheme over running a consensus algorithm on all the transactions is that 
-the rate of transaction is no longer dependent on the consensus algorithm---ACS.
+the transaction throughput is no longer dependent on the consensus algorithm---ACS.
 This enables horizontal scalability where adding new nodes would lead to higher global transaction rate.
 In addition, a convenient consequence \Cref{theorem:validation-agreement} is unforgeability.
 That is, no polynomial time adversary is able to create two chains $F = \{ \dots, t, c\}$ $F' = \{ \dots, t', c\}$ with correct hash pointers and the same end of chain $c$.
@@ -168,19 +167,19 @@ We believe in a relaxed model, i.e. a weakly synchronous model, a stronger valid
 \Cref{theorem:validation-agreement} is a major result that allows significantly improved performance over traditional blockchain systems,
 but it does not have all the properties of a typical Byzantine consensus protocol.
 Now we show a negative result, where the liveness property of \Cref{def:validation} cannot be attained.
-Meaning that trasanctions with adversaries cannot always be validated.
+Meaning that transactions with adversaries cannot always be validated.
 
 \begin{lemma}
-There exist a valid transactions that cannot be validated eventually.
+There exists a valid transaction that cannot be validated eventually.
 \end{lemma}
 \begin{proof}
-Suppose nodes $u$ and $v$ correctly perfomed the TX protocol which resulted a transaction.
+Suppose nodes $u$ and $v$ correctly performed the TX protocol to create a transaction.
 Then when $u$ wants to validate it, it does so by sending \texttt{vd\_req} message to $v$.
 $v$ can act maliciously and ignore all \texttt{vd\_req} message, then the transaction can never be validated.
 \end{proof}
 Although this is a negative result, it does not put the adversary in an advantageous position.
 If the adversary is observed to ignore validation requests, then the honest nodes may prefer not to transact with her in the future.
-Thus, to stay relevant in the system, the adversary need to comply to the protocol.
+Thus, to stay relevant in the system, the adversary needs to comply with the protocol.
 
 % \subsection{Chain structure}
 % In this section we discuss how the adversary may tamper with the chain structure and its effects.
@@ -197,14 +196,14 @@ We build on top of those results to analyse the global throughput.
 
 \subsection{Communication complexity of the consensus protocol}
 \label{sec:cons-complexity}
-The consensus protocol can bee seen as three parts,
+The consensus protocol can be seen as three parts,
 so the communication complexity is the sum of these parts.
 The first part is when every node sends their CP block to all the facilitators, which is $O(Nn)$ since there are $N$ nodes and $n$ facilitators.
 Or simply $O(N)$ if we consider $n$ as a constant.
 
 The second part is ACS.
 The communication complexity of ACS is $O(n^2|v| + \lambda n^3 \log n)$~\cite{miller2016honey},
-where $|v|$ is the size of largest message and $\lambda$ is the security parameter (described in \Cref{sec:model-assumptions}).
+where $|v|$ is the size of the largest message and $\lambda$ is the security parameter (described in \Cref{sec:model-assumptions}).
 In our system, we wish to understand the scalability property.
 Thus we consider the complexity as a function of $N$ rather than $n$ or $\lambda$.
 Since $|v|$ is at most all the CP blocks from every node, we have $|v| = kN$,
@@ -215,7 +214,7 @@ Since we use a constant $n$, $O(N)$ communication complexity also holds for a si
 % TODO wrong?
 The third and final part is the dissemination, where the facilitators broadcast the consensus result along with their signatures.
 For the same reason as the first part, this is also $O(N)$.
-Thus the combined communication complexity when $n$ is a constant is $O(N)$.
+Thus the combined communication complexity is $O(N)$ for a constant $n$.
 
 % We argue that with a $O(N)$ message complexity we also have $O(N)$ time complexity.
 % It is know that the running time is $O(\log n)$~\cite{miller2016honey}, which translates to $O(1)$ if our $n$ is constant.
@@ -227,8 +226,8 @@ Thus the combined communication complexity when $n$ is a constant is $O(N)$.
 In order to make arguments on bandwidth or throughput in our purely asynchronous model, which are concepts that depend on time,
 we must make some assumptions regarding our model to make arguments on the duration of the consensus protocol.
 Note that it is not the same as the time complexity typically used in distributed systems.
-In analysis of distributed systems, time complexity is often in terms of the number of rounds.
-For example, ACS runs in a constant number of rounds because its subprotocols---reliable broadcast and binary Byzantine consensus---also run in a constant number of rounds~\cite{miller2016honey}.
+In the analysis of distributed algorithms, time complexity is often in terms of the number of rounds.
+For example, ACS runs in a constant number of rounds because of its sub-protocols---reliable broadcast and binary Byzantine consensus---also run in a constant number of rounds~\cite{miller2016honey}.
 However, in practice, making a unit of communication always has some overhead associated with it, for example serialising and writing it to some network socket.
 Hence, for the remainder of our performance analysis, we add the following to our computational model.
 For every unit of communication, we assume they take some non-negligible but constant time to perform.
@@ -237,11 +236,9 @@ it follows that the consensus protocol has a duration of $O(N)$.
 
 \subsection{Communication cost for transactions}
 \label{sec:communication-cost-for-tx}
-With the analysis on the duration of the consensus protocol,
-we are ready to analyse the amount of data required to be transmitted over a link per transaction,
-which we call the communication cost per transaction.
-% First, we define bandwidth as the ``amount of data a link or network path can deliver per unit of
-% time''~\cite{prasad2003bandwidth}.
+Geared with the results above,
+we are ready to analyse the amount of data required to be transmitted over a link per transaction.
+Which we call the communication cost per transaction.
 To create and then validate a transaction,
 the communication cost per transaction is of $O(l)$,
 where $l$ is the length of the agreed fragment.
@@ -260,11 +257,11 @@ The behaviour is verified experimentally in \Cref{ch:implementation}.
 \subsection{Linear global throughput}
 \label{sec:global-throughput}
 Using our results so far, we are able to analyse the global throughput.
-First we clarify the bandwidth definition, which is ``the data rate at which a network link or a network path can transfer''~\cite{prasad2003bandwidth}.
+First, we clarify the bandwidth definition, which is ``the data rate at which a network link or a network path can transfer''~\cite{prasad2003bandwidth}.
 Now, suppose every node has some fixed bandwidth $C$ per link, $N$ links and are making transactions at $r_{\text{tx}}$ per second.
 Then we have the inequality
 $$NC \ge r_{\text{tx}} l,$$
-where $l$ is the length of the the agree fragment as before.
+where $l$ is the length of the agreed fragment as before.
 The inequality suggests that the rate for which transactions and validations are made cannot exceed the total bandwidth of all the links.
 
 We note that the inequality does not hold if the node is only transacting with a subset of the population.
@@ -276,7 +273,7 @@ and a new \texttt{vd\_resp} must be sent for every \texttt{vd\_req} message.
 
 Consider the case where the system is making use of all the bandwidth, i.e. $NC = r_{\text{tx}} l$.
 Recall that $l$ is of $O(N)$, that means LHS and RHS both grow linearly with respect to $N$.
-Hence, there exist some constant $r_\text{tx}$ that makes use of all the available bandwidth regardless of $N$.
+Hence, there exists some constant $r_\text{tx}$ that makes use of all the available bandwidth regardless of $N$.
 Finally, if every node in the network is transacting at a constant rate, then the global throughput (in terms of transactions per second) is linear w.r.t. the population size $N$.
 If the system is not making use of all the bandwidth.
 We also maintain a constant transaction rate by the same argument.
@@ -292,9 +289,9 @@ We verify both of these claims experimentally in~\Cref{ch:implementation}.
 % For instance, if $u$ and $v$ make $x$ transactions in a single round,
 % then only one agreed fragment need to be exchanged as it contains all the transactions rather than $x$ agreed fragments.
 
-\section{Effect of a highly adverserial environment}
+\section{Effect of a highly adversarial environment}
 
-Our last study consideres the effect when the number of adversaries is more than $t$.
+Our last study considers the effect when the number of adversaries is more than $t$.
 This is useful because in practice it is difficult to guarantee that $t$ satisfied $n \ge 3t + 1$, especially when $N$ is large.
 Hence we are interested in the probability for this to happen under our facilitator election process.
 
@@ -302,7 +299,7 @@ The problem can be formulated as follows.
 Suppose an urn contains $N$ balls, $t$ are black (malicious) and $N-t$ are white (honest).
 If $n$ balls are drawn uniformly at random without replacement,
 what is the probability that more than $\lfloor \frac{n-1}{3} \rfloor$ are black?
-The random variable $X$ in this case is the number of black balls, or the number of successful events.
+The random variable $X$, in this case, is the number of black balls, or the number of successful events.
 It follows the hypergeometric distribution since we pick balls \emph{without} replacement~\cite{skala2013hypergeometric}.
 Hence, we are interested in the following probability.
 $$
@@ -346,7 +343,7 @@ $$
 \Pr[X \ge \lfloor \frac{n-1}{3} \rfloor + 1] \le e^{-2 \big(\frac{\lfloor  \frac{n - 1}{3} \rfloor + 1}{n} - \alpha \big)^2 n}
 $$
 
-The bound is not tight, but it is useful for for picking parameters.
+The bound is not tight, but it is useful for picking parameters.
 For some fixed $n$, since $0 \le \alpha \le \lfloor \frac{n-1}{3} \rfloor/n < (\lfloor  \frac{n - 1}{3} \rfloor + 1) / n$,
 the probability is maximum when the squared term is minimum at $\alpha = \lfloor \frac{n-1}{3} \rfloor/n$.
 The probability is minimum when the squared term is maximum at $\alpha = 0$.
