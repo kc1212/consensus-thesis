@@ -31,9 +31,7 @@ The structure of the implementation is primarily made up of three modules---\tex
 \texttt{acs}, as its name suggests, implements ACS.
 ACS uses erasure code in one of its sub-protocols (reliable broadcast).
 Thus we use the liberasurecode\footnote{\url{https://github.com/openstack/liberasurecode}} library for its Reed-Solomon error correcting code functionality.
-An implementation detail is that liberasurecode cannot create more than 32 code blocks\footnote{
-  The 32 code blocks limitation is hardcoded in the source file, see
-  \url{https://github.com/openstack/liberasurecode/blob/0794b31c623e4cede76d66be730719d24debcca9/include/erasurecode/erasurecode.h\#L35}
+An implementation detail is that liberasurecode cannot create more than 32 code blocks, which is hardcoded in the source file\footnote{\url{https://github.com/openstack/liberasurecode/blob/0794b31c623e4cede76d66be730719d24debcca9/include/erasurecode/erasurecode.h\#L35}
 }, we discuss the effect of this in~\Cref{sec:experimental-setup}.
 The \texttt{acs} module provides a small interface to the caller to start and stop the consensus process and also retrieve results.
 The \texttt{trustchain} module implements the Extended TrustChain data structure.

@@ -218,7 +218,8 @@ where $\tau$ represents the TX type and $\gamma$ represents the CP type.
 \begin{definition}
 \textbf{\emph{Transaction block}}
 
-The TX block is a six-tuple, i.e $t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), seq_u, txid, pk_v, m, sig_u \rangle$.
+The TX block is a six-tuple, i.e
+$$t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), seq_u, txid, pk_v, m, sig_u \rangle.$$
 We describe each item in turn.
 \begin{enumerate}
 \item $\textsf{H}(b_{u, i - 1})$ is the hash pointer to the previous block.
@@ -244,13 +245,14 @@ Thus, given a TX block, these properties allow us to identify its pair.
 \begin{definition}
 \textbf{\emph{Checkpoint block}}
 
-The CP block is a five-tuple, 
-i.e. $c_{u, i} = \langle \textsf{H}(b_{u, i-1}), seq_u, \textsf{H}(\C_r), r, sig_u \rangle$,
-where $\C_r$ is the consensus result (which we describe in \Cref{sec:consensus-result}) in round $r$, the other items are the same as the TX block definition.
+The CP block is a five-tuple, i.e. 
+$$c_{u, i} = \langle \textsf{H}(b_{u, i-1}), seq_u, \textsf{H}(\C_r), r, sig_u \rangle,$$
+where $\C_r$ is the consensus result (which we describe in \Cref{sec:consensus-result}) in round $r$,
+the other items are the same as the TX block definition.
 % Note that unlike in our prior work~\cite{implicitconsensus}, CP blocks and TX blocks do not have independent sequence numbers.
 
 The genesis block in the chain must be a CP block in the form of
-$c_{u, 0} = \langle \textsf{H}(\bot), 0,  \textsf{H}(\bot), 0, sig_u \rangle$
+$$c_{u, 0} = \langle \textsf{H}(\bot), 0,  \textsf{H}(\bot), 0, sig_u \rangle,$$
 where $\textsf{H}(\bot)$ can be interpreted as applying the hash function on an empty string.
 The genesis block is unique because every node has a unique public and private key pair.
 \end{definition}
