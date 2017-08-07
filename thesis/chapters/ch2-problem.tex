@@ -20,7 +20,9 @@ This category represents the baseline,
 which are systems with a probabilistic consensus algorithm.
 That is, transactions never reach consensus with a probability of 1.
 The typical examples are proof-of-work based systems such as Bitcoin, Ethereum and other Altcoins.
-In Bitcoin, the level of consensus of a block containing many transactions is determined by how deep it is in the Bitcoin blockchain,
+In Bitcoin, nodes compete in solving puzzles.
+The first node solves the puzzle has the privilege to create a new block.
+The level of consensus of a block containing many transactions is determined by how deep it is in the Bitcoin blockchain,
 also called the number of confirmation.
 The probability of a block being orphaned drops exponentially as the depth increases~\cite{bitcoin}.
 Nevertheless, the probability of the highest block being orphaned is non-negligible.
@@ -67,7 +69,7 @@ this is called the opening transaction.
 Both parties keep the channel state which is not broadcasted to the network.
 The state is updated when the two parties make new transactions.
 The protocol disincentivises the parties from broadcasting old channel states.
-If this issue occurs, the counterparty can drain all the Bitcoins in the channel.
+If this occurs, the counterparty can drain all the Bitcoins in the channel.
 To close the channel, the parties simply broadcast the latest net settlement to the Bitcoin network,
 this is called the closing transaction.
 Effectively, only two transactions need to be broadcasted to the Bitcoin network---the opening and the closing transaction,
@@ -82,7 +84,7 @@ Some implementations already exist\footnote{For example \url{https://github.com/
 but at the time of writing SegWit is not activated yet which is a prerequisite for Lightning Network.
 
 On the other hand, off-chain transactions also suffer from the problem of Bitcoin.
-Proof-of-work still consumes an unreasonable amount of power.
+Namely, proof-of-work consumes an unreasonable amount of power.
 Further, payment channels complicate user experience.
 As we mentioned earlier, each node must deposit some Bitcoins into a multi-signature account.
 The users must pick a suitable amount.

@@ -281,21 +281,21 @@ which gives us an insight into our system performance may perform when the numbe
   \centering
   \makebox[\linewidth][c]{%
   \begin{subfigure}[b]{0.7\textwidth}
-    \includegraphics[width=\textwidth]{neighbour-fixed/consensus-communication-cost-vs-facilitators}
+    \includegraphics[width=\textwidth]{neighbour-fixed/round-communication-cost-vs-facilitators}
     \caption{Transactions are with fixed neighbours.}
-    \label{fig:facilitators-comms-fixed}
+    \label{fig:facilitators-round-comms-fixed}
   \end{subfigure}%
   \begin{subfigure}[b]{0.7\textwidth}
-    \includegraphics[width=\textwidth]{neighbour-random/consensus-communication-cost-vs-facilitators}
+    \includegraphics[width=\textwidth]{neighbour-random/round-communication-cost-vs-facilitators}
     \caption{Transactions are with random neighbours.}
-    \label{fig:facilitators-comms-random}
+    \label{fig:facilitators-round-comms-random}
   \end{subfigure}
   }
   \caption{The communication cost of the consensus protocol increases polynomially with respect to the number of facilitators as expected from the ACS communication complexity.}
-  \label{fig:facilitators-comms}
+  \label{fig:facilitators-round-comms}
 \end{figure}
 
-\Cref{fig:facilitators-comms} shows the communication cost of the consensus protocol for varying numbers of facilitators.
+\Cref{fig:facilitators-round-comms} shows the communication cost of the consensus protocol for varying numbers of facilitators.
 There is strong evidence that the communication cost grows polynomially.
 We expect this because of there are polynomial terms in the ACS communication complexity---$O(n^2|v| + \lambda n^3 \log n)$.
 This also means that the rounds would take longer to complete and transactions would take longer to verify.

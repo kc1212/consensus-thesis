@@ -4,10 +4,10 @@
 In this work we introduced an application neutral blockchain system which we call Checo.
 We add checkpoint block to the existing TrustChain data structure for use in our consensus protocol.
 The round based consensus protocol uses ACS as a building block to reach consensus on checkpoint blocks.
-The consensus result lets nodes elect new facilitators and create new checkpoint blocks.
-Nodes make transactions via the transaction protocol,
+The consensus result, which is a set of checkpoint blocks, lets nodes elect new facilitators and create new checkpoint blocks.
+To make transactions, nodes use the transaction protocol,
 which is adapted from an existing work called True Halves.
-We introduce a validation protocol which ensures that if agreed fragments for some transaction exists,
+Finally, we introduce a validation protocol which ensures that if agreed fragments for some transaction exists,
 then nodes reach agreement on the validity of that transaction.
 The novelty of the validation protocol is that it uses point-to-point communication,
 i.e. nodes only validate the transactions of interest,
@@ -39,6 +39,9 @@ We do not attempt to prevent the Sybil attack, spam or DoS because the accuracy 
 For instance, without any application, it would be impossible to distinguish between a very active node from a spammer because the content of the transaction ($m$) carry no meaning.
 
 Our experiment is carried out in a somewhat idealised world (DAS-5).
+We hope to experiment our prototype in a more realistic environment.
+For example, DeterLab~\cite{mirkovic2012teaching} lets users simulate network delay,
+which is important for discovering issue that may only occur in hostile environments.
 To understand our system further, we hope to experiment with a real platform with real users such as Tribler~\cite{pouwelse2008tribler}.
 For instance, the TrustChain in Tribler stores the number of bytes uploaded and downloaded between users, but it has no global consensus.
 It would be useful to integrate our consensus protocol into Tribler to prevent misreporting attacks.

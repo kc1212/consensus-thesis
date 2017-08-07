@@ -121,7 +121,9 @@ Due to the principals of mathematical induction, these properties hold for all $
 \end{proof}
 
 \subsection{Correctness of the validation protocol}
-The consensus protocol (on CP blocks and facilitators) is the backbone for consensus on transactions.
+The consensus protocol,
+which ensures consensus on CP blocks and facilitators,
+is the backbone for consensus on transactions.
 In this section, we build on top of \Cref{theorem:consensus} to show that the properties except for liveness in \Cref{def:validation} can be satisfied.
 
 \begin{theorem}
@@ -131,6 +133,8 @@ The validation protocol satisfies agreement and validity properties.
 \end{theorem}
 \begin{proof}
 We proof the agreement property by contradiction.
+From~\Cref{alg:get-validity},
+we use the fact that $F_{u, i}$ and $t_{u, i}$ are valid.
 Without loss of generality, suppose for some transaction with TX block $t$,
 node $u$ decides \emph{valid} but node $v$ decides \emph{invalid}.
 Then there exists a fragment $F' = \{ \dots, t', c'\}$ which $u$ received that contains a valid pair of $t$---$t'$.
@@ -141,8 +145,9 @@ Since $c' (= c'') = \langle \textsf{H}(t'), \dots \rangle$ we must have $\textsf
 In other words, the sender of $F''$ must be able to create some $t''$ that has the same digest as $t'$.
 But this is only possible if the adversary can compute the inverse of $H(\cdot)$ with non-negligible probability.
 Thus we have a contradiction and this completes the agreement proof.
+
 Our protocol uses \Cref{alg:get-validity} which is also the validity definition,
-this completes the validity proof.
+so the validity property is also satisfied.
 \end{proof}
 
 \Cref{theorem:validation-agreement} shows that agreement on CP blocks would lead to agreement on TX blocks when the nodes are running the validation protocol.
@@ -151,12 +156,12 @@ One of the main advantages of our scheme over running a consensus algorithm on a
 the transaction throughput is no longer dependent on the consensus algorithm---ACS.
 This enables horizontal scalability where adding new nodes would lead to higher global transaction rate.
 In addition, a convenient consequence \Cref{theorem:validation-agreement} is unforgeability.
-That is, no polynomial time adversary is able to create two chains $F = \{ \dots, t, c\}$ $F' = \{ \dots, t', c\}$ with correct hash pointers and the same end of chain $c$.
+That is, no polynomial time adversary is able to create two chains, $F = \{ \dots, t, c\}$ and $F' = \{ \dots, t', c\}$, with correct hash pointers and the same end of chain $c$.
 % Another way to think about it is if a transaction can be forged, then it cannot be agreed.
 
 A stronger version of the validity definition exists.
-That is, if two nodes are making transactions with each other,
-then the resulting transaction is always valid in addition to our current validity definition.
+That is, if two honest nodes make a transaction,
+then the transaction state is always valid in addition to our current validity definition.
 Under our purely asynchronous model, we cannot guarantee this stronger version.
 Since the adversary can delay any message for any amount of time,
 it can make sure all \texttt{tx\_req} messages are delivered in a round later than the round which the message is sent.

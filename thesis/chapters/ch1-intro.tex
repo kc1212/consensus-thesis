@@ -6,7 +6,7 @@ The internet, for instance, gave us the ability of efficiently exchange informat
 However, in contrast to its original design, the internet and in particular the world wide web is becoming increasingly centralised.
 The domain name system (root name server), certificate authorities (root CA), to name a few, carry enormous responsibilities and are a central point of failure.
 The  same can be said for many other services such are online marketplaces,
-cloud services, hospitality services and even our banking system.
+cloud services and even our banking system.
 The 2008 financial crisis is an example of the banking system making poor choices which resulted in a
 decline in consumer wealth in the order of trillions~\cite{financialcrisis} and led to the European debt crisis.
 
@@ -14,8 +14,7 @@ Ironically, also in 2008, Satoshi Nakamoto published the Bitcoin whitepaper~\cit
 Which, for the first time, gave us a simple banking system in the form of a distributed ledger, also known as blockchain.
 It needs no central control but still incorruptible with high probability even if there are malicious parties that aim to undermine the system.
 
-The primary innovations are (1) the consensus model which prevents double spending,
-and (2) the incentive mechanism that encourages anyone (with adequate hardware) to participate in the network and keep it running.
+The primary innovation is the consensus mechanism which prevents double spending but also incentivises anyone (with adequate hardware) to participate and keep the network running.
 The double spending problem can be seen as an inconsistency issue.
 For example, $C$ has 5 units of currency in her account.
 If $C$ can simultaneously claim that she transferred 5 units to $A$ but also 5 units to $B$, then the system is inconsistent.
@@ -28,8 +27,7 @@ Where miners (parties that run the Bitcoin network) collect transactions and com
 The puzzle is easy to verify but difficult to solve.
 Only the miner that solves it can generate a valid block containing all the collected transactions.
 The miner is also rewarded with new coins and transaction fees.
-It is important to note that every block, that is the solution of the puzzle,
-depends on the previous block.
+It is important to note that every block depends on the previous block.
 Hence the name blockchain.
 This property ensures malicious nodes cannot easily rewrite history if they do not have a majority of the network's computing power.
 Consequently, it is unlikely for more than one blockchain to exist in the network for a long period of time.
@@ -37,9 +35,9 @@ Thus every party sees a consistent blockchain which solves the double spending p
 % Further, due to the reward mechanism,
 % people are incentivised to act as miners and keep the system running.
 
-Bitcoin has had its ups and downs, but over it has grown into an enormous system.
+Bitcoin has had its ups and downs, but overall it has grown into an enormous system.
 Its power consumption is as high as Republic of Ireland~\cite{o2014bitcoin}.
-Its market capitalisation, at the time of writing, is over 60 billion USD~\cite{bitcoinmarketcap} and growing (\Cref{fig:market-cap}).
+Its market capitalisation, at the time of writing, is over 60 billion USD and growing (see \Cref{fig:market-cap}).
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{market-cap}
@@ -47,7 +45,7 @@ Its market capitalisation, at the time of writing, is over 60 billion USD~\cite{
 \label{fig:market-cap}
 \end{figure}
 Many online marketplaces are using Bitcoin.
-For example, Steam\footnote{\url{https://store.steampowered.com/}} and even Amazon\footnote{Not directly, but via \url{https://purse.io/}.}.
+For example, Steam\footnote{\url{https://store.steampowered.com/}} and Amazon\footnote{Not directly, but via \url{https://purse.io/}.}.
 Due to its success, people from many different disciplines began investigating in ways to use blockchain technology.
 This includes finance~\cite{finance}, health care~\cite{healthcare}, logistics~\cite{supplychain} and energy~\cite{energy}.
 
@@ -70,14 +68,13 @@ Even worse, it may give some miner an unfair lead over others.
 Thus fundamental changes are necessary to run at the scale of centralised payment processors such as Visa,
 which is in the order of tens of thousands transactions per second~\cite{visa}.
 
-What we have described is, in fact, the current state of Bitcoin.
-Many proposals exist with the aim to make Bitcoin more scalable.
+The Bitcoin community understands the issue and many proposals exist with the aim to make Bitcoin more scalable.
 The most prominent one is Segregated Witness or SegWit~\cite{segwit}.
 It moves the signature data to the end of the block and uses a variable block size up to 4 MB.
 The effect is that the first 1 MB of the block is still backwards compatible, thus there is no need for a hard fork.
-It also solves the transaction malleability problem~\cite{bitcoinmalleability} and paves the way for off-chain transactions via Lightning Network~\cite{lightningnetwork}.
-However, some fear SegWit is not enough and wish to see a hard fork that uses ``Adjustable Blocksize Cap'' that increase the block size up to 8 MB\footnote{\url{https://www.bitcoinabc.org/}}.
-The ongoing civil war resulted in a Bitcoin fork, called Bitcoin Cash\footnote{\url{https://www.bitcoincash.org/}}.
+It also solves the transaction malleability problem~\cite{bitcoinmalleability} which paves the way for off-chain transactions via Lightning Network~\cite{lightningnetwork}.
+However, some fear SegWit is not enough and wish to see a hard fork that uses ``Adjustable Blocksize Cap'' that increase the maximum block size even further to 8 MB~\cite{bitcoincash}.
+The ongoing civil war resulted in a Bitcoin fork, called Bitcoin Cash~\cite{bitcoincasharticle}.
 At the time of writing, it is too early to speculate how these proposals and forks may affect the scalability properties of Bitcoin.
 But the conclusion that we can draw from the scalability debate is that the Bitcoin design is fundamentally not scalable,
 and it is highly non-trivial to ``patch'' the problem.
@@ -86,10 +83,10 @@ In this work, we take the advice of Croman et el.~\cite{croman2016scaling} and V
 Our primary insight came from observing the differences between how value transfer work in the real world and how they work in early blockchain systems.
 Take a restaurant owner, for example,
 most of the time the customer is honest and pays the bill.
-There is no need for the customer or the restaurant owner to report the transaction to any central authority 
+There is no need for the customer or the owner to report the transaction to any central authority 
 because both parties are happy with the transaction.
 On the other hand, if the customer leaves without paying the bill,
-then the restaurant owner would report the incident to some central authority, e.g. the police.
+then the owner would report the incident to some central authority, e.g. the police.
 On the contrary, in blockchain systems, every transaction is effectively sent to the miners,
 which can be seen as a collective authority.
 This consequently leads to limited scalability because every transaction must be validated by the authority even when most of the transactions are legitimate.
@@ -100,10 +97,10 @@ but nevertheless verifiable at a later stage by any node in the network.
 Informally, our system works as follows.
 Every node stores its own blockchain and every block is one transaction.
 We randomly select nodes in every round, the selected ones are called facilitators.
-They reach consensus not on the individual transactions,
-but on the state of every chain represented by a single digest, we call this state the checkpoint.
-If a checkpoint of some node is in consensus, 
-then that node can proof to any other node that it holds a set of transactions that compute (form a chain) to the checkpoint.
+Facilitators reach consensus not on the individual transactions,
+but on the state of every chain represented by a single digest, called a checkpoint block.
+If a checkpoint block of some node is in consensus, 
+then that node can proof to any other node that it holds a set of transactions that compute (form a chain) to the checkpoint block.
 This immediately shows that those transactions are tamper-proof.
 We call our protocol Checo, derived from \emph{che}ckpoint \emph{co}nsensus.
 % TODO mention consensus and trade off?
@@ -114,7 +111,7 @@ Our main contributions are the following.
         It uses individual hash chains and checkpoints on every node to achieve
         horizontally scalable for the first time.
     \item We formally analyse Checo to ensure correctness as defined in our architecture.
-    \item We implement Checkpoint Consensus with experiment with up to 1200 nodes,
+    \item We provide an implementation and then experiment with up to 1200 nodes,
         our results show strong evidence of horizontal scalability.
 \end{itemize}
 

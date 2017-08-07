@@ -136,7 +136,7 @@ The TX protocol is a simple request and response protocol.
 The nodes exchange one round of messages and create new TX blocks on their respective chains.
 Thus, as we mentioned before, one transaction should result in two TX blocks.
 
-The consensus and transaction protocol by themselves do not provide a mechanism to detect forks or other forms of tampering.
+The consensus and transaction protocol by themselves do not provide a mechanism to detect tampering.
 Thus we need a validation protocol to counteract malicious behaviour.
 When a node wishes to validate one of its TX, it asks the counterparty for the \emph{agreed fragment} of the TX.
 An agreed fragment of a TX block is a section of the chain beginning and ending with CP blocks that contain the TX block,
@@ -551,17 +551,25 @@ This allows for high concurrency where we can call $\textsf{new\_tx}(\cdot)$ mul
 \section{Validation protocol}
 \label{sec:vd-protocol}
 
-Up to this point, we do not provide a mechanism to detect forks or other forms of tampering or forging.
+Up to this point, we do not provide a mechanism to detect tampering.
 The validation protocol aims to solve this issue.
 The protocol is also a request-response protocol, just like the transaction protocol.
 But before explaining the protocol itself, we first define what it means for a transaction to be valid.
 
 \subsection{Validity definition}
 A transaction can be in one of three states in terms of validity---\emph{valid}, \emph{invalid} and \emph{unknown}.
-Given a fragment $F_{v, j}$, the validity of the transaction $t_{u, i}$ is captured by the function $\textsf{get\_validity}(t, F_u, F_v)$ (\Cref{alg:get-validity}).
-The first four conditions (up to \Cref{line:valid-fragment}) essentially check whether the fragment is the one that the verifier needs.
+Given a fragment $F_{v, j}$, the validity of the TX block $t_{u, i}$ and the agreed fragment of it is captured by the function $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ (\Cref{alg:get-validity}).
+Note that $t_{u, i}$ and $F_{u, i}$ are assumed to be valid,
+otherwise the node calling the function would have no point of reference.
+This is not difficult to achieve.
+Typically the caller is $u$, so it knows its own TX block and the corresponding agreed fragment.
+If the caller is not $u$, it can always query for the agreed fragment that contains the transaction of interest from $u$.
+
+\Cref{alg:get-validity} works as follows.
+Before~\Cref{line:valid-fragment},
+we essentially check whether the fragment is the one that the verifier needs.
 If it is not, then the verifier cannot make any decision and return \emph{unknown}.
-This is likely to be the case for new transactions because $\textsf{agreed\_fragment}(\cdot)$ would be $\bot$.
+This is likely to be the case for new transactions because the result of $\textsf{agreed\_fragment}(\cdot)$ would be $\bot$.
 The next two conditions check for tampering or missing blocks, if any of these misconducts are detected, then the TX is invalid.
 
 We stress that the \emph{unknown} state means that the verifier does not have enough information to continue with the validation protocol.
@@ -575,8 +583,10 @@ Thus, in such cases, the whole transaction identified by its $txid$ is marked as
 
 Further, the caller of $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ is not necessarily 
 $u$\footnote{In practice, it often is because after completing the TX protocol the parties are incentivised to check that the counterparty ``did the right thing''.}
-Any node $w$ may call $\textsf{get\_validity}(t_u{u, i}, F_{u, i}, F_{v, j})$ as long as the caller $w$ has an agreed fragment of $t_{u, i}$---$F_{u, i}$.
-$F_{u, i}$ may be readily available if $w = u$ or it may be from some other \texttt{vd\_resp} message, which we describe next in the validation protocol.
+Any node $w$ may call $\textsf{get\_validity}(t_u{u, i}, F_{u, i}, F_{v, j})$ as long as $w$ has an the necessary input parameters.
+$F_{u, i}$  and $t_{u, i}$ may be readily available if $w = u$.
+Otherwise, $w$ could query $u$ with the \texttt{vd\_req} message and then obtain the result from \texttt{vd\_resp}.
+This is the validation protocol which we describe next.
 
 \begin{algorithm}
 \caption{Function $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ validates the transaction represented by $t_{u, i}$.
@@ -602,7 +612,7 @@ $F_{v, j}$ is the corresponding fragment received from $v$.}
     \State $\langle \_, \_, txid', pk_u, m', \_ \rangle \gets t_{v, j}$ 
 
     % message tampering
-    \If{$m \ne m' $} 
+    \If{$m \ne m' \vee txid \ne txid'$} 
         \State \Return \emph{invalid}
     \EndIf
     \State
@@ -616,8 +626,9 @@ $F_{v, j}$ is the corresponding fragment received from $v$.}
 \end{algorithm}
 
 \subsection{Validation protocol}
-Our validation protocol is designed to classify transactions according to the aforementioned validity definition.
-The protocol is a simple response and request protocol shown in \Cref{alg:vd-proto}.
+Our validation protocol,
+shown in~\Cref{alg:vd-proto},
+is designed to classify transactions according to the aforementioned validity definition.
 If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends $\langle \texttt{vd\_req}, txid \rangle$ to $v$.
 The desired properties of the validation protocol are as follows.
 \begin{definition}
@@ -785,14 +796,18 @@ our scheme is not suitable.
 For such applications, we need to guarantee that there are no forks from the genesis block leading up to the TX block of interest.
 
 There are a variety of approaches to do global fork detection.
-First and the easiest solution is to simply ask for every agreed fragment from the one containing the genesis block up to the one that the to-be-proven TX block is in.
-If the hash pointers are correct and all the CP blocks are in consensus, then the verifier can be sure that there are no forks.
+First and the easiest solution is to simply ask for the complete chain of the counterparty.
+The verifier can be sure that there are no forks if the following holds.
+\begin{enumerate}
+    \item The hash pointers are correct.
+    \item All the CP blocks are in consensus.
+    \item The TX of interest is in the chian.
+\end{enumerate}
 We use this approach in our prior work on Implicit Consensus~\cite{implicitconsensus}.
 It may sound inefficient at first, but nodes employ caching to minimise communication costs.
-In our work, we call this effect ``spontaneous sharding''.
 
-The second approach is probabilistic but with only a constant communication overhead.
-For a node, observe that if all of its agreed fragment has a transaction with an honest node,
+The second approach is probabilistic but with only a constant communication overhead over our current design.
+For a node, observe that if all of its agreed fragments has a transaction with an honest node,
 then the complete chain is effectively validated in a distributed manner.
 The only way for an attacker to make a fork is to make sure that the agreed fragment containing the fork has no transactions with honest nodes.
 Such malicious behaviour is prevented probabilistically using a challenge-response protocol as follows.
@@ -805,7 +820,7 @@ The probability that an honest node catches out a malicious node is
 $$p = \frac{f}{r},$$
 where $f$ is the number of bad agreed fragments and $r$ is the latest round number.
 If there are more nodes (say $n$) trying to make transactions with the malicious node,
-then the probability that the malicious node gets caught at least once follows a binomial distribution
+then the probability that the malicious node gets caught at least once (denoted by the random variable $X$) follows a binomial distribution, i.e.
 $$\Pr[X > 0] = \sum_{k = 1}^{n}\binom{n}{k}p^k (1 - p)^{n - k}.$$
 
 % TODO?
