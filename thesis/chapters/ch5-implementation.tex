@@ -243,6 +243,7 @@ Validation requests are sent at the same rate, which explains the magnitude.
 The difference in magnitude between \Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random} is caused by the caching mechanism mentioned earlier.
 If a new agreed fragment needs to be transmitted to validate every transaction then it puts a toll on the network infrastructure.
 The low transaction rate in~\Cref{fig:global-throughput-random} is caused by the fact that the network infrastructure cannot keep up with our demand.
+In practice, we do not expect such behaviour to occur as it is possible to cache agreed fragments.
 
 We demonstrate the bottleneck issue from a different perspective in~\Cref{fig:backlog}.
 The graph is plotted by counting the number of transactions and the number of validated transactions every 5 seconds for one node running in a network of 1200 nodes and 32 facilitators.

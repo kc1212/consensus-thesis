@@ -94,6 +94,7 @@ This consequently leads to limited scalability because every transaction must be
 Using the aforementioned insight,
 we explore an alternative consensus model for blockchain systems where transactions themselves do not reach consensus,
 but nevertheless verifiable at a later stage by any node in the network.
+We call our protocol Checo, derived from \emph{che}ckpoint \emph{co}nsensus.
 Informally, our system works as follows.
 Every node stores its own blockchain and every block is one transaction.
 We randomly select nodes in every round, the selected ones are called facilitators.
@@ -102,8 +103,9 @@ but on the state of every chain represented by a single digest, called a checkpo
 If a checkpoint block of some node is in consensus, 
 then that node can proof to any other node that it holds a set of transactions that compute (form a chain) to the checkpoint block.
 This immediately shows that those transactions are tamper-proof.
-We call our protocol Checo, derived from \emph{che}ckpoint \emph{co}nsensus.
-% TODO mention consensus and trade off?
+The key difference from related work is the independence of the transaction validation phase.
+Prior systems such a Bitcoin and Ethereum entangled the consensus algorithm with the transaction validation, restricting performance.
+By splitting this functionality we achieved horizontal scalability in the general case.
 
 Our main contributions are the following.
 \begin{itemize}

@@ -688,8 +688,10 @@ They enable better performance, allow us to apply our design in the fully permis
 One of the final steps in our consensus protocol is to broadcast the consensus result and signatures to every other node (\Cref{sec:consensus-phase}).
 While this guarantees delivery (since we assumed reliable channel), it is wasteful.
 For example, if every facilitator is honest, a node would receive $n$ consensus results which are identical when only one is necessary.
+Furthermore, realistic networks do not offer a broadcast primitive,
+i.e. firewalls may block incoming messages from certain nodes.
 
-An optimisation we can do is to use an epidemic protocol~\cite{eugster2004epidemic} (also known as gossiping) instead of our broadcast approach.
+An improvement is use an epidemic protocol~\cite{eugster2004epidemic} (also known as gossiping) instead of our broadcast approach.
 Typical epidemic protocols works as follows.
 Every node buffers every message it receives up to some buffer size $b$.
 Then it forwards the messages $t$ number of times.
