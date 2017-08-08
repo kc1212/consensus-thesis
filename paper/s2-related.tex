@@ -1,0 +1,180 @@
+
+\section{Background and Related Work}
+% give background on ACS
+% give background on TrustChain?
+
+\subsection{Background on asynchronous subset consensus}
+\label{sec:acs-background}
+
+ACS is an especially useful primitive for blockchain systems.
+It allows any party to propose a value and the result is the set union of all the proposed values by the majority.
+Concretely, ACS needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
+\begin{definition}
+\label{def:acs}
+\textbf{\emph{Asynchronous subset consensus}}
+
+There are $n$ nodes, of which at most $t$ might experience Byzantine fault.
+Node $i$ starts with a non-empty set of input values $C_i$.
+The nodes must decide an output $C$, satisfying the following.
+\begin{enumerate}
+    \item \emph{Agreement:}
+        If a correct node outputs $C$, then every node outputs $C$.
+    \item \emph{Validity:}
+        If any correct node outputs a set $C$,
+        then $|C| \ge n - t$ and $C$ contains the input of at least $n - 2t$ nodes.
+    \item \emph{Totality:}
+        If $n - t$ nodes receive an input, then all correct nodes produce an output.
+\end{enumerate}
+\end{definition}
+
+ACS has the nice property of censorship resilience when compared to other consensus algorithms.
+For instance, Hyperledger and Tendermint uses a variant of Practical Byzantine Fault Tolerance (PBFT)~\cite{castro1999practical} as their consensus algorithm.
+In PBFT, a leader is elected, if the leader is malicious but follows the protocol, then it can selectively filter transactions.
+In contrast, every party in ACS are involved in the proposal phase,
+and it guarantees that if $n - 2t$ parties propose the same transaction, then it must be in the agreed output.
+Thus, if some value is submitted to at least $n - 2t$ nodes, it is guaranteed to be in the consensus result.
+For a detailed description of ACS, we refer to the HoneyBadgerBFT work~\cite{miller2016honey}.
+To understand the remainder of this work, the knowledge of~\Cref{def:acs} is sufficient.
+
+The main drawback with ACS and also Byzantine consensus algorithms is the high message complexity.
+Typically, such protocols have a message complexity of $O(n^2)$, where $n$ is the number of parties.
+Hence, it may work with a small number of nodes,
+but it is infeasible for blockchain systems where thousands of nodes are involved.
+
+% The literature on Byzantine consensus and atomic broadcast is rich, some noteable ones include TODO.
+% Thus in the ETC consensus protocol, we assume there exist an "off-the-shelf" Byzantine consensus algorithm which we can use
+% (in our implementation we use HoneyBadgerBFT and motivate our choice in TODO).
+
+% In our case, every node do not propose some arbitrary data, but a set of CP blocks.
+% Thus the result of the consensus is the set union of all the legitimate proposals.
+
+
+\subsection{Off-chain transactions and payment networks}
+Off-chain transactions make use of the following fact.
+If nodes make frequent transactions,
+then it is not necessary to store every transaction on the blockchain,
+only the net settlement is necessary.
+The best examples are Lightning Network~\cite{lightningnetwork} and Duplex Micropayment Channels~\cite{decker2015fast}.
+
+Off-chain transaction systems are implemented using multi-signature addresses~\cite{bitcoinmultisig} and hashed time-locked Bitcoin contracts~\cite{bitcointimelock}.
+In the simplest case, 
+if two parties wish to make transactions,
+they open a payment channel in the form of a multi-signature Bitcoin address (for two parties it would be a 2-of-2 signature address).
+Each of the party must also deposit some Bitcoins in the multi-signature address,
+this is called the opening transaction.
+Both parties keep the channel state which is not broadcasted to the network.
+The state is updated when the two parties make new transactions.
+The protocol disincentivises the parties from broadcasting old channel states.
+If this occurs, the counterparty can drain all the Bitcoins in the channel.
+To close the channel, the parties simply broadcast the latest net settlement to the Bitcoin network,
+this is called the closing transaction.
+Effectively, only two transactions need to be broadcasted to the Bitcoin network---the opening and the closing transaction,
+even if the two parties made thousands or millions of transactions in between.
+The two-party scheme can be extended to a network of channels,
+which allows two parties to make off-chain transactions without an open channel as long as they are connected by nodes that do.
+
+The advantage of such systems is that they act as add-ons to Bitcoin wish already has a large number of users.
+Thus, if enough of the network wish for it (by setting a new block version),
+then a large number of users will instantly benefit from it.
+Some implementations already exist\footnote{For example \url{https://github.com/lightningnetwork/lnd}.},
+but at the time of writing SegWit is not activated yet which is a prerequisite for Lightning Network.
+
+On the other hand, off-chain transactions also suffer from the problem of Bitcoin.
+Namely, proof-of-work consumes an unreasonable amount of power.
+Further, payment channels complicate user experience.
+As we mentioned earlier, each node must deposit some Bitcoins into a multi-signature account.
+The users must pick a suitable amount.
+If the deposit is too low it would not allow large transactions.
+If the deposit is too high the user is locked out of much of its Bitcoins for use outside of the channel.
+In addition, the user must proactively check whether the counterparty has broadcasted an old channel state so that the user does not lose Bitcoins.
+Payment channel, in theory, solves the scalability problem of early blockchain systems,
+but to the best of our knowledge, its exact scalability characteristics are not investigated.
+
+% Further, off-chain transactions are limited only to an exchange of cryptocurrency,
+% it is less general than typical Bitcoin transactions which may be a simple smart contract.
+% Time-locked contracts have a strong dependency on timing, thus disputes may arise when the payment channel is just about to close.
+% Our system is purely asynchronous and make no assumption on timing,
+% in fact we assume the adversary has control of the message delivery time and order.
+
+
+\subsection{Permissioned systems based on Byzantine consensus}
+
+This category of systems uses traditional Byzantine consensus algorithms such as PBFT~\cite{castro1999practical}.
+In essence, they contain a fixed set of nodes (sometimes called validating peer) that run a Byzantine consensus algorithm to decide on new blocks.
+This is often used in permissioned system where the validators must be predetermined,
+for example, Hyperledger Fabric~\cite{cachin2016architecture}.
+
+A nice aspect of Byzantine consensus and in particular PBFT is that it can handle much more transactions than classical blockchain systems.
+PBFT can, for example, achieve 10,000 TX/s if the number of validating peer is under 16~\cite[Section 5.2]{miller2016honey}.
+Further, in contrast to proof-of-work, PBFT consensus is final.
+That is, transaction history cannot be re-written if it is already in the blockchain.
+
+The major drawback of Byzantine consensus based systems is that it does not scale in terms of the number of validating peers.
+Going back to PBFT, its transaction rate drops to under 5000 TX/s when the number of validating peer is 64~\cite[Section 5.2]{miller2016honey}.
+Moreover, the validating peers are predetermined which makes the system unsuitable for the open internet.
+
+% But our system has the potential to perform beyond that of PBFT because we represent many transactions with a single CP block,
+% enabling horizontal scalability.
+% Furthermore, since PBFT relies on a leader, it is not censorship resiliant.
+% Our system on the other hand has the benifits of ACS where CP blocks cannot be censored.
+% Finally, our system is able to work in the permissionless setting by simply submitting new CP blocks to the facilitators.
+% It can even be adapted to work in the permissioned by simply removing the luck value computation.
+
+% What we wish to have which is in Hyperledger is a smart contract system (also known as chaincodes in Hyperledger).
+% We hope to design and implement smart contracts by adding additional logic to the transaction protocol and the validation protocol.
+% Such functionalities we believe is better to be built into the backbone rather than having it as an add on.
+
+\subsection{Combining proof-of-work with Byzantine consensus}
+Recent research has developed a class of hybrid systems which uses PoW for committee election,
+and Byzantine consensus algorithms to agree on transactions.
+This design is primarily for permissionless system because the PoW leader election aspect prevents Sybils.
+% And then they use a Byzantine consensus algorithm to actually reach consensus on a set of transactions within the committee.
+Some examples are SCP~\cite{luu2015scp}, ByzCoin~\cite{kogias2016enhancing} and Solidus~\cite{abraham2016solidus}.
+
+This technique overcomes the early blockchain scalability issue by delegating the transaction validation to the Byzantine consensus protocol (e.g. PBFT in ByzCoin~\cite{kogias2016enhancing}).
+A major tradeoff of such systems is that they cannot guarantee correctness when there is a large number of malicious nodes (but less than a majority).
+For SCP, ByzCoin and Solidus, they all have some probability to elect more than $t$ Byzantine nodes into the committee,
+where $t$ is typically just under a third of the committee size (a lower bound of Byzantine consensus~\cite{pease1980reaching}).
+This problem is especially difficult to solve because the committee is always much smaller than the population size which has more than $t$ Byzantine nodes.
+Classical blockchain does not have this problem because they do not use Byzantine consensus.
+Further, due to the fact that these systems must reach consensus on all transactions, none of them achieves horizontal scalability.
+
+% Our approach share many similarities with the hybrid systems.
+% First, we also elect a committee (facilitators) to drive consensus.
+% But we do not have proof-of-work for Sybil defence because we believe 
+% it is possible to do it efficiently, e.g. using NetFlow~\cite{pimotte}.
+% Secondly, our use of CP blocks and ACS is also unique.
+% This creates a much higher throughput and enables censorship resiliance as mentioned earlier.
+% For instance, ByzCoin performs just below 1000 TPS with a thousand nodes whereas we peak at 8000 TPS.
+
+\subsection{Sharding}
+
+Sharding is a technique to achieve horizontal scalability by grouping nodes into multiple committees or shards.
+Nodes within a single shard run a Byzantine consensus algorithm to agree on a set of transactions that belong to that specific shard.
+An intra-shard protocol is needed for transactions that involve nodes from more than one shard.
+The number of shards grows linearly with respect to the total computational power in the network.
+This scheme achieves horizontal scalability because if every shard commits transactions at the same throughput,
+then adding more shard would naturally result in a linear increase of global throughput.
+Examples of blockchain systems that use sharding are Elastico~\cite{luu2016elastico} and OmniLedger~\cite{kokoris2017omniledger}.
+
+The biggest limitation of sharding is that it is only optimal is transactions stay in the same shard.
+In fact, Elastico cannot atomically process inter-shard transactions.
+OmniLedger has an inter-shard transaction protocol but choosing a good shard size is difficult.
+A large shard size would make the system less scalable because the Byzantine consensus algorithm must be run by a large number of nodes.
+A small shard size would result in a large number of inter-shard transactions which also hinder scalability.
+The authors of OmniLedger noted that inter-shard transactions have significantly higher latency compared to the consensus protocol~\cite{kokoris2017omniledger}.
+Furthermore, since no shards can be compromised for the system to function correctly,
+the adversaries have more opportunities to compromise the system.
+
+\subsection{Blockchain without global consensus}
+
+Tangle~\cite{tangle}, Corda~\cite{corda} and the original TrustChain~\cite{multichain} do not use global consensus at all.
+In this scheme, every node has their own chain.
+Transactions between nodes are recorded on their respective chains.
+This effectively results in a directed acyclic graph.
+By avoiding global consensus, this approach achieves extremely desirable scalability properties similar to BitTorrent~\cite{cohen2003incentives}.
+
+On the other hand, the application and security are limited.
+A malicious node can easily lie to other nodes regarding its own chain by simply presenting one version of reality to a set of nodes and another version to a different set.
+Thus the network will have a conflicting view on the state of the malicious node.
+Applications such as digital cash can not be implemented on top of such systems because consistency is needed in solving the double spending problem.
