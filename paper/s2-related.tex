@@ -1,53 +1,11 @@
 
 \section{Background and Related Work}
-% give background on ACS
-% give background on TrustChain?
 
-\subsection{Background on asynchronous subset consensus}
-\label{sec:acs-background}
-
-ACS is an especially useful primitive for blockchain systems.
-It allows any party to propose a value and the result is the set union of all the proposed values by the majority.
-Concretely, ACS needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
-\begin{definition}
-\label{def:acs}
-\textbf{\emph{Asynchronous subset consensus}}
-
-There are $n$ nodes, of which at most $t$ might experience Byzantine fault.
-Node $i$ starts with a non-empty set of input values $C_i$.
-The nodes must decide an output $C$, satisfying the following.
-\begin{enumerate}
-    \item \emph{Agreement:}
-        If a correct node outputs $C$, then every node outputs $C$.
-    \item \emph{Validity:}
-        If any correct node outputs a set $C$,
-        then $|C| \ge n - t$ and $C$ contains the input of at least $n - 2t$ nodes.
-    \item \emph{Totality:}
-        If $n - t$ nodes receive an input, then all correct nodes produce an output.
-\end{enumerate}
-\end{definition}
-
-ACS has the nice property of censorship resilience when compared to other consensus algorithms.
-For instance, Hyperledger and Tendermint uses a variant of Practical Byzantine Fault Tolerance (PBFT)~\cite{castro1999practical} as their consensus algorithm.
-In PBFT, a leader is elected, if the leader is malicious but follows the protocol, then it can selectively filter transactions.
-In contrast, every party in ACS are involved in the proposal phase,
-and it guarantees that if $n - 2t$ parties propose the same transaction, then it must be in the agreed output.
-Thus, if some value is submitted to at least $n - 2t$ nodes, it is guaranteed to be in the consensus result.
-For a detailed description of ACS, we refer to the HoneyBadgerBFT work~\cite{miller2016honey}.
-To understand the remainder of this work, the knowledge of~\Cref{def:acs} is sufficient.
-
-The main drawback with ACS and also Byzantine consensus algorithms is the high message complexity.
-Typically, such protocols have a message complexity of $O(n^2)$, where $n$ is the number of parties.
-Hence, it may work with a small number of nodes,
-but it is infeasible for blockchain systems where thousands of nodes are involved.
-
-% The literature on Byzantine consensus and atomic broadcast is rich, some noteable ones include TODO.
-% Thus in the ETC consensus protocol, we assume there exist an "off-the-shelf" Byzantine consensus algorithm which we can use
-% (in our implementation we use HoneyBadgerBFT and motivate our choice in TODO).
-
-% In our case, every node do not propose some arbitrary data, but a set of CP blocks.
-% Thus the result of the consensus is the set union of all the legitimate proposals.
-
+Making early blockchain systems scalable has received much attention from both the academia and the industry in recent years.
+This section gives an mini taxonomy of the state-of-the-art, categorised by the scalability approach.
+At the end of this section,
+we describe the important--asynchronous subset consensus (ACS),
+which is the key building block of our work.
 
 \subsection{Off-chain transactions and payment networks}
 Off-chain transactions make use of the following fact.
@@ -56,30 +14,7 @@ then it is not necessary to store every transaction on the blockchain,
 only the net settlement is necessary.
 The best examples are Lightning Network~\cite{lightningnetwork} and Duplex Micropayment Channels~\cite{decker2015fast}.
 
-Off-chain transaction systems are implemented using multi-signature addresses~\cite{bitcoinmultisig} and hashed time-locked Bitcoin contracts~\cite{bitcointimelock}.
-In the simplest case, 
-if two parties wish to make transactions,
-they open a payment channel in the form of a multi-signature Bitcoin address (for two parties it would be a 2-of-2 signature address).
-Each of the party must also deposit some Bitcoins in the multi-signature address,
-this is called the opening transaction.
-Both parties keep the channel state which is not broadcasted to the network.
-The state is updated when the two parties make new transactions.
-The protocol disincentivises the parties from broadcasting old channel states.
-If this occurs, the counterparty can drain all the Bitcoins in the channel.
-To close the channel, the parties simply broadcast the latest net settlement to the Bitcoin network,
-this is called the closing transaction.
-Effectively, only two transactions need to be broadcasted to the Bitcoin network---the opening and the closing transaction,
-even if the two parties made thousands or millions of transactions in between.
-The two-party scheme can be extended to a network of channels,
-which allows two parties to make off-chain transactions without an open channel as long as they are connected by nodes that do.
-
-The advantage of such systems is that they act as add-ons to Bitcoin wish already has a large number of users.
-Thus, if enough of the network wish for it (by setting a new block version),
-then a large number of users will instantly benefit from it.
-Some implementations already exist\footnote{For example \url{https://github.com/lightningnetwork/lnd}.},
-but at the time of writing SegWit is not activated yet which is a prerequisite for Lightning Network.
-
-On the other hand, off-chain transactions also suffer from the problem of Bitcoin.
+Off-chain transactions promises significant scalability improvements, but it suffer from the problem of Bitcoin.
 Namely, proof-of-work consumes an unreasonable amount of power.
 Further, payment channels complicate user experience.
 As we mentioned earlier, each node must deposit some Bitcoins into a multi-signature account.
@@ -166,15 +101,36 @@ The authors of OmniLedger noted that inter-shard transactions have significantly
 Furthermore, since no shards can be compromised for the system to function correctly,
 the adversaries have more opportunities to compromise the system.
 
-\subsection{Blockchain without global consensus}
+\subsection{Asynchronous subset consensus}
+\label{sec:acs-background}
 
-Tangle~\cite{tangle}, Corda~\cite{corda} and the original TrustChain~\cite{multichain} do not use global consensus at all.
-In this scheme, every node has their own chain.
-Transactions between nodes are recorded on their respective chains.
-This effectively results in a directed acyclic graph.
-By avoiding global consensus, this approach achieves extremely desirable scalability properties similar to BitTorrent~\cite{cohen2003incentives}.
+ACS is an especially useful primitive for blockchain systems.
+It allows any party to propose a value and the result is the set union of all the proposed values by the majority.
+Concretely, ACS needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
+\begin{definition}
+\label{def:acs}
+\textbf{\emph{Asynchronous subset consensus}}
 
-On the other hand, the application and security are limited.
-A malicious node can easily lie to other nodes regarding its own chain by simply presenting one version of reality to a set of nodes and another version to a different set.
-Thus the network will have a conflicting view on the state of the malicious node.
-Applications such as digital cash can not be implemented on top of such systems because consistency is needed in solving the double spending problem.
+There are $n$ nodes, of which at most $t$ might experience Byzantine fault.
+Node $i$ starts with a non-empty set of input values $C_i$.
+The nodes must decide an output $C$, satisfying the following.
+\begin{enumerate}
+    \item \emph{Agreement:}
+        If a correct node outputs $C$, then every node outputs $C$.
+    \item \emph{Validity:}
+        If any correct node outputs a set $C$,
+        then $|C| \ge n - t$ and $C$ contains the input of at least $n - 2t$ nodes.
+    \item \emph{Termination:}
+        If $n - t$ nodes receive an input, then all correct nodes produce an output.
+\end{enumerate}
+\end{definition}
+
+ACS has the nice property of censorship resilience when compared to other consensus algorithms.
+For instance, a leader is elected in PBFT~\cite{castro1999practical},
+if the leader is malicious but follows the protocol, then it can selectively filter transactions.
+In contrast, every party in ACS are involved in the proposal phase,
+and it guarantees that if $n - 2t$ parties propose the same transaction, then it must be in the agreed output.
+Thus, if some value is submitted to at least $n - 2t$ nodes, it is guaranteed to be in the consensus result.
+The total communication complexity of ACS is $O(n^2 |v| + \lambda n^3 \log(n))$,
+where $n$ is the number of nodes, $|v|$ is the message size and $\lambda$ is the security parameter.
+For a detailed description of ACS, we refer to the HoneyBadgerBFT work~\cite{miller2016honey}.

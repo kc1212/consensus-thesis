@@ -1,22 +1,31 @@
-
 \section{System Architecture}
 
 Our system consists of three protocols---the consensus protocol, the transaction protocol and the validation protocol.
 It is based on our prior work on TrustChain~\cite{multichain},
 where every node independently interacts with each other via their own blockchain\footnote{It is originally called MultiChain but the name has changed to TrustChain}.
 
+\subsection{Overview and intuition}
+Unlike most blockchain systems, we do not use a global ledger.
+Instead, every node has their own hash chain.
+The nodes only store transactions (TX) that they are involved in on their hash chain.
+We introduce a special block called checkpoint (CP) block, which represents the state of a hash chain.
+The data structure is called Extended TrustChain, a visualisation can be seen on~\Cref{fig:trustchain-good-cp}.
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{trustchain-good-cp}
+\caption{Visualisation of the Extended TrustChain. $t_{u, i}$ represents a TX block on $u$'s chain with a sequence number of $i$.
+$c_{v, j}$ represents a CP block on $v$'s chain with a sequence number of $j$.}
+\label{fig:trustchain-good-cp}
+\end{figure}
+
+We randomly elect special nodes called facilitators in every round.
+The facilitators reach consensus on CP blocks and the consensus result is essentially a set of CP blocks of from (nearly) all the nodes.
+While this gives us consensus on a representation of the global state, it does not imply consensus on transactions.
+To this end, we introduce the validation protocol that allows any nodes to challenge any other node to produce a set of TX blocks that computes to the CP block in consensus.
+Hence we implicitly achieve consensus on transactions.
+
 \subsection{Model and assumptions}
 \label{sec:model-assumptions}
-
-This section and the ones following it give a technical treatment of what the content in System overview.
-For notational clarity, we use the following convention (adapted from~\cite{miller2016honey}) for most of this work.
-\begin{itemize}
-\item Lower case (e.g. $x$) denotes a scalar object or a tuple.
-\item Upper case (e.g. $X$) denotes a set or a constant.
-\item Sans serif (e.g. $\textsf{fn}(\cdot)$) denotes a function.
-\item Monospace (e.g. $\texttt{ack}$) denotes message type.
-\end{itemize}
-Further, we use $a || b$ to denote concatenation of the binary representations of $a$ and $b$.
 
 We assume purely asynchronous channels with eventual delivery.
 Thus in no stage of our protocol do we make timing assumptions.
@@ -24,11 +33,8 @@ The adversary has full control of the delivery schedule and the message ordering
 But they are not allowed to drop messages except for their own\footnote{
     Reliability can be achieved in unreliable networks by resending messages or using some error correction code.
 }.
-
-We assume there exists a Public Key Infrastructure (PKI), and nodes are identified by their unique and permanent public key.
-Finally, we use the random oracle (RO) model, i.e. calls to the random oracle are denoted by $\textsf{H}: \{0, 1\}^* \rightarrow \{0, 1\}^\lambda$,
-where $\{0, 1\}^*$ denotes the space of finite binary strings and $\lambda$ is the security parameter.
-Under the RO model, the probability of successfully computing the inverse of the hash function is negligible with respect to $\lambda$~\cite{bellare1993random}.
+Further, we assume there exists a Public Key Infrastructure (PKI),
+and nodes are identified by their unique and permanent public key.
 
 % TODO big N does not follow our convention
 In our model, we consider $N$ nodes, which is the population size.
@@ -108,7 +114,7 @@ The genesis block is unique because every node has a unique public and private k
 \label{sec:consensus-result}
 \textbf{\emph{Consensus result}}
 
-Our consensus protocol runs in rounds as discussed in \Cref{sec:system-overview}.
+Our consensus protocol runs in rounds.
 Every round is identified by a round number $r$, which is incremented on every new round.
 The consensus result is a tuple, i.e. $\C_r = \langle r, C \rangle$,
 where $C$ is a set of CP blocks agreed by the facilitators of round $r$.
@@ -128,14 +134,8 @@ Intuitively, that is the two closest CP blocks that surround $t_{u, i}$.
 Note that $c_{u, a}$ is the more recent CP block.
 Also, some TX blocks may not have any enclosure, then its enclosure is $\bot$.
 Agreed enclosure is the same as enclosure with an extra constraint where the CP blocks must be in some consensus result $\C_r$.
-
 \end{definition}
 
-Note that the ``closest CP blocks'' property must also apply to agreed enclosure. 
-Suppose a chain is in the form
-$\{c_{i}, c_{i+1}, t_{i+2}, c_{i+3}\}$\footnote{Usually the notation is of the form $c_{u, i}$, but the node identity is not important here so we simplify it to $c_{i}$}
-and $c_{i}, c_{i+1}, c_{i+3}$ are in $\C_r, \C_{r+1}, \C_{r+3}$ respectively,
-then the agreed enclosure of $t_{i+2}$ is $\langle c_{i+1}, c_{i+3}\rangle$ and cannot be $\langle c_{i}, c_{i+3}\rangle$.
 
 \begin{definition}
 \textbf{\emph{Fragment and agreed fragment}}
@@ -147,17 +147,45 @@ For convenience, the function $\textsf{agreed\_fragment}(\cdot)$ represents the 
 \end{definition}
 
 \subsection{Consensus Protocol}
+Our scalable consensus protocol runs on top of Extended TrustChain.
+It uses an unmodified asynchronous subset consensus (ACS) algorithm as the key building block.
+The objectives of the protocol are to
+    allow honest nodes always make progress (in the form of creating new CP blocks),
+    compute correct consensus result in every round
+    and have an unbiased election of facilitators.
+Concretely, we define the necessary properties as follows.
+\begin{definition}
+\label{def:consensus}
+\textbf{\emph{Properties of the consensus protocol}}
+
+$\forall r \in \mathbb{N}$, the following properties must hold.
+\begin{enumerate}
+    \item \emph{Agreement}:
+        If one correct node outputs a set of facilitators $\F_r$,
+        then every node outputs $\F_r$
+    \item \emph{Validity}:
+        If any correct node outputs $\F_r$, then 
+            \begin{enumerate}
+                \item $|\C_r| \ge N - t$ and each CP in $\C_r$ belong to a different node\footnote{
+                $\C_r$ is a tuple but we abuse the notation here by writing $|\C_r|$ to mean the number of CP blocks in the second element of $\C_r$.}.
+                \item $\F_r$ must contain at least $n - t$ honest nodes and
+                \item $|\F_r| = n$.
+            \end{enumerate}
+    \item \emph{Fairness}:
+        Every node with a CP block in $\C_r$ should have an equal probability of becoming a member of $\F_r$.
+    \item \emph{Termination}:
+        Every correct node eventually outputs some $\F_r$.
+\end{enumerate}
+\end{definition}
+These properties are similar to Byzantine consensus properties but there are subtle differences.
+Firstly, they are properties for every node in the network and not just the facilitators.
+Secondly, they must be satisfied for all rounds because the whole system falls apart if one of the property cannot be satisfied in one of the rounds.
+
+
 \subsubsection{Bootstrap phase}
 \label{sec:bootstrap}
-Now we have all the necessary information to describe our consensus protocol.
-As with all distributed systems, there must be a bootstrap phase which sets up the system.
-
-The reader may notice from the system overview (\Cref{sec:system-overview}) that the facilitators are computed from the consensus result,
-but the consensus result is agreed by the facilitators.
-Thus we have a dependency cycle.
-The goal of the bootstrap phase is to give us a starting point in the cycle.
-
-To bootstrap, imagine that there is some bootstrap oracle, that initiates the code on every node.
+As with many distributed systems, there must be a bootstrap phase which sets up the system.
+Imagine that there is some bootstrap oracle, that initiates the code on every node.
 The code satisfies all the properties in \Cref{def:consensus}.
 Namely, every node has the same set of valid facilitators $\F_1$ that are randomly chosen.
 This concludes the bootstrap phase.
@@ -195,7 +223,8 @@ Second, HoneyBadgerBFT uses threshold encryption to hide the content of the tran
 But we do not reach consensus on transactions, only CP blocks, so hiding CP blocks is meaningless for us as it contains no transaction information.
 
 Continuing, when $\F_{r}$ reaches agreement on $\C_{r+1}$,
-they immediately broadcast two messages to all the nodes---
+they immediately broadcast\footnote{An alternative to using broadcasting is to use an epidemic protocl~\cite{eugster2004epidemic}, 
+as long as it can guarantee delivery.} two messages to all the nodes---
 first the consensus message $\langle \texttt{cons\_msg}, \C_{r+1} \rangle$,
 and second the signature message $\langle \texttt{cons\_sig}, r, sig \rangle$.
 The reason for sending \texttt{cons\_sig} is the following.
@@ -330,14 +359,12 @@ $F_{v, j}$ is the corresponding fragment received from $v$.}
     \If{$F_{v, j}$ is not a fragment created in the same round as $F_{u, i}$}
         \State \Return \emph{unknown}
     \EndIf
-    \State
 
     \label{line:valid-fragment}
     \State $\langle \_, \_, txid, pk_v, m, \_ \rangle \gets t_{u, i}$
     \If{number of blocks of $txid$ in $F_{v, j} \ne 1$}
         \State \Return \emph{invalid}
     \EndIf
-    \State
 
     \State $t_{v, j} \gets $ the TX block with $txid$ in $F_{v, j}$
     \State $\langle \_, \_, txid', pk_u, m', \_ \rangle \gets t_{v, j}$ 
@@ -346,7 +373,6 @@ $F_{v, j}$ is the corresponding fragment received from $v$.}
     \If{$m \ne m' \vee txid \ne txid'$} 
         \State \Return \emph{invalid}
     \EndIf
-    \State
 
     % signature tampering
     \If{$t_{u, i} \text{ is not signed by } pk_u \vee t_{v, j} \text{ is not signed by } pk_v $}
@@ -415,32 +441,6 @@ In this section,
 we explore a few design variations which we can make, some of them require a relaxed version of our original model.
 They enable better performance, allow us to apply our design in the fully permissionless setting and improves privacy.
 
-\subsubsection{Using epidemic protocol to reduce communication cost}
-One of the final steps in our consensus protocol is to broadcast the consensus result and signatures to every other node (\Cref{sec:consensus-phase}).
-While this guarantees delivery (since we assumed reliable channel), it is wasteful.
-For example, if every facilitator is honest, a node would receive $n$ consensus results which are identical when only one is necessary.
-Furthermore, realistic networks do not offer a broadcast primitive,
-i.e. firewalls may block incoming messages from certain nodes.
-
-An improvement is use an epidemic protocol~\cite{eugster2004epidemic} (also known as gossiping) instead of our broadcast approach.
-Typical epidemic protocols works as follows.
-Every node buffers every message it receives up to some buffer size $b$.
-Then it forwards the messages $t$ number of times.
-Every time the message is sent to $f$ random neighbours, $f$ is often called the fan-out.
-The upside of using epidemic protocol is that the communication cost is distributed more evenly between nodes.
-This is especially true with a lazy push approach where the node who just received a message would push the message ID (e.g. digest) to its $f$ random neighbours,
-and only push the full message if the neighbour explicitly requests the message~\cite{leitao2007epidemic}.
-With this, nodes typically only need to receive one consensus result message instead of $n$.
-
-A down side of an epidemic protocol is that it usually takes $O(\log N)$ time to infect the whole network,
-whereas broadcasting uses constant time.
-Another downside of some epidemic protocols (e.g. eager push) is that it is difficult to guarantee delivery.
-It is especially true when the parameters are not chosen correctly in a network that is only partially connected (but every node is nevertheless reachable).
-If the delivery cannot be guaranteed, 
-then we cannot guarantee liveness in our consensus protocol because a future facilitator may miss the memo.
-Picking parameters are difficult in practice because the network configuration is unknown and the total number of nodes might also be unknown.
-
-
 \subsubsection{Using timing assumption in the permissionless setting}
 \label{sec:permissionless}
 Our model is purely asynchronous, where we make no timing assumptions anywhere in the protocol.
@@ -500,15 +500,6 @@ With compact blocks, it is only necessary to send the compact version of the agr
 The validation then proceeds in a similar fashion,
 provided that the pair of the to-be-validated TX block is known.
 
-The space saving of this approach depends on the size of the full blocks.
-If the full blocks are on average 500 bytes
-(which is the typical size of Bitcoin transactions ~\cite{txsize}),
-and the compact blocks are $32 + 32 + 8 = 72$ bytes
-(SHA256 digests are 32 bytes each and we use a 64-bit integer to represent the sequence number),
-then the saving in communication cost is 86\%.
-
-%Using compact blocks, it is possible to reduce network communication costs in the validation protocol but also protect transaction privacy.
-
 \subsubsection{Optimising validation protocol using cached agreed fragments}
 \label{sec:caching}
 One more way to improve the efficiency of the validation protocol is to use a single agreed fragment to validate multiple transactions.
@@ -549,10 +540,4 @@ $A$ first sends a challenge to $B$ asking it to prove that it holds a valid agre
 If $B$ provides a correct proof, then they run the transaction protocol as usual.
 If $B$ provides an invalid proof or refuses to respond,
 then $A$ would refuse to make the transaction.
-The probability that an honest node catches out a malicious node is 
-$$p = \frac{f}{r},$$
-where $f$ is the number of bad agreed fragments and $r$ is the latest round number.
-If there are more nodes (say $n$) trying to make transactions with the malicious node,
-then the probability that the malicious node gets caught at least once (denoted by the random variable $X$) follows a binomial distribution, i.e.
-$$\Pr[X > 0] = \sum_{k = 1}^{n}\binom{n}{k}p^k (1 - p)^{n - k}.$$
 
