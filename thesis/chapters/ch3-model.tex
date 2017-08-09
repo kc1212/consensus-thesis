@@ -338,7 +338,7 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
         Every correct node eventually outputs some $\F_r$.
 \end{enumerate}
 \end{definition}
-These properties may look like Byzantine consensus properties (which we describe next in \Cref{sec:acs-background}) but there are subtle differences.
+These properties are similar to Byzantine consensus properties (which we describe next in \Cref{sec:acs-background}), but there are subtle differences.
 Firstly, they are properties for every node in the network and not just the facilitators.
 Secondly, they must be satisfied for all rounds because the whole system falls apart if one of the property cannot be satisfied in one of the rounds.
 
@@ -390,7 +390,7 @@ The nodes must decide an output $C$, satisfying the following.
     \item \emph{Validity:}
         If any correct node outputs a set $C$,
         then $|C| \ge n - t$ and $C$ contains the input of at least $n - 2t$ nodes.
-    \item \emph{Totality:}
+    \item \emph{Termination:}
         If $n - t$ nodes receive an input, then all correct nodes produce an output.
 \end{enumerate}
 \end{definition}
@@ -820,6 +820,7 @@ $A$ first sends a challenge to $B$ asking it to prove that it holds a valid agre
 If $B$ provides a correct proof, then they run the transaction protocol as usual.
 If $B$ provides an invalid proof or refuses to respond,
 then $A$ would refuse to make the transaction.
+
 The probability that an honest node catches out a malicious node is 
 $$p = \frac{f}{r},$$
 where $f$ is the number of bad agreed fragments and $r$ is the latest round number.

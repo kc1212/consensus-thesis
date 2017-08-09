@@ -19,7 +19,7 @@ where we analyse the performance experimentally rather than analytically and com
 
 The prototype implementation can be found on GitHub.
 \begin{displayquote}
-\url{https://github.com/kc1212/consensus-thesis-code}
+\url{https://github.com/kc1212/checo}
 \end{displayquote}
 It implements the three protocols and the Extended TrustChain discussed in~\Cref{ch:model}.
 We also implement two optimisations---privacy preserving validation protocol using compact blocks (\Cref{sec:compact})
@@ -143,7 +143,7 @@ the magnitude of the communication cost is similar.
 Both peak at about 100 MB.
 This is expected because the consensus protocol is decoupled from the transaction protocol and the validation protocol.
 Finally, the rate for which the communication cost increases is higher when the number of facilitators is higher.
-This is also expected because the ACS algorithm has an $n^2$ term in its communication complexity.
+This is also expected because the ACS algorithm has a polynomial term with respect to $n$ in its communication complexity.
 
 We are also interested in how communication costs translate to time.
 Hence, for the same experiment, we record the duration in seconds and the result is shown in~\Cref{fig:round-duration}.
