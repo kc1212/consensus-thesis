@@ -2,6 +2,50 @@
 \section{Introduction}
 
 % problem description
+Bitcoin is almost 10 years old and its market capitalisation is over \$60 billion USD and growing~\cite{bitcoinmarketcap}.
+We can be reasonably sure cryptocurrencies,
+even if their application is limited,
+are here to stay in the foreseeable future.
+Driven by the success of Bitcoin, we are seeing a renaissance of consensus research~\cite{miller2016honey, kogias2016enhancing, kokoris2017omniledger},
+where the primary focus is to improve the scalability of blockchain system.
+This is due to the consensus mechanism in early blockchain systems---proof-of-work (PoW).
+For example, Bitcoin can only do 7 transactions per second (TPS) at most~\cite{vukolic2015quest} prior to SegWit,
+which introduces a new block structure.
+While adjusting the block size and/or the block interval may increase TPS,
+it also leads to centralisation as larger blocks take longer to propagate in the network,
+giving miners that do not have a fast network a disadvantage~\cite{croman2016scaling}.
+In today's network, it is not possible to achieve more than 758 TPS
+if new blocks need to be propogated timely to 90\% of the network.
+
 % research question
+In this work, answer the following research question.
+\begin{displayquote}
+\emph{Is it possible to design a blockchain consensus protocol that is fault-tolerant and horizontally scalable?}
+\end{displayquote}
+A blockchain consensus protocol should be application neutural,
+for example PoW without the transaction logic.
+Our system should be Byzantine fault tolerant up to some threshold.
+The threshold may be made adjustable by trading off performance.
+Finally, we are interested in horizontal scalability as it enables ubiquitous use.
+That is, by adding new nodes into the network, the global transaction rate should increase proportionally.
+
 % contribution
+The key insight is to \emph{not} reach consensus using an existing consensus algorithm (a modified HoneyBadgerBFT~\cite{miller2016honey}) on transactions themselves but on special blocks called checkpoint blocks,
+such that transactions are nevertheless verifiable at a later stage by any node in the network.
+Our main contributions are the following.
+\begin{itemize}
+    \item We formally introduce a blockchain system---Checo\footnote{\emph{Che}ckpoint \emph{co}nsensus}.
+        It uses individual hash chains and checkpoints on every node to achieve
+        horizontally scalable for the first time.
+    \item We analyse Checo to ensure correctness as defined in our architecture.
+    \item We provide an implementation and then experiment with up to 1200 nodes,
+        our results show strong evidence of horizontal scalability.
+\end{itemize}
+
 % organisation
+In~\Cref{sec:related},
+we cover the current state-of-the-art and the necessary background.
+\Cref{sec:system} gives the formal system architecture.
+Next, we argue the correctness and fault tolerance properties of our system in~\Cref{sec:analysis}.
+We evaluate our system experimentally in~\Cref{sec:implementation}.
+Finally, we conclude our work in~\Cref{sec:conclusion}.
