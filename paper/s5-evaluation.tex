@@ -1,23 +1,37 @@
 \section{Implementation and Evaluation}
 \label{sec:implementation}
 
+\begin{figure*}[t]
+  \centering
+  \makebox[\linewidth][c]{%
+  \begin{subfigure}[b]{0.5\linewidth}
+    \includegraphics[width=\linewidth]{neighbour-fixed/throughput-vs-population}
+    \caption{Every node make transactions with a fixed node.}
+    \label{fig:global-throughput-fixed}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.5\linewidth}
+    \includegraphics[width=\linewidth]{neighbour-random/throughput-vs-population}
+    \caption{Every node make transactions with a random node.}
+    \label{fig:global-throughput-random}
+  \end{subfigure}
+  }
+  \caption{Global throughput increases as the population increases when every node transact at the same rate.
+  Making transactions with fixed nodes results in a higher throughput because of the caching mechanism.}
+  \label{fig:global-throughput}
+\end{figure*}
+
 The prototype implementation can be found on GitHub.
 \begin{displayquote}
 \url{https://github.com/kc1212/consensus-thesis-code}
 \end{displayquote}
 It implements the three protocols and the Extended TrustChain.
-We also implement two optimisations---privacy preserving validation protocol using compact blocks (\Cref{sec:compact})
-and optimised validation protocol using cached agreed fragments (\Cref{sec:caching}).
-It is written in the event driven paradigm, using the Python programming language\footnote{\url{https://www.python.org/}}.
+We also implement the caching optimisations discussed in \Cref{sec:caching}.
+It is written in the Python programming language\footnote{\url{https://www.python.org/}}.
 The cryptography primitives we use are SHA256 for hash functions and Ed25519 for digital signatures.
 Both of which are provided by libnacl~\footnote{\url{https://pypi.python.org/pypi/libnacl}}.
 
-
-\subsection{Experimental setup}
-\label{sec:experimental-setup}
-
 We run the experiment on the DAS-5\footnote{\url{https://www.cs.vu.nl/das5/}} with up to 1200 nodes.
-Every node makes a transaction with a random node twice every second.
+Every node makes transactions at 2 per second.
 Since Bitcoin transactions are approximately 500 bytes~\cite{txsize},
 we use a uniformly random transaction size sampled between 400 and 600 bytes.
 
@@ -25,18 +39,29 @@ To coordinate nodes on many different machines,
 we employ a discovery server to inform every node the IP addresses and port numbers of every other node.
 It is only run before the experiment and is not used during the experiment.
 
-\subsection{Linear Global Throughput}
+The global throughput results are shown in~\Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random}.
+We consider~\Cref{fig:global-throughput-fixed} as the ideal case,
+where nodes only make transactions with a fixed node.
+We consider \Cref{fig:global-throughput-random} as the worst case,
+where nodes make transactions with random nodes and the caching mechanism is unlikely to be used.
+The low transaction rate in~\Cref{fig:global-throughput-random} is caused by the fact that the network infrastructure cannot keep up with our demand.
+In practice, we do not expect such behaviour to occur as it is possible to cache agreed fragments.
 
-The global throughput results are shown in~\Cref{fig:global-throughput}.
-Evidently, the throughput has a linear relationship with the population size.
+For~\Cref{fig:global-throughput-fixed},
+the magnitude of our throughput may not be self-evident at first glance.
+Recall that we fixed the transaction rate to 2 TPS,
+but how is it possible to have around 4800 transactions per second for 1200 nodes (which is 4 TX/s)?
+This is due to the way validated transactions are calculated.
+Transactions are between two parties, hence if every node makes two transactions per second,
+every node also expects to receive two transactions per second.
+Hence, for every node, the TX blocks are created at 4 per second.
+Validation requests are sent at the same rate, which explains the magnitude.
+
+Overall, the throughput has a linear relationship with the population size.
 This result is a strong indication of the horizontal scalability which we aimed to achieve.
+For more experimental results, refer to~\cite[Chapter 5]{checo}???.
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\linewidth]{neighbour-random/throughput-vs-population}
-  \caption{Global throughput increases as the population increases when every node transact at the same rate.
-  Using fixed neighbours results in a higher throughput because of the caching mechanism.}
-  \label{fig:global-throughput}
-\end{figure}
-
-
+% The difference in magnitude between \Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random} is caused by the caching mechanism mentioned earlier.
+% If a new agreed fragment needs to be transmitted to validate every transaction then it puts a toll on the network infrastructure.
+% The low transaction rate in~\Cref{fig:global-throughput-random} is caused by the fact that the network infrastructure cannot keep up with our demand.
+% In practice, we do not expect such behaviour to occur as it is possible to cache agreed fragments.

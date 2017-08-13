@@ -1,21 +1,63 @@
-
 \section{Introduction}
 
 % problem description
 Bitcoin is almost 10 years old and its market capitalisation is over \$60 billion USD and growing~\cite{bitcoinmarketcap}.
-We can be reasonably sure cryptocurrencies,
-even if their application is limited,
+We can be reasonably sure that cryptocurrencies,
+even if their application is still somewhat limited,
 are here to stay in the foreseeable future.
 Driven by the success of Bitcoin, we are seeing a renaissance of consensus research~\cite{miller2016honey, kogias2016enhancing, kokoris2017omniledger},
 where the primary focus is to improve the scalability of blockchain system.
-This is due to the consensus mechanism in early blockchain systems---proof-of-work (PoW).
-For example, Bitcoin can only do 7 transactions per second (TPS) at most~\cite{vukolic2015quest} prior to SegWit,
-which introduces a new block structure.
-While adjusting the block size and/or the block interval may increase TPS,
+This is due to the inefficiencies in the consensus mechanism in early blockchain systems---proof-of-work (PoW).
+For example, Bitcoin can only do 7 transactions per second (TPS) at most~\cite{vukolic2015quest}.
+While adjusting the block size (which Bitcoin has recently done via SegWit~\cite{segwit}) and/or the block interval may increase TPS,
 it also leads to centralisation as larger blocks take longer to propagate in the network,
 giving miners that do not have a fast network a disadvantage~\cite{croman2016scaling}.
 In today's network, it is not possible to achieve more than 758 TPS
-if new blocks need to be propogated timely to 90\% of the network.
+if new blocks need to be propogated timely to 90\% of the network~\cite{croman2016scaling}.
+
+% related work
+Many approaches exist for improving the scalability of early blockchains.
+Off-chain transactions make use of the fact that if nodes make frequent transactions,
+then it is not necessary to store every transaction on the blockchain,
+only the net settlement is necessary.
+The best examples are Lightning Network~\cite{lightningnetwork} and Duplex Micropayment Channels~\cite{decker2015fast}.
+It promises significant scalability improvements,
+but complicates user experience and heavily relies on the semantics of transactions.
+Each node must deposit a suitable amount of Bitcoins into a multi-signature account.
+A low deposit would not allow large transactions.
+A high deposit locks the user from using much of her Bitcoins outside the channel.
+In addition, the user must proactively check whether the counterparty has broadcasted an old channel state so that the user does not lose Bitcoins.
+Payment channel, in theory, solves the scalability problem of early blockchain systems,
+but to the best of our knowledge, its exact scalability characteristics are not investigated.
+
+Another way to improve transaction rate is to use traditional Byzantine consensus algorithms such as PBFT~\cite{castro1999practical}.
+In essence, they contain a fixed set of nodes (sometimes called validating peer) that run a Byzantine consensus algorithm to decide on new blocks.
+This is often used in permissioned system where the validators must be predetermined, e.g. Hyperledger Fabric~\cite{cachin2016architecture}.
+Such systems can achieve much higher transaction rates, e.g. 10,000 TX/s if the number of validating peer is under 16 for PBFT~\cite[Section 5.2]{miller2016honey}.
+However, these systems do not scale, e.g. the transaction rate drops to under 5000 TX/s when the number of validating peer is 64~\cite[Section 5.2]{miller2016honey}.
+Moreover, the validating peers are predetermined which makes the system unsuitable for the open internet.
+
+Recent research has developed a class of hybrid systems which uses PoW for committee election,
+and Byzantine consensus algorithms to agree on transactions, e.g. SCP~\cite{luu2015scp}, ByzCoin~\cite{kogias2016enhancing} and Solidus~\cite{abraham2016solidus}.
+This design is primarily for permissionless system because the PoW leader election aspect prevents Sybils.
+This technique overcomes the early blockchain scalability issue by delegating the transaction validation to the Byzantine consensus protocol (e.g. PBFT in ByzCoin~\cite{kogias2016enhancing}).
+A major tradeoff of such systems is that they cannot guarantee correctness when there is a large number of malicious nodes (but less than a majority).
+For SCP, ByzCoin and Solidus, they all have some probability to elect more than $t$ Byzantine nodes into the committee,
+where $t$ is typically just under a third of the committee size (a lower bound of Byzantine consensus~\cite{pease1980reaching}).
+This problem is especially difficult to solve because the committee is always much smaller than the population size which has more than $t$ Byzantine nodes.
+Again, due to the fact that these systems must reach consensus on all transactions,
+none of them achieves horizontal scalability.
+
+Finally, a technique that does achieve horizontal scalability is sharding, e.g. Elastico~\cite{luu2016elastico} and OmniLedger~\cite{kokoris2017omniledger}.
+This is done by grouping nodes into multiple committees or shards of constant size.
+Nodes within a single shard run a Byzantine consensus algorithm to agree on a set of transactions that belong to that specific shard.
+The number of shards grows linearly with respect to the total computational power in the network, hence the transaction rate also grows linearly.
+The biggest limitation of sharding is that it is only optimal is transactions stay in the same shard.
+In fact, Elastico cannot atomically process inter-shard transactions.
+OmniLedger has an inter-shard transaction protocol but choosing a good shard size is difficult.
+A large shard size would make the system less scalable because the Byzantine consensus algorithm must be run by a large number of nodes.
+A small shard size would result in a large number of inter-shard transactions which also hinder scalability.
+The authors of OmniLedger noted that inter-shard transactions have significantly higher latency compared to the consensus protocol~\cite{kokoris2017omniledger}.
 
 % research question
 In this work, answer the following research question.
@@ -26,7 +68,7 @@ A blockchain consensus protocol should be application neutural,
 for example PoW without the transaction logic.
 Our system should be Byzantine fault tolerant up to some threshold.
 The threshold may be made adjustable by trading off performance.
-Finally, we are interested in horizontal scalability as it enables ubiquitous use.
+Finally, we are interested in horizontal scalability in the general case, as it enables ubiquitous use.
 That is, by adding new nodes into the network, the global transaction rate should increase proportionally.
 
 % contribution
@@ -34,17 +76,17 @@ The key insight is to \emph{not} reach consensus using an existing consensus alg
 such that transactions are nevertheless verifiable at a later stage by any node in the network.
 Our main contributions are the following.
 \begin{itemize}
-    \item We formally introduce a blockchain system---Checo\footnote{\emph{Che}ckpoint \emph{co}nsensus}.
+    \item We formally introduce a blockchain system---\textsc{Checo}\footnote{\emph{Che}ckpoint \emph{co}nsensus}.
         It uses individual hash chains and checkpoints on every node to achieve
         horizontally scalable for the first time.
-    \item We analyse Checo to ensure correctness as defined in our architecture.
+    \item We analyse \textsc{Checo} to ensure correctness as defined in our architecture.
     \item We provide an implementation and then experiment with up to 1200 nodes,
         our results show strong evidence of horizontal scalability.
 \end{itemize}
 
 % organisation
-In~\Cref{sec:related},
-we cover the current state-of-the-art and the necessary background.
+In~\Cref{sec:description},
+we give the problem description and our system model.
 \Cref{sec:system} gives the formal system architecture.
 Next, we argue the correctness and fault tolerance properties of our system in~\Cref{sec:analysis}.
 We evaluate our system experimentally in~\Cref{sec:implementation}.

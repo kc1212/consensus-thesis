@@ -1,7 +1,7 @@
 \section{Conclusion}
 \label{sec:conclusion}
 
-In this work we introduced an application neutral blockchain system which we call Checo.
+In this work we introduced an application neutral blockchain system which we call \textsc{Checo}.
 We add checkpoint block to the existing TrustChain data structure for use in our consensus protocol.
 The round based consensus protocol uses ACS as a building block to reach consensus on checkpoint blocks.
 The consensus result, which is a set of checkpoint blocks, lets nodes elect new facilitators and create new checkpoint blocks.
@@ -12,3 +12,8 @@ then nodes reach agreement on the validity of that transaction.
 The novelty of the validation protocol is that it uses point-to-point communication,
 i.e. nodes only validate the transactions of interest,
 this enables our horizontal scalability property.
+
+We achieve the properties described in the Problem Description (\Cref{sec:description}).
+Namely, our protocol achieves agreement and validity as we argued in~\Cref{sec:correctness-of-validity}.
+Further, the horizontal scalability is demonstrated in~\Cref{sec:implementation},
+in the ideal case as well as the worst case.

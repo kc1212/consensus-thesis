@@ -362,7 +362,13 @@ Email: k.cong@student.tudelft.nl}
 \IEEEauthorblockN{Zhijie Ren}
 \IEEEauthorblockA{Cyber Security Group\\Dept. of Intelligent Systems\\
 Delft University of Technology\\
-Email: z.ren@tudelft.nl}}
+Email: z.ren@tudelft.nl}
+\and
+\IEEEauthorblockN{Johan Pouwelse}
+\IEEEauthorblockA{Distributed Systems Group\\Dept. of Software Technology\\
+Delft University of Technology\\
+Email: peer2peer@gmail.com}
+}
 
 % conference papers do not typically use \thanks and this command
 % is locked out in conference mode. If really needed, such as for
@@ -401,7 +407,25 @@ Email: z.ren@tudelft.nl}}
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-The abstract goes here.
+% what's the problem?
+Blockchain systems have the potential to decentralise many traditionally centralised system.
+However, scalability remains a key challenge.
+Without a horizontally scalable solution, blockchain system remain unsuitable for ubiquitous use.
+% what's the solution?
+We design a novel blockchain system which we call Checo.
+Each node in our system maintain individual hash chains,
+which only stores transactions that involve the node.
+Consensus is reached on special blocks called checkpoint blocks rather than on all the transactions.
+Checkpoint blocks are effectively a hash pointer to the individual hash chains,
+thus a single checkpoint block may represent a large set of transaction blocks.
+The consensus protocol does not imply transaction validity.
+Hence we include a validation protocol which allows nodes to verify that the counterparty correctly recorded the transaction.
+% how good is the solution?
+We implement a prototype and evaluate it experimentally.
+Our results show strong indication of horizontal scalability even in the worst case,
+where every transaction is with a randomly selected node.
+For 1200 nodes, we were able to perform almost 5000 transactions per second,
+orders of magnitude higher than the 7 transaction per second limit of Bitcoin.
 \end{abstract}
 
 % no keywords
@@ -422,7 +446,7 @@ The abstract goes here.
 
 
 \input{s1-intro}
-\input{s2-related}
+\input{s2-problem}
 \input{s3-system}
 \input{s4-analysis}
 \input{s5-evaluation}

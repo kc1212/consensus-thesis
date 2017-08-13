@@ -1,0 +1,49 @@
+\section{Problem Description}
+\label{sec:description}
+We introduce the problem as a modified Byzantine consensus problem.
+In our model, we consider $N$ nodes, $t$ of which are Byzantine.
+Nodes in our system make transactions with each other.
+Transactions can be in one of three states---\emph{valid}, \emph{invalid} and \emph{unknown}, defined by some function $\textsf{get\_validity}(\cdot)$.
+We seek a protocol that defines these states given a transaction,
+but also satisfies the following properties.
+\begin{itemize}
+    \item \emph{Agreement}:
+        If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
+        then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
+    \item \emph{Validity}:
+        The protocol outputs the correct result according to $\textsf{get\_validity}(\cdot).$
+    \item \emph{Scalability}:
+        If every node makes transactions at the same rate,
+        then as $N$ increases,
+        the global transaction rate should increase linearly w.r.t. $N$.
+\end{itemize}
+
+Note that the agreement and validity property are similar to what is often seen in Byzantine consensus problems but there are subtle differences and relaxations.
+Firstly, the agreement property only holds if honest nodes do not output \emph{unknown}.
+For example, it is ok if two honest nodes output \emph{valid} and \emph{unknown}, but it is not ok to output \emph{valid} and \emph{invalid}.
+Secondly, the validity is a relaxation of what is typically seen in Byzantine consensus problems,
+namely we do not make any guarantee on whether the transaction is \emph{valid} even if all nodes are honest,
+only that it is correct according to the $\textsf{get\_validity}(\cdot)$ defined by the protocol.
+
+Our problem is purposefully made to be application neutural,
+i.e. there are no constraints on the semantics of transaction.
+This is so that the protocol can act as a backbone to many applications.
+Due to this fact, we also do not consider global fork prevention or detection,
+as some application may not need such strong guarantees such as recording the number of bytes uploaded and downloaded in Tribler~\cite{pimotte, pouwelse2008tribler}.
+On the other hand, we give an alternative construction that does have fork detection in~\Cref{sec:fork}.
+
+\textbf{System model.}
+We assume purely asynchronous channels with eventual delivery.
+Thus in no stage of the protocol are we allowed to make timing assumptions.
+The adversary has full control of the delivery schedule and the message ordering of all messages.
+But they are not allowed to drop messages except for their own.
+Reliability can be achieved in unreliable networks by resending messages or using some error correction code.
+
+\textbf{Security assumptions.}
+The malicious nodes are Byzantine and we use a static, round-adaptive corruption model.
+That is, if a round has started, the corrupted nodes cannot change until the next round.
+We assume there exists a Public Key Infrastructure (PKI), and nodes are identified by their unique and permanent public key.
+Finally, we use the random oracle (RO) model, i.e. calls to the random oracle are denoted by $\textsf{H}: \{0, 1\}^* \rightarrow \{0, 1\}^\lambda$,
+where $\{0, 1\}^*$ denotes the space of finite binary strings and $\lambda$ is the security parameter.
+Under the RO model, the probability of successfully computing the inverse of the hash function is negligible with respect to $\lambda$~\cite{bellare1993random}.
+
