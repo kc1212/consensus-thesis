@@ -60,11 +60,12 @@ A few months ago the backlog even reached 100,000, which meant new transactions 
 This issue has plagued the Bitcoin community for some time and is the root cause for the block size debate, which some calls it a civil war~\cite{bitcoincivilwar}.
 Parties that are for the increase in block size argue that a larger block would improve the transaction rate.
 Parties against it argue that it would make mining more centralised because blocks take longer to propagate through the network.
-It also requires a hard fork (not backwards compatible), which risks consensus failure and devaluation.
-A recent empirical study by Croman et el.~\cite{croman2016scaling} has shown that increasing the block size may help.
-But given the bandwidth and latency constraints,
-it is not possible to have more than 758 transactions per second.
-Even worse, it may give some miner an unfair lead over others.
+It also requires a hard (non-backwards compatible) fork,
+which risks consensus failure and devaluation.
+A recent empirical study by Croman et el.~\cite{croman2016scaling} has shown that increasing the block size or the block interval may help.
+But given the bandwidth and latency constraints of today's network,
+it is not possible to have more than 758 transactions per second if messages need to be propagated timely to 90\% of the nodes.
+To achieve transaction rates higher than that, it will lead to unfairness for nodes that do not have a good network connection.
 Thus fundamental changes are necessary to run at the scale of centralised payment processors such as Visa,
 which is in the order of tens of thousands transactions per second~\cite{visa}.
 
@@ -95,7 +96,7 @@ This consequently leads to limited scalability because every transaction must be
 Using the aforementioned insight,
 we explore an alternative consensus model for blockchain systems where transactions themselves do not reach consensus,
 but nevertheless verifiable at a later stage by any node in the network.
-We call our protocol Checo, derived from \emph{che}ckpoint \emph{co}nsensus.
+We call our protocol \textsf{Checo}, derived from \emph{che}ckpoint \emph{co}nsensus.
 Informally, our system works as follows.
 Every node stores its own blockchain and every block is one transaction.
 We randomly select nodes in every round, the selected ones are called facilitators.
@@ -111,10 +112,10 @@ That is, by adding new nodes into the network, the global transaction rate shoul
 
 Our main contributions are the following.
 \begin{itemize}
-    \item We formally introduce a blockchain system---Checo.
+    \item We formally introduce a blockchain system---\textsc{Checo}.
         It uses individual hash chains and checkpoints on every node to achieve
         horizontally scalable for the first time.
-    \item We formally analyse Checo to ensure correctness as defined in our architecture.
+    \item We formally analyse \textsc{Checo} to ensure correctness as defined in our architecture.
     \item We provide an implementation and then experiment with up to 1200 nodes,
         our results show strong evidence of horizontal scalability.
 \end{itemize}

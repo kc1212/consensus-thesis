@@ -264,7 +264,8 @@ The genesis block is unique because every node has a unique public and private k
 
 Our consensus protocol runs in rounds as discussed in \Cref{sec:system-overview}.
 Every round is identified by a round number $r$, which is incremented on every new round.
-The consensus result is a tuple, i.e. $\C_r = \langle r, C \rangle$,
+The consensus result is a tuple, i.e. 
+$$\C_r = \langle r, C \rangle,$$
 where $C$ is a set of CP blocks agreed by the facilitators of round $r$.
 \end{definition}
 
@@ -340,7 +341,8 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
 \end{definition}
 These properties are similar to Byzantine consensus properties (which we describe next in \Cref{sec:acs-background}), but there are subtle differences.
 Firstly, they are properties for every node in the network and not just the facilitators.
-Secondly, they must be satisfied for all rounds because the whole system falls apart if one of the property cannot be satisfied in one of the rounds.
+Secondly, they must be satisfied for all rounds,
+because a failure in one round will lead to failures in sebsequent rounds.
 
 Before describing the protocol in detail,
 we take a brief detour to give background on the ACS algorithm as it is the primary building block.
@@ -475,10 +477,11 @@ If a non-facilitator sees some $\C_{r + 1}$, it cannot immediately trust it beca
 Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_{r + 1}$.
 
 Upon receiving $\C_{r + 1}$ and at least $n - f$ valid signatures by some node $u$, $u$ performs two tasks.
-First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1}, r + 1)$ using \Cref{alg:new-cp}.
-Second, it computes the new facilitators using $\textsf{get\_facilitator}(\C_{r + 1}, n)$ using \Cref{alg:facilitator},
+First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1}, r + 1)$ (\Cref{alg:new-cp}).
+Second, it computes the new facilitators using $\textsf{get\_facilitator}(\C_{r + 1}, n)$ (\Cref{alg:facilitator}),
 and updates its facilitator set to the result.
-This concludes the consensus phase and brings us back to the beginning of the consensus phase.
+This concludes the consensus phase and brings us back to the state at the beginning of the consensus phase,
+so a new round can be started.
 
 \begin{algorithm}
 \caption{Function $\textsf{new\_cp}(\C_r, r)$ runs in the context of the caller $u$.
@@ -511,7 +514,7 @@ Every node then sends a completion messages (in the form of \texttt{cp\_msg}) to
 \label{sec:tx-protocol}
 
 The TX protocol, shown in \Cref{alg:tx-proto}, is run by all nodes.
-It is also known as True Halves, first described by Veldhuisen~\cite[Chapter~3.2]{truehalves}.
+It is also known as True Halves, first described informally by Veldhuisen~\cite[Chapter~3.2]{truehalves}.
 Nodes that wish to initiate a transaction calls $\textsf{new\_tx}(pk_v, m, txid)$ (\Cref{alg:new-tx}) with the intended counterparty $v$ identified by $pk_v$ and message $m$.
 $txid$ should be a uniformly distributed random value, i.e. $txid \in_R \{0, 1\}^{256}$.
 Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
@@ -548,7 +551,7 @@ Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 
 A key feature of the TX protocol is that it is non-blocking.
 At no time in \Cref{alg:new-tx} or \Cref{alg:tx-proto} do we need to hold the chain state and wait for some message to be delivered before committing a new block to the chain.
-This allows for high concurrency where we can call $\textsf{new\_tx}(\cdot)$ multiple times without waiting for the corresponding \texttt{tx\_resp} messages.
+This allows for a high level of concurrency where we can call $\textsf{new\_tx}(\cdot)$ multiple times without waiting for the corresponding \texttt{tx\_resp} messages.
 
 \section{Validation protocol}
 \label{sec:vd-protocol}
@@ -560,11 +563,11 @@ But before explaining the protocol itself, we first define what it means for a t
 
 \subsection{Validity definition}
 A transaction can be in one of three states in terms of validity---\emph{valid}, \emph{invalid} and \emph{unknown}.
-Given a fragment $F_{v, j}$, the validity of the TX block $t_{u, i}$ and the agreed fragment of it is captured by the function $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ (\Cref{alg:get-validity}).
+Given a fragment $F_{v, j}$, the validity of the TX block $t_{u, i}$ with its corresponding fragment $F_{u, i}$ is captured by the function $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ (\Cref{alg:get-validity}).
 Note that $t_{u, i}$ and $F_{u, i}$ are assumed to be valid,
 otherwise the node calling the function would have no point of reference.
-This is not difficult to achieve.
-Typically the caller is $u$, so it knows its own TX block and the corresponding agreed fragment.
+This is not difficult to achieve,
+because typically the caller is $u$, so it knows its own TX block and the corresponding agreed fragment.
 If the caller is not $u$, it can always query for the agreed fragment that contains the transaction of interest from $u$.
 
 \Cref{alg:get-validity} works as follows.
@@ -583,12 +586,12 @@ In that case, it may seem that the counterparty, who is honest, purposefully omi
 But in reality, it was the malicious sender who did not follow the protocol.
 Thus, in such cases, the whole transaction identified by its $txid$ is marked as invalid.
 
-Further, the caller of $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ is not necessarily 
-$u$\footnote{In practice, it often is because after completing the TX protocol the parties are incentivised to check that the counterparty ``did the right thing''.}
-Any node $w$ may call $\textsf{get\_validity}(t_u{u, i}, F_{u, i}, F_{v, j})$ as long as $w$ has an the necessary input parameters.
-$F_{u, i}$  and $t_{u, i}$ may be readily available if $w = u$.
-Otherwise, $w$ could query $u$ with the \texttt{vd\_req} message and then obtain the result from \texttt{vd\_resp}.
-This is the validation protocol which we describe next.
+% Further, the caller of $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ is not necessarily 
+% $u$\footnote{In practice, it often is because after completing the TX protocol the parties are incentivised to check that the counterparty ``did the right thing''.}
+% Any node $w$ may call $\textsf{get\_validity}(t_u{u, i}, F_{u, i}, F_{v, j})$ as long as $w$ has an the necessary input parameters.
+% $F_{u, i}$  and $t_{u, i}$ may be readily available if $w = u$.
+% Otherwise, $w$ could query $u$ with the \texttt{vd\_req} message and then obtain the result from \texttt{vd\_resp}.
+% This is the validation protocol which we describe next.
 
 \begin{algorithm}
 \caption{Function $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ validates the transaction represented by $t_{u, i}$.
@@ -783,23 +786,23 @@ then the saving in communication cost is 86\%.
 \subsection{Optimising validation protocol using cached agreed fragments}
 \label{sec:caching}
 One more way to improve the efficiency of the validation protocol is to use a single agreed fragment to validate multiple transactions.
-Concretely, upon receiving an agreed fragment from node $A$,
+Concretely, for node $A$, upon receiving an agreed fragment from node $B$,
 rather than validating a single transaction,
-we attempt to validate all transactions with $A$ in the unknown state in that fragment.
+$A$ attempts to validate all transactions performed with $B$ in the unknown state, in that fragment.
 
-For a node, the benefit of this technique is maximised when it only transacts with one other node.
+The benefit of this technique is maximised when a node only transacts with one other node.
 In this case, the communication of one fragment is sufficient to validate all transactions in that fragment.
 In the opposite extreme, if every transaction that the node makes is with another unique node,
 then the caching mechanism would have no effect.
 
-\subsection{Global fork detection}
+\subsection{Total fork detection}
 The validation algorithm guarantees that there are no forks within a single agreed fragment.
 This is sufficient for some applications such as proving the existence of some information.
 However, for applications such as digital cash where every block depends on one or more previous blocks,
 our scheme is not suitable.
 For such applications, we need to guarantee that there are no forks from the genesis block leading up to the TX block of interest.
 
-There are a variety of approaches to do global fork detection.
+We offer two approaches to do total fork detection.
 First and the easiest solution is to simply ask for the complete chain of the counterparty.
 The verifier can be sure that there are no forks if the following holds.
 \begin{enumerate}
@@ -808,7 +811,7 @@ The verifier can be sure that there are no forks if the following holds.
     \item The TX of interest is in the chian.
 \end{enumerate}
 We use this approach in our prior work on Implicit Consensus~\cite{implicitconsensus}.
-It may sound inefficient at first, but nodes employ caching to minimise communication costs.
+Nodes employ caching to minimise communication costs, we call this effect spontaneous sharding.
 
 The second approach is probabilistic but with only a constant communication overhead over our current design.
 For a node, observe that if all of its agreed fragments has a transaction with an honest node,
