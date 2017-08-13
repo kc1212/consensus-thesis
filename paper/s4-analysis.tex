@@ -1,7 +1,7 @@
 \section{Correctness and fault tolerance analysis}
 \label{sec:analysis}
 We evaluate our system analytically to ensure the desired properties (\Cref{def:consensus} and \Cref{def:validation}) hold.
-An informal argument is given in this section, we refer to~\cite[Chapter 4]{checo}??? for an indepth analysis.
+An informal argument is given in this section, we refer to~\cite[Chapter 4]{checo}??? for an in-depth analysis.
 
 \subsection{Correctness of the consensus protocol}
 Recall that the consensus protocol properties (\Cref{def:consensus}) has
@@ -14,7 +14,7 @@ The first three hold due to the following facts.
         so honest nodes must hold the same result as the honest facilitators.
 \end{itemize}
 
-Fairnress holds if we model $\textsf{H}(\cdot)$ as a query to the random oracle.
+Fairness holds if we model $\textsf{H}(\cdot)$ as a query to the random oracle.
 Sorting nodes by the luck value $\textsf{H}(\C || pk)$ can be seen as a random permutation of a list of nodes.
 Therefore every node has the same probability of becoming a facilitator.
 
@@ -23,7 +23,7 @@ Therefore every node has the same probability of becoming a facilitator.
 Using the previous result,
 we show that the agreement and validity properties (from~\Cref{def:validation}) hold for the validation protocol.
 
-The validty property holds because we use $\textsf{get\_validity}(\cdot)$ in the validation protocol.
+The validity property holds because we use $\textsf{get\_validity}(\cdot)$ in the validation protocol.
 The agreement property holds because we model $\textsf{H}(\cdot)$ as a query to a random oracle.
 Suppose two honest nodes decided on two different state, \emph{valid} and \emph{invalid} for the same transaction.
 Due to the properties of the consensus protocol, the agreed enclosure for the transaction must be the same.
@@ -51,7 +51,7 @@ Finally, we consider the effect when the number of adversaries is more than $t$.
 This is useful because in practice it is difficult to guarantee that $t$ satisfies $n \ge 3t + 1$,
 especially when $N$ is large.
 Hence we are interested in the probability for this to happen under our facilitator election process.
-The problem is modeled by a hypergeometric distribution,
+The problem is modelled by a hypergeometric distribution,
 where the random variable $X$ is the number of malicious nodes.
 For our system to fail, we are interested in the following probability.
 $$

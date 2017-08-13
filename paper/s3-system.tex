@@ -157,7 +157,7 @@ $\forall r \in \mathbb{N}$, the following properties must hold.
 These properties are similar to Byzantine consensus properties but there are subtle differences.
 Firstly, they are properties for every node in the network and not just the facilitators.
 Secondly, they must be satisfied for all rounds,
-because a failure in one round will lead to failures in sebsequent rounds.
+because a failure in one round will lead to failures in subsequent rounds.
 
 \subsubsection{Bootstrap phase}
 \label{sec:bootstrap}
@@ -195,7 +195,7 @@ Second, HoneyBadgerBFT uses threshold encryption to hide the content of the tran
 But we do not reach consensus on transactions, only CP blocks, so hiding CP blocks is meaningless for us as it contains no transaction information.
 
 Continuing, when $\F_{r}$ reaches agreement on $\C_{r+1}$,
-they immediately broadcast\footnote{An alternative to using broadcasting is to use an epidemic protocl~\cite{eugster2004epidemic}, 
+they immediately broadcast\footnote{An alternative to using broadcasting is to use an epidemic protocol~\cite{eugster2004epidemic}, 
 as long as it can guarantee delivery.} two messages to all the nodes---
 first the consensus message $\langle \texttt{cons\_msg}, \C_{r+1} \rangle$,
 and second the signature message $\langle \texttt{cons\_sig}, r, sig \rangle$.
@@ -240,8 +240,8 @@ then sorts the CP blocks $C$ by the luck value (the $\lambda$-expression), and o
 The TX protocol, shown in \Cref{alg:tx-proto}, is run by all nodes.
 It is also known as True Halves, first described informally by Veldhuisen~\cite[Chapter~3.2]{truehalves}.
 Nodes that wish to initiate a transaction calls $\textsf{new\_tx}(pk_v, m, txid)$ (\Cref{alg:new-tx}) with the intended counterparty $v$ identified by $pk_v$ and message $m$.
-$txid$ should be a uniformly distributed random value, i.e. $txid \in_R \{0, 1\}^{256}$,
-then sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
+$txid$ should be a uniformly distributed random value, i.e. $txid \in_R \{0, 1\}^{256}$.
+Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 
 \begin{algorithm}
     \caption{Function $\textsf{new\_tx}(pk_v, m, txid)$ generates a new TX block and appends it to the caller $u$'s chain.
@@ -447,7 +447,7 @@ The verifier can be sure that there are no forks if the following holds.
 \begin{enumerate}
     \item The hash pointers are correct.
     \item All the CP blocks are in consensus.
-    \item The TX of interest is in the chian.
+    \item The TX of interest is in the chain.
 \end{enumerate}
 We use this approach in our prior work on Implicit Consensus~\cite{implicitconsensus}.
 Nodes employ caching to minimise communication costs, we call this effect spontaneous sharding.

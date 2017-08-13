@@ -20,12 +20,12 @@ but also satisfies the following properties.
 
 Note that the agreement and validity property are similar to what is often seen in Byzantine consensus problems but there are subtle differences and relaxations.
 Firstly, the agreement property only holds if honest nodes do not output \emph{unknown}.
-For example, it is ok if two honest nodes output \emph{valid} and \emph{unknown}, but it is not ok to output \emph{valid} and \emph{invalid}.
+For example, it is OK if two honest nodes output \emph{valid} and \emph{unknown}, but it is not OK to output \emph{valid} and \emph{invalid}.
 Secondly, the validity is a relaxation of what is typically seen in Byzantine consensus problems,
 namely we do not make any guarantee on whether the transaction is \emph{valid} even if all nodes are honest,
 only that it is correct according to the $\textsf{get\_validity}(\cdot)$ defined by the protocol.
 
-Our problem is purposefully made to be application neutural,
+Our problem is purposefully made to be application neutral,
 i.e. there are no constraints on the semantics of transaction.
 This is so that the protocol can act as a backbone to many applications.
 Due to this fact, we also do not consider global fork prevention or detection,
