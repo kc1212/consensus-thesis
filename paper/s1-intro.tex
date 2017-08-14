@@ -47,6 +47,7 @@ where $t$ is typically just under a third of the committee size (a lower bound o
 This problem is especially difficult to solve because the committee is always much smaller than the population size which has more than $t$ Byzantine nodes.
 Again, due to the fact that these systems must reach consensus on all transactions,
 none of them achieves horizontal scalability.
+That is, by adding new nodes into the network, the global transaction rate should increase proportionally.
 
 Finally, a technique that does achieve horizontal scalability is sharding, e.g. Elastico~\cite{luu2016elastico} and OmniLedger~\cite{kokoris2017omniledger}.
 This is done by grouping nodes into multiple committees or shards of constant size.
@@ -60,6 +61,7 @@ A small shard size would result in a large number of inter-shard transactions wh
 The authors of OmniLedger noted that inter-shard transactions have significantly higher latency compared to the consensus protocol~\cite{kokoris2017omniledger}.
 
 % research question
+Thus far, there are no systems that achieve horizontal scalability in the general case.
 In this work, answer the following research question.
 \begin{displayquote}
 \emph{Is it possible to design a blockchain consensus protocol that is fault-tolerant and horizontally scalable?}
@@ -69,7 +71,6 @@ for example PoW without the transaction logic.
 Our system should be Byzantine fault tolerant up to some threshold.
 The threshold may be made adjustable by trading off performance.
 Finally, we are interested in horizontal scalability in the general case, as it enables ubiquitous use.
-That is, by adding new nodes into the network, the global transaction rate should increase proportionally.
 
 % contribution
 The key insight is to \emph{not} reach consensus using an existing consensus algorithm (a modified HoneyBadgerBFT~\cite{miller2016honey}) on transactions themselves but on special blocks called checkpoint blocks,
@@ -78,7 +79,7 @@ Our main contributions are the following.
 \begin{itemize}
     \item We formally introduce a blockchain system---\textsc{Checo}\footnote{Derived from ``\emph{Che}ckpoint \emph{co}nsensus''.}.
         It uses individual hash chains and checkpoints on every node to achieve
-        horizontally scalable for the first time.
+        horizontally scalable in the general case for the first time.
     \item We analyse \textsc{Checo} to ensure correctness as defined in our architecture.
     \item We provide an implementation and then experiment with up to 1200 nodes,
         our results show strong evidence of horizontal scalability.
