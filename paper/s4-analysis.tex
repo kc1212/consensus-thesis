@@ -1,41 +1,41 @@
-\section{Correctness and fault tolerance analysis}
+\section{Correctness and Fault Tolerance Analysis}
 \label{sec:analysis}
 We evaluate our system analytically to ensure the desired properties (\Cref{def:consensus} and \Cref{def:validation}) hold.
 An informal argument is given in this section, we refer to~\cite[Chapter 4]{checo}??? for an in-depth analysis.
 
-\subsection{Correctness of the consensus protocol}
+\subsection{Correctness of the Consensus Protocol}
 Recall that the consensus protocol properties (\Cref{def:consensus}) has
 four items---agreement, validity, termination and fairness.
 The first three hold due to the following facts.
 \begin{itemize}
     \item The CP blocks sent to the facilitators are eventually delivered and then ACS eventually starts.
-    \item Agreement, validity and termination holds for ACS as they are the properties of ACS and are proven to hold in~\cite{miller2016honey}.
+    \item Agreement, validity and termination hold for ACS as they are the properties of ACS and are proven to hold in~\cite{miller2016honey}.
     \item The consensus result and signatures are eventually disseminated to all the nodes,
         so honest nodes must hold the same result as the honest facilitators.
 \end{itemize}
 
-Fairness holds if we model $\textsf{H}(\cdot)$ as a query to the random oracle.
+Fairness holds because we model $\textsf{H}(\cdot)$ as a query to the random oracle.
 Sorting nodes by the luck value $\textsf{H}(\C || pk)$ can be seen as a random permutation of a list of nodes.
 Therefore every node has the same probability of becoming a facilitator.
 
-\subsection{Correctness of the validation protocol}
+\subsection{Correctness of the Validation Protocol}
 \label{sec:correctness-of-validity}
 Using the previous result,
 we show that the agreement and validity properties (from~\Cref{def:validation}) hold for the validation protocol.
 
 The validity property holds because we use $\textsf{get\_validity}(\cdot)$ in the validation protocol.
 The agreement property holds because we model $\textsf{H}(\cdot)$ as a query to a random oracle.
-Suppose two honest nodes decided on two different state, \emph{valid} and \emph{invalid} for the same transaction.
-Due to the properties of the consensus protocol, the agreed enclosure for the transaction must be the same.
-For that to happen, two agreed fragments must exist for the same transaction.
+Suppose two honest nodes decided on two different states, \emph{valid} and \emph{invalid} for the same transaction.
+For that to happen, two agreed fragments must exist for the same transaction,
+but these fragments must also have the same agreed enclosure.
 Recall that blocks form a hash chain.
-So this cannot happen unless the adversary can compute the inverse of $\textsf{H}(\cdot)$ with high probability.
+So this is not possible unless the adversary can compute the inverse of $\textsf{H}(\cdot)$ with high probability.
 
-Liveness, unfortunately does not hold in our model.
-A malicious node can ask honestly when running the transaction protocol,
+Liveness, unfortunately, does not hold in our model.
+A malicious node can act honestly when running the transaction protocol,
 but then never respond to any validation requests.
 Therefore there are transactions that can never be validated.
-Nevertheless, the malicious node will be at an economical loss if it is not responsive because honest nodes are less likely to make contact with nodes that do not respond to validation requests.
+Nevertheless, the malicious node will be at an economic loss if it is not responsive because honest nodes are less likely to make contact with nodes that do not respond to validation requests.
 
 A stronger version of the validity definition exists.
 That is, if two honest nodes make a transaction,
@@ -46,7 +46,7 @@ it can make sure all \texttt{tx\_req} messages are delivered in a round later th
 Effectively, the transaction pair would always be in different rounds and the validation protocol would not output \emph{valid}.
 We believe in a relaxed model, i.e. a weakly synchronous model, a stronger validity definition is possible.
 
-\subsection{Fault tolerance}
+\subsection{Fault Tolerance}
 Finally, we consider the effect when the number of adversaries is more than $t$.
 This is useful because in practice it is difficult to guarantee that $t$ satisfies $n \ge 3t + 1$,
 especially when $N$ is large.
@@ -57,7 +57,7 @@ For our system to fail, we are interested in the following probability.
 $$
 \Pr[X \ge \lfloor \frac{n-1}{3} \rfloor + 1]
 $$
-Let $E[X] = n\alpha$ where $0 \le \alpha \le \lfloor \frac{n-1}{3} \rfloor/n < (\lfloor  \frac{n - 1}{3} \rfloor + 1) / n$.
+Let $E[X] = n\alpha$ where $0 \le \alpha \le \lfloor \frac{n-1}{3} \rfloor/n$.
 Using the tail inequality found in~\cite{skala2013hypergeometric}
 $$
 \Pr[X \ge E[X] + \tau n] \le e^{-2\tau^2n},
@@ -71,11 +71,11 @@ $$
 \Pr[X \ge \lfloor \frac{n-1}{3} \rfloor + 1] \le e^{-2 \big(\frac{\lfloor  \frac{n - 1}{3} \rfloor + 1}{n} - \alpha \big)^2 n}.
 $$
 
-The bound is not tight, but it is useful for picking parameters for a desired level of fault tolerance.
+The bound is not tight, but it is useful for picking parameters for the desired level of fault tolerance.
 If $n$ is known, then we can pick a $\alpha$ such that the probability becomes small.
-On the other hand, if $\alpha$ is fixed, but small, we may increase $n$ to achieve the same.
+On the other hand, if $\alpha$ is fixed, we may increase $n$ to achieve the same.
 Furthermore, hypergeometric distributions have light tails with ``faster-than-exponential fall-off''~\cite{skala2013hypergeometric}.
-So the probability for picking more than $\lfloor \frac{n-1}{3} \rfloor$ malicious nodes drops of exponentially as the expected value moves away from $\lfloor \frac{n-1}{3} \rfloor$.
+So the probability of picking more than $\lfloor \frac{n-1}{3} \rfloor$ malicious nodes drops of exponentially as the expected value moves away from $\lfloor \frac{n-1}{3} \rfloor$.
 To put this into perspective,
 suppose $n = 1000$ and $\alpha = 1/5$, i.e. a fifth of the nodes are malicious.
 Then the probability to elect more malicious nodes than the threshold is only $2.6 \times 10^{-16}$.

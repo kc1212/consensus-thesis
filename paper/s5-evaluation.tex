@@ -22,10 +22,10 @@
 
 The prototype implementation can be found on GitHub.
 \begin{displayquote}
-\url{https://github.com/kc1212/consensus-thesis-code}
+\url{https://github.com/kc1212/checo}
 \end{displayquote}
 It implements the three protocols and the Extended TrustChain.
-We also implement the caching optimisations discussed in \Cref{sec:caching}.
+We also implement the caching optimisation discussed in \Cref{sec:caching}.
 It is written in the Python programming language\footnote{\url{https://www.python.org/}}.
 The cryptography primitives we use are SHA256 for hash functions and Ed25519 for digital signatures.
 Both of which are provided by libnacl~\footnote{\url{https://pypi.python.org/pypi/libnacl}}.
@@ -35,16 +35,14 @@ Every node makes transactions at 2 per second.
 Since Bitcoin transactions are approximately 500 bytes~\cite{txsize},
 we use a uniformly random transaction size sampled between 400 and 600 bytes.
 
-To coordinate nodes on many different machines,
-we employ a discovery server to inform every node the IP addresses and port numbers of every other node.
-It is only run before the experiment and is not used during the experiment.
-
-The global throughput results are shown in~\Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random}.
+The global throughput results are shown in~\Cref{fig:global-throughput}.
 We consider~\Cref{fig:global-throughput-fixed} as the ideal case,
 where nodes only make transactions with a fixed node.
 We consider \Cref{fig:global-throughput-random} as the worst case,
 where nodes make transactions with random nodes and the caching mechanism is unlikely to be used.
-The low transaction rate in~\Cref{fig:global-throughput-random} is caused by the fact that the network infrastructure cannot keep up with our demand.
+Observe that the transaction rate is much lower in~\Cref{fig:global-throughput-random}.
+This is because the communication of an agreed fragment is necessary to verify every transaction (no caching),
+putting a strain on our network infrastructure.
 In practice, we do not expect such behaviour to occur as it is possible to cache agreed fragments.
 
 For~\Cref{fig:global-throughput-fixed},
@@ -59,7 +57,7 @@ Validation requests are sent at the same rate, which explains the magnitude.
 
 Overall, the throughput has a linear relationship with the population size.
 This result is a strong indication of the horizontal scalability which we aimed to achieve.
-For more experimental results, refer to~\cite[Chapter 5]{checo}???.
+For more experimental results refer to~\cite[Chapter 5]{checo}???.
 
 % The difference in magnitude between \Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random} is caused by the caching mechanism mentioned earlier.
 % If a new agreed fragment needs to be transmitted to validate every transaction then it puts a toll on the network infrastructure.

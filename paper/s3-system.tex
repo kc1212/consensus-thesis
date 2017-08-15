@@ -6,33 +6,39 @@ Unlike most blockchain systems, we do not use a global ledger.
 Instead, every node has their own hash chain.
 The nodes only store transactions (TX) that they are involved in on their hash chain.
 Transactions are stored in TX blocks and every block only contains one transaction.
-We introduce a special block called checkpoint (CP) block, which represents the state of a hash chain.
+We introduce a special block called checkpoint (CP) block,
+which represents the state of a hash chain in the form of a hash pointer.
 Such data structure is called Extended TrustChain,
-a visualisation can be seen on~\Cref{fig:trustchain-good-cp}.
+a visualisation can be seen in~\Cref{fig:trustchain-good-cp}.
 \begin{figure}[h]
 \centering
 \includegraphics[width=\linewidth]{trustchain-good-cp}
 \caption{Visualisation of the Extended TrustChain. $t_{u, i}$ represents a TX block on $u$'s chain with a sequence number of $i$.
-$c_{v, j}$ represents a CP block on $v$'s chain with a sequence number of $j$.}
+$c_{v, j}$ represents a CP block on $v$'s chain with a sequence number of $j$.
+A transaction is represented by a \emph{pair} of TX blocks,
+one on each of the party's chain.
+}
 \label{fig:trustchain-good-cp}
 \end{figure}
 
 We randomly elect $n$ special nodes called facilitators in every round.
 The facilitators reach consensus on CP blocks using an existing consensus algorithm---asynchronous subset consensus from HoneyBadgerBFT~\cite{miller2016honey}.
 The consensus result is essentially a set of CP blocks from (nearly) all the nodes.
-While this gives us consensus on a representation of the global state, it does not imply consensus on transactions.
-To this end, we introduce a validation protocol that allows any nodes to challenge any other node to produce a set of TX blocks that computes to the CP block in consensus.
-Hence we implicitly achieve consensus on transactions.
+While this gives us a consensus on a representation of the global state, it does not imply consensus on transactions.
+To this end,
+we introduce a validation protocol that allows any nodes to challenge any other node to produce a set of TX blocks that computes to the CP block in consensus,
+achieving implicit consensus on transactions.
 Since the transaction and validation protocols only make point-to-point communication,
 we achieve horizontal scalability.
 
 The formal description is given next,
-it consist of one data structure---Extended TrustChain,
+it consists of one data structure---Extended TrustChain,
 and three protocols---consensus protocol, transaction protocol and validation protocol.
+The complete protocol can be seen as the concurrent composition of the sub-protocols.
 
 \subsection{Extended TrustChain}
 Each node $u$ has a public and private key pair---$pk_u$ and $sk_u$, and a chain $B_u$.
-The chain consist of blocks $B_u = \{ b_{u, i} : i \in \{ 0, \dots, h - 1 \} \}$,
+The chain consists of blocks $B_u = \{ b_{u, i} : i \in \{ 0, \dots, h - 1 \} \}$,
 where $b_{u, i}$ is the $i$th block of $u$,
 and $h$ is the height of the block (i.e. $h = |B_u|$).
 We often use $b_{u, h}$ to denote the latest block.
@@ -54,16 +60,18 @@ We describe each item in turn.
 \item $seq_u$ is the sequence number which should equal $i$.
 \item $txid$ is the transaction identifier, it should be generated using a cryptographically secure pseudo-random number generator by the initiator of the transaction.
 \item $pk_v$ is the public key of the counterparty $v$.
-\item $m$ is the transaction message.
+\item $m$ is the transaction message,
+    which can be seen as an arbitrary string.
 \item $sig_u$ is the signature created using $sk_u$ on the concatenation of the binary representation of the five items above.
 \end{enumerate}
-The fact that we have no constraint on the content of $m$ is in alignment with our problem description---application neutrality.
+% The fact that we have no constraint on the content of $m$ is in alignment with our problem description---application neutrality.
 
 TX blocks come in pairs.
 In particular, for every block 
 $$t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), seq_u, txid, pk_v, m, sig_u \rangle$$
 there exist one and only one \emph{pair} 
-$$t_{v, j} = \langle \textsf{H}(b_{v, j - 1}), seq_v, txid, pk_u, m, sig_v \rangle.$$
+$$t_{v, j} = \langle \textsf{H}(b_{v, j - 1}), seq_v, txid, pk_u, m, sig_v \rangle,$$
+if the nodes follow the transaction protocol (described in~\Cref{sec:tx-protocol}).
 Note that the $txid$ and $m$ are the same, and the public keys refer to each other.
 Thus, given a TX block, these properties allow us to identify its pair.
 \end{definition}
@@ -98,18 +106,17 @@ where $C$ is a set of CP blocks agreed by the facilitators of round $r$.
 \end{definition}
 
 Here we define an important property which results from the interleaving nature of CP and TX blocks.
-It is used in our validation protocol.
+It is used in our validation protocol (discussed in~\Cref{sec:vd-protocol}).
 \begin{definition}
 \textbf{\emph{Enclosure and agreed enclosure}}
 
 If there exist a tuple $\langle c_{u,a}, c_{u, b} \rangle$ for a TX block $t_{u, i}$,
 where 
-$$a = \argmin_{k, k < i, \texttt{typeof}(b_{u,k}) = \gamma}(i - k)$$
-$$b = \argmin_{k, k > i, \texttt{typeof}(b_{u,k}) = \gamma}(k - i),$$
+$$a = \argmin_{k, k < i, \textsf{typeof}(b_{u,k}) = \gamma}(i - k)$$
+$$b = \argmin_{k, k > i, \textsf{typeof}(b_{u,k}) = \gamma}(k - i),$$
 then $\langle c_{u,a}, c_{u, b} \rangle$ is the enclosure of $t_{u, i}$.
 Intuitively, that is the two closest CP blocks that surround $t_{u, i}$.
-Note that $c_{u, a}$ is the more recent CP block.
-Also, some TX blocks may not have any enclosure, then its enclosure is $\bot$.
+Some TX blocks may not have any enclosure, then its enclosure is $\bot$.
 Agreed enclosure is the same as enclosure with an extra constraint where the CP blocks must be in some consensus result $\C_r$.
 \end{definition}
 
@@ -125,7 +132,7 @@ For convenience, the function $\textsf{agreed\_fragment}(\cdot)$ represents the 
 
 \subsection{Consensus Protocol}
 Our scalable consensus protocol runs on top of Extended TrustChain.
-It uses an unmodified asynchronous subset consensus (ACS) algorithm as the key building block (we describe the reasoning later).
+It uses an unmodified asynchronous subset consensus (ACS) algorithm as the key building block.
 The objectives of the protocol are to
 allow honest nodes always make progress (in the form of creating new CP blocks),
 compute correct consensus result in every round
@@ -159,7 +166,7 @@ Firstly, they are properties for every node in the network and not just the faci
 Secondly, they must be satisfied for all rounds,
 because a failure in one round will lead to failures in subsequent rounds.
 
-\subsubsection{Bootstrap phase}
+\subsubsection{Bootstrap Phase}
 \label{sec:bootstrap}
 As with many distributed systems, there must be a bootstrap phase which sets up the system.
 Imagine that there is some bootstrap oracle, that initiates the code on every node.
@@ -168,10 +175,10 @@ Namely, every node has the same set of valid facilitators $\F_1$ that are random
 This concludes the bootstrap phase.
 For any future rounds, the consensus phase is used.
 
-\subsubsection{Consensus phase}
+\subsubsection{Consensus Phase}
 \label{sec:consensus-phase}
 The consensus phase begins when $\F_r$ is available to all the nodes.
-Note that $\F_r$ indicates the facilitators that were elected using results of round $r$ and are responsible for driving the ACS protocol in round $r + 1$.
+Note that $\F_r$ indicates the facilitators that were elected using results of round $r$ and are responsible for driving the ACS algorithm in round $r + 1$.
 The goal is to reach agreement on a set of new facilitators $\F_{r + 1}$ that satisfies the four properties in \Cref{def:consensus}.
 
 There are two scenarios in the consensus phase.
@@ -206,17 +213,18 @@ If a non-facilitator sees some $\C_{r + 1}$, it cannot immediately trust it beca
 Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_{r + 1}$.
 
 Upon receiving $\C_{r + 1}$ and at least $n - f$ valid signatures by some node $u$, $u$ performs two tasks.
-First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1}, r + 1)$ using \Cref{alg:new-cp}.
+First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1})$ (\Cref{alg:new-cp}).
 Second, it computes the new facilitators using $\textsf{get\_facilitator}(\C_{r + 1}, n)$ (\Cref{alg:facilitator}),
 and updates its facilitator set to the result.
 This concludes the consensus phase and brings us back to the state at the beginning of the consensus phase,
 so a new round can be started.
 
 \begin{algorithm}
-\caption{Function $\textsf{new\_cp}(\C_r, r)$ runs in the context of the caller $u$.
+\caption{Function $\textsf{new\_cp}(\C_r)$ runs in the context of the caller $u$.
 It creates a new CP block and appends it to $u$'s chain.}
 \label{alg:new-cp}
 \begin{algorithmic}
+\State $\langle r, \_ \rangle \gets \C_r$
 \State $h \gets |B_u|$
 \State $c_{u, h} \gets \langle \textsf{H}(b_{u, h-1}), h, \textsf{H}(\C_r), r, sig_u \rangle$
 \State $B_u \gets B_u \cup c_{u, h}$
@@ -277,22 +285,22 @@ A key feature of the TX protocol is that it is non-blocking.
 At no time in \Cref{alg:new-tx} or \Cref{alg:tx-proto} do we need to hold the chain state and wait for some message to be delivered before committing a new block to the chain.
 This allows for a high level of concurrency where we can call $\textsf{new\_tx}(\cdot)$ multiple times without waiting for the corresponding \texttt{tx\_resp} messages.
 
-\subsection{Validation protocol}
+\subsection{Validation Protocol}
 \label{sec:vd-protocol}
 
 Up to this point, we do not provide a mechanism to detect tampering.
 The validation protocol aims to solve this issue.
-The protocol is also a request-response protocol, just like the transaction protocol.
+The protocol is also a request-response protocol.
 But before explaining the protocol itself, we first define what it means for a transaction to be valid.
 
-\subsubsection{Validity definition}
+\subsubsection{Validity Definition}
 A transaction can be in one of three states in terms of validity---\emph{valid}, \emph{invalid} and \emph{unknown}.
 Given a fragment $F_{v, j}$,
 the validity of the TX block $t_{u, i}$ with its corresponding fragment $F_{u, i}$ is captured by the function $\textsf{get\_validity}(t_{u, i}, F_{u, i}, F_{v, j})$ (\Cref{alg:get-validity}).
 Note that $t_{u, i}$ and $F_{u, i}$ are assumed to be valid,
 otherwise the node calling the function would have no point of reference.
-This is not difficult to achieve,
-because typically the caller is $u$, so it knows its own TX block and the corresponding agreed fragment.
+This is not difficult to achieve because typically the caller is $u$,
+so it knows its own TX block and the corresponding agreed fragment.
 If the caller is not $u$, it can always query for the agreed fragment that contains the transaction of interest from $u$.
 
 % \Cref{alg:get-validity} works as follows.
@@ -305,7 +313,7 @@ If the caller is not $u$, it can always query for the agreed fragment that conta
 We stress that the \emph{unknown} state means that the verifier does not have enough information to continue with the validation protocol.
 If enough information is available at a later time, then the verifier will output either \emph{valid} or \emph{invalid}.
 
-Note that the validity is on a transaction (two TX blocks with the same $txid$), rather than on one TX block owned by a single party.
+Note that the validity is on a transaction, i.e. two TX blocks that form a pair.
 It is defined this way because the malicious sender may create new TX blocks in their own chain but never send \texttt{tx\_req} messages.
 In that case, it may seem that the counterparty, who is honest, purposefully omitted TX blocks.
 But in reality, it was the malicious sender who did not follow the protocol.
@@ -345,7 +353,7 @@ $F_{v, j}$ is the corresponding fragment received from $v$.}
 \end{algorithmic}
 \end{algorithm}
 
-\subsubsection{Validation protocol}
+\subsubsection{Validation Protocol}
 Our validation protocol,
 shown in~\Cref{alg:vd-proto},
 is designed to classify transactions according to the aforementioned validity definition.
@@ -389,25 +397,22 @@ The desired properties of the validation protocol are as follows.
 \end{algorithm}
 
 We make two remarks.
-First, just like the TX protocol, we do not block at any part of the protocol.
+First, just like the TX protocol, we do not block any part of the protocol.
 Second, suppose some $F_{v, j}$ validates $t_{u, i}$, then that does not imply that $t_{u, i}$ only has one pair $t_{v, j}$.
 Our validity requirement only requires that there is only one $t_{v, j}$ in the correct consensus round.
 The counterparty may create any number of fake pairs in later consensus rounds.
-But these fake pairs only pollutes the chain of $v$ and can never be validated because the round is incorrect.
+But these fake pairs only pollutes the chain of $v$ and can never be validated.
 
-\subsection{Design variations and tradeoffs}
+\subsection{Design Variations and Tradeoffs}
 \label{sec:tradeoffs}
 In this section, 
-we explore a few design variations which we can make, some of them require a relaxed version of our original model.
+we explore a few design variations, some of them require a relaxed version of our original model.
 They enable better performance and allow us to apply our design in the fully permissionless setting.
 
-\subsubsection{Using timing assumption in the permissionless setting}
+\subsubsection{Using Timing Assumption in the Permissionless Setting}
 \label{sec:permissionless}
-One limitation of our system is that we use the parameter $N$ in our algorithms, which makes it unsuitable for the permissionless environment where users can join and leave at will.
-In this section we show how making a timing assumption would allow us to operate in the permissionless setting.
-
 At the start of our consensus phase (\Cref{sec:consensus-phase}), facilitators must wait for $N-f$ \texttt{cp\_msg} messages.
-This is the only place where we used $N$ as a parameter.
+The use of $N$ makes our system unsuitable for the permissionless setting.
 To introduce timing, instead of waiting for $N-f$ messages, we wait for some time $D$,
 such that $D$ is sufficiently long for honest nodes to send their CP blocks to the facilitators.
 Consequently, this removes the need for a PKI because the collected CP blocks may be from nodes that nobody has seen in the past.
@@ -421,19 +426,19 @@ There is a subtlety here which happens when the node is elected as a facilitator
 In this case, the node must fulfil its obligation by completing the consensus protocol, but without proposing its own CP block, before leaving.
 Otherwise, the $n \ge 3t + 1$ condition may be violated.
 
-\subsubsection{Optimising validation protocol using cached agreed fragments}
+\subsubsection{Optimising Validation Protocol Using Cached Agreed Fragments}
 \label{sec:caching}
 One more way to improve the efficiency of the validation protocol is to use a single agreed fragment to validate multiple transactions.
 Concretely, for node $A$, upon receiving an agreed fragment from node $B$,
 rather than validating a single transaction,
-$A$ attempts to validate all transactions with performed with $B$ in the unknown state, in that fragment.
+$A$ attempts to validate all transactions performed with $B$ in the unknown state, in that fragment.
 
 The benefit of this technique is maximised when a node only transacts with one other node.
 In this case, the communication of one fragment is sufficient to validate all transactions in that fragment.
 In the opposite extreme, if every transaction that the node makes is with another unique node,
 then the caching mechanism would have no effect.
 
-\subsubsection{Total fork detection}
+\subsubsection{Total Fork Detection}
 \label{sec:fork}
 The validation algorithm guarantees that there are no forks within a single agreed fragment.
 This is sufficient for some applications such as proving the existence of some information.
@@ -459,7 +464,6 @@ The only way for an attacker to make a fork is to make sure that the agreed frag
 Such malicious behaviour is prevented probabilistically using a challenge-response protocol as follows.
 Suppose node $A$ wish to make a transaction with node $B$.
 $A$ first sends a challenge to $B$ asking it to prove that it holds a valid agreed fragment between some consensus round specified by $A$.
-If $B$ provides a correct proof, then they run the transaction protocol as usual.
-If $B$ provides an invalid proof or refuses to respond,
-then $A$ would refuse to make the transaction.
+If $B$ provides a correct and timely response, then they run the transaction protocol as usual.
+Otherwise, $A$ would refuse to make the transaction.
 
