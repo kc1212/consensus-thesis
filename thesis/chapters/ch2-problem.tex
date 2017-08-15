@@ -33,7 +33,7 @@ Bitcoin is also fault-tolerant because attackers can not out pace honest users i
 As long as the majority is honest and reasonable measures are taken to prevent the selfish mining attack~\cite{eyal2014majority}.
 The disadvantage, however, is that transactions are never in consensus with a probability of 1---no consensus finality.
 Hence double spending is possible for transactions that do not have a large number of confirmations.
-Furthermore, as we mentioned in the Introduction,
+Furthermore, as we mentioned in the~\Cref{ch:intro},
 the performance is limited due to the fact that blocks are of fixed size and are generated at fixed intervals.
 Thus early blockchain systems do not achieve horizontal scalability.
 
@@ -83,15 +83,15 @@ then a large number of users will instantly benefit from it.
 Some implementations already exist\footnote{For example \url{https://github.com/lightningnetwork/lnd}.},
 but at the time of writing SegWit is not activated yet which is a prerequisite for Lightning Network.
 
-On the other hand, off-chain transactions also suffer from the problem of Bitcoin.
-Namely, proof-of-work consumes an unreasonable amount of power.
-Further, payment channels complicate user experience.
+On the other hand, payment channel complicates user experience and leads to centralisation.
 As we mentioned earlier, each node must deposit some Bitcoins into a multi-signature account.
 The users must pick a suitable amount.
 If the deposit is too low it would not allow large transactions.
 If the deposit is too high the user is locked out of much of its Bitcoins for use outside of the channel.
 In addition, the user must proactively check whether the counterparty has broadcasted an old channel state so that the user does not lose Bitcoins.
-Payment channel, in theory, solves the scalability problem of early blockchain systems,
+Furthermore, creating channels with sufficient balance and also keeping it online to act as a router is expensive.
+A casual user is not capable of such tasks, thus it leads to centralisation.
+Payment channels, in theory, solve the scalability problem of early blockchain systems,
 but to the best of our knowledge, its exact scalability characteristics are not investigated.
 
 % Further, off-chain transactions are limited only to an exchange of cryptocurrency,

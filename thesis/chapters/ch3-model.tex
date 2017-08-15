@@ -276,8 +276,8 @@ It is used in our validation protocol.
 
 If there exist a tuple $\langle c_{u,a}, c_{u, b} \rangle$ for a TX block $t_{u, i}$,
 where 
-$$a = \argmin_{k, k < i, \texttt{typeof}(b_{u,k}) = \gamma}(i - k)$$
-$$b = \argmin_{k, k > i, \texttt{typeof}(b_{u,k}) = \gamma}(k - i),$$
+$$a = \argmin_{k, k < i, \textsf{typeof}(b_{u,k}) = \gamma}(i - k)$$
+$$b = \argmin_{k, k > i, \textsf{typeof}(b_{u,k}) = \gamma}(k - i),$$
 then $\langle c_{u,a}, c_{u, b} \rangle$ is the enclosure of $t_{u, i}$.
 Intuitively, that is the two closest CP blocks that surround $t_{u, i}$.
 Note that $c_{u, a}$ is the more recent CP block.
@@ -345,7 +345,7 @@ Secondly, they must be satisfied for all rounds,
 because a failure in one round will lead to failures in sebsequent rounds.
 
 Before describing the protocol in detail,
-we take a brief detour to give background on the ACS algorithm as it is the primary building block.
+we take a brief detour to give background on the ACS protocol as it is the primary building block.
 Then we move on to describe the two phases of our consensus protocol---bootstrap phase and consensus phase.
 
 \subsection{Background on asynchronous subset consensus}
@@ -477,17 +477,18 @@ If a non-facilitator sees some $\C_{r + 1}$, it cannot immediately trust it beca
 Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_{r + 1}$.
 
 Upon receiving $\C_{r + 1}$ and at least $n - f$ valid signatures by some node $u$, $u$ performs two tasks.
-First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1}, r + 1)$ (\Cref{alg:new-cp}).
+First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1})$ (\Cref{alg:new-cp}).
 Second, it computes the new facilitators using $\textsf{get\_facilitator}(\C_{r + 1}, n)$ (\Cref{alg:facilitator}),
 and updates its facilitator set to the result.
 This concludes the consensus phase and brings us back to the state at the beginning of the consensus phase,
 so a new round can be started.
 
 \begin{algorithm}
-\caption{Function $\textsf{new\_cp}(\C_r, r)$ runs in the context of the caller $u$.
+\caption{Function $\textsf{new\_cp}(\C_r)$ runs in the context of the caller $u$.
 It creates a new CP block and appends it to $u$'s chain.}
 \label{alg:new-cp}
 \begin{algorithmic}
+\State $\langle r, \_ \rangle \gets \C_r$
 \State $h \gets |B_u|$
 \State $c_{u, h} \gets \langle \textsf{H}(b_{u, h-1}), h, \textsf{H}(\C_r), r, sig_u \rangle$
 \State $B_u \gets B_u \cup c_{u, h}$
@@ -674,7 +675,7 @@ The desired properties of the validation protocol are as follows.
 \end{algorithm}
 
 We make two remarks.
-First, just like the TX protocol, we do not block at any part of the protocol.
+First, just like the TX protocol, we do not block any part of the protocol.
 Second, suppose some $F_{v, j}$ validates $t_{u, i}$, then that does not imply that $t_{u, i}$ only has one pair $t_{v, j}$.
 Our validity requirement only requires that there is only one $t_{v, j}$ in the correct consensus round.
 The counterparty may create any number of fake pairs in later consensus rounds.
@@ -820,9 +821,8 @@ The only way for an attacker to make a fork is to make sure that the agreed frag
 Such malicious behaviour is prevented probabilistically using a challenge-response protocol as follows.
 Suppose node $A$ wish to make a transaction with node $B$.
 $A$ first sends a challenge to $B$ asking it to prove that it holds a valid agreed fragment between some consensus round specified by $A$.
-If $B$ provides a correct proof, then they run the transaction protocol as usual.
-If $B$ provides an invalid proof or refuses to respond,
-then $A$ would refuse to make the transaction.
+If $B$ provides a correct and timely response, then they run the transaction protocol as usual.
+Otherwise, $A$ would refuse to make the transaction.
 
 The probability that an honest node catches out a malicious node is 
 $$p = \frac{f}{r},$$
