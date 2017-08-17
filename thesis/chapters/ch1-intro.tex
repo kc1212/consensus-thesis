@@ -10,7 +10,7 @@ cloud services and even our banking system.
 The 2008 financial crisis is an example of the banking system making poor choices which resulted in a
 decline in consumer wealth in the order of trillions~\cite{financialcrisis} and led to the European debt crisis.
 
-Ironically, also in 2008, Satoshi Nakamoto published the Bitcoin whitepaper~\cite{bitcoin}.
+Ironically, during the midst of the financial crisis, Satoshi Nakamoto published the Bitcoin whitepaper~\cite{bitcoin}.
 Which, for the first time, gave us a simple banking system in the form of a distributed ledger, also known as blockchain.
 It needs no central control but still incorruptible with high probability even if there are malicious parties that aim to undermine the system.
 
@@ -51,18 +51,17 @@ This includes finance~\cite{finance}, health care~\cite{healthcare}, logistics~\
 
 Sadly, as traditional blockchain systems began to gain popularity,
 their limitations also became apparent.
-Bitcoin has the infamous 7 transactions per second upper bound~\cite{vukolic2015quest}.
-This is due to the fact that blocks are fixed to 1 MB,
-and are only generated on average every 10 minutes.
+Bitcoin has the infamous 7 transactions per second upper bound~\cite{vukolic2015quest}, 
+which is due to the fact that blocks are fixed to 1 MB and are only generated on average every 10 minutes.
 Since every Bitcoin transaction is at least 250 bytes, it computes to about 7 transactions per second.
 Due to this limitation, it is not uncommon to see a long backlog of about 20,000 transactions\footnote{\url{https://blockchain.info/unconfirmed-transactions/}}.
 A few months ago the backlog even reached 100,000, which meant new transactions would take at least 11 hours to be written to the blockchain~\cite{bitcoinbacklog}.
-This issue has plagued the Bitcoin community for some time and is the root cause for the block size debate, which some calls it a civil war~\cite{bitcoincivilwar}.
+This issue has plagued the Bitcoin community for some time and is the root cause for the block size debate, which some call a civil war~\cite{bitcoincivilwar}.
 Parties that are for the increase in block size argue that a larger block would improve the transaction rate.
 Parties against it argue that it would make mining more centralised because blocks take longer to propagate through the network.
 It also requires a hard (non-backwards compatible) fork,
 which risks consensus failure and devaluation.
-A recent empirical study by Croman et el.~\cite{croman2016scaling} has shown that increasing the block size or the block interval may help.
+A recent empirical study by Croman et al.~\cite{croman2016scaling} has shown that increasing the block size or the block interval may help.
 But given the bandwidth and latency constraints of today's network,
 it is not possible to have more than 27 transactions per second.
 To achieve transaction rates higher than that, it will lead to unfairness for nodes that do not have a good network connection.
@@ -81,7 +80,7 @@ But the conclusion that we can draw from the scalability debate is that the Bitc
 and it is highly non-trivial to ``patch'' the problem.
 
 \section{Contributions}
-In this work, we take the advice of Croman et el.~\cite{croman2016scaling} and Vukoli\'{c}~\cite{vukolic2015quest} and rethink the blockchain architecture.
+In this work, we take the advice of Croman et al.~\cite{croman2016scaling} and Vukoli\'{c}~\cite{vukolic2015quest} and rethink the blockchain architecture.
 Our primary insight came from observing the differences between how value transfer work in the real world and how they work in early blockchain systems.
 Take a restaurant owner, for example,
 most of the time the customer is honest and pays the bill.
@@ -96,19 +95,20 @@ This consequently leads to limited scalability because every transaction must be
 Using the aforementioned insight,
 we explore an alternative consensus model for blockchain systems where transactions themselves do not reach consensus,
 but nevertheless verifiable at a later stage by any node in the network.
-We call our protocol \textsf{Checo}, derived from \emph{che}ckpoint \emph{co}nsensus.
+We call our protocol \textsc{Checo}, derived from \emph{che}ckpoint \emph{co}nsensus.
 Informally, our system works as follows.
 Every node stores its own blockchain and every block is one transaction.
 We randomly select nodes in every round, the selected ones are called facilitators.
 Facilitators reach consensus not on the individual transactions,
 but on the state of every chain represented by a single digest, called a checkpoint block.
 If a checkpoint block of some node is in consensus, 
-then that node can proof to any other node that it holds a set of transactions that compute (form a chain) to the checkpoint block.
+then that node can prove to any other node that it holds a set of transactions that compute (form a chain) to the checkpoint block.
 This immediately shows that those transactions are tamper-proof.
 The key difference from related work is the independence of the transaction validation phase.
 Prior systems such a Bitcoin and Ethereum entangled the consensus algorithm with the transaction validation, restricting performance.
 By splitting this functionality we achieved horizontal scalability in the general case.
-That is, by adding new nodes into the network, the global transaction rate should increase proportionally.
+That is, by adding new nodes into the network, the global transaction rate should increase proportionally,
+regardless of the choice of system parameters.
 
 Our main contributions are the following.
 \begin{itemize}
@@ -121,9 +121,10 @@ Our main contributions are the following.
 \end{itemize}
 
 \section{Document structure}
-We describe and analyse our idea in the remainder of this work.
-We begin with the problem description in~\Cref{ch:problem} which describes the state-of-the-art work on making blockchain systems scalable and our research question.
+We begin with the problem description in~\Cref{ch:problem},
+it first describes the state-of-the-art in scalable blockchain systems and their shortcomings,
+which leads to our research question.
 In~\Cref{ch:model} we give a formal description of our system model and architecture.
 Next, we analyse the correctness and performance of our design in~\Cref{ch:analysis}, this is where we present our key theorems.
 Implementation and experimental results are discussed in~\Cref{ch:implementation}.
-Finally, we conclude in \ref{ch:conclusion} and discuss future work.
+Finally, we conclude in~\Cref{ch:conclusion} and discuss future work.

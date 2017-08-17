@@ -19,6 +19,7 @@ we classify various blockchain systems by their scalability approach.
 This category represents the baseline,
 which are systems with a probabilistic consensus algorithm.
 That is, transactions never reach consensus with a probability of 1.
+Given sufficient computational power, adversaries are able to undo any transaction.
 The typical examples are proof-of-work based systems such as Bitcoin, Ethereum and other Altcoins.
 In Bitcoin, nodes compete in solving puzzles.
 The first node solves the puzzle has the privilege to create a new block.
@@ -105,8 +106,8 @@ but to the best of our knowledge, its exact scalability characteristics are not 
 
 This category of systems uses traditional Byzantine consensus algorithms such as PBFT~\cite{castro1999practical}.
 In essence, they contain a fixed set of nodes (sometimes called validating peer) that run a Byzantine consensus algorithm to decide on new blocks.
-This is often used in permissioned system where the validators must be predetermined,
-for example, Hyperledger Fabric~\cite{cachin2016architecture}.
+This technique is often used in permissioned system where the validators must be predetermined.
+For example, Hyperledger Fabric~\cite{cachin2016architecture}.
 
 A nice aspect of Byzantine consensus and in particular PBFT is that it can handle much more transactions than classical blockchain systems.
 PBFT can, for example, achieve 10,000 TX/s if the number of validating peer is under 16~\cite[Section 5.2]{miller2016honey}.
@@ -204,10 +205,12 @@ To the best of our knowledge, only two systems---Elastico~\cite{luu2016elastico}
 However, these techniques rely on sharding, thus the performance highly depends on transaction characteristics and the shard size parameter because inter-shard transactions are slow.
 Furthermore, all the systems described in~\Cref{sec:taxonomy} are complete blockchain systems designed for a concrete application.
 We wish to design a blockchain consensus protocol that can be used in many applications.
-For example recording uploads and downloads between peers in Tribler~\cite{pouwelse2008tribler, multichain} and decentralised market\footnote{\url{https://github.com/Tribler/tribler/blob/devel/Tribler/community/tradechain/__init__.py}}.
+For example, the accounting of detailed internet traffic in Tribler~\cite{pouwelse2008tribler, multichain} and decentralised market\footnote{\url{https://github.com/Tribler/tribler/blob/devel/Tribler/community/tradechain/__init__.py}}.
 Hence our research question is the following.
 \begin{displayquote}
-\emph{Is it possible to design a blockchain consensus protocol that is fault-tolerant, scalable and can reach global consensus?}
+\emph{How can we design a blockchain consensus protocol that is fault-tolerant,
+horizontally scalable,
+and able to reach global consensus?}
 \end{displayquote}
 
 In order to make sense of our research question, we must first define \emph{blockchain consensus protocol}.
@@ -222,68 +225,50 @@ Because it is the scalability bottleneck and is necessary for any blockchain bas
 % Also, it should be possible to build any kind of application on top our system.
 % We do not impose on a consensus algorithm, as long as it satisfies the properties of atomic broadcast which we describe in~\Cref{sec:overview-cons}.
 
-In the remainder of this section, we expand on our research question and visit each of our requirement in detail.
+In the remainder of this section, we expand on our research question and visit each of our requirements in detail.
 At the end of this section, we describe some issues that we do not consider as a part of our design,
 which is the result of not focusing on any specific application.
 
-\subsection{Global consensus}
-
-% Early blockchain systems use PoW as the consensus algorithm,
-% but consensus algorithm and especially Byzantine\footnote{Byzantine means participants can experience arbitrary failure, more on this in~\Cref{sec:acs-background}.}
-% consensus algorithms have existece since the 80s~\cite{pease1980reaching, lamport1982byzantine}.
-% The Practical Byzantine Fault Tolerance (PBFT) algorithm introduced in 1999 by Castro and Liskov~\cite{castro1999practical} is widely regarded as the first high-performance consensus algorithm.
-% The authors show that running PBFT in Network File System (NFS) was only 3\% slower than the standard unreplicated NFS.
-% Since then, research in this area picked up pace and many more algorithms are introduced, for example Q/U~\cite{abd2005fault} and Zyzzyva~\cite{kotla2007zyzzyva}.
-% With the introduction of Bitcoin's probabilistic consensus model, the field experienced a second renaissance.
-% These include proof-of-stake protocols~\cite{bentov2016snow, micali2016algorand}, as well as protocols optimised for blockchain~\cite{liu2016xft, miller2016honey}.
-
-The first objective is to reach consensus on a global \emph{state} by building on top of decades of Byzantine consensus protocol research~\cite{pease1980reaching, lamport1982byzantine, castro1999practical, miller2016honey}.
+\subsection*{Global consensus}
+% WHY WE NEED GLOBAL CONSENSUS?
 Having consensus is essential in blockchain systems.
-It stops many types of malicious activities because agreed state must have the consent of the honest nodes in the network.
-We emphasise the word state because in contrary to traditional blockchains,
+It stops many types of malicious activities because the agreed state, or a representation of it, must have the consent of the honest nodes in the network.
+We emphasise on the notion of a representation of the state because in contrary to traditional blockchains,
 it does not necessarily mean the set of all transactions that have ever happened.
-The state can be a verifiable representation of all the transactions.
+The state can be a small, but verifiable representation of all the transactions.
 As an extreme example, a single digest of the complete history can represent the state.
 It is even verifiable as long as there are nodes that store the history.
 
-% Our approach is to combine the vast literature in Byzantine fault tolerance research with blockchain technology,
-% and introduce a new consensus model to record the global state.
-
-\subsection{Security and fault-tolerance}
-
-Our system should be unaffected in the presence of powerful adversaries.
+\subsection*{Fault-tolerance}
+% WHY WE NEED FAULT-TOLERANCE
+Similar to many blockchain systems,
+our system should be unaffected in the presence of powerful adversaries.
 In particular, adversaries are Byzantine meaning that they can have arbitrary behaviour.
 Thus anything is possible from simply omitting messages to colluding with each other in order to undermine the whole system.
-This aspect usually comes for free when using a Byzantine fault-tolerant consensus algorithm.
 
 There is another aspect of fault tolerance that is transaction verifiability.
 All transactions must be eventually verifiable to maintain system integrity.
 Further, the validation result must be consistent.
-For example, if two different honest nodes attempts verify the same transaction,
+For example, if two different honest nodes attempt to verify the same transaction,
 it cannot be the case that one node thinks that the transaction is valid but the other thinks it is invalid.
 
-% Recall that it is not neccessary to reach consensus on all the transactions in order to record the state.
-% But when using some digest (or a set of digets) to represent the state, it is also important for the transactions to be verifiable.
-% Otherwise adversaries could simply store invalid transactions in the state and they would never be detected.
+\subsection*{Horizontal scalability}
 
-\subsection{Performance and scalability}
-
-The last but not least, the final objective is horizontal scalability.
-We wish to see the performance (global transaction rate) increase as more nodes join the network.
+To enable ubiquitous use, we demand horizontal scalability.
+That is, the global transaction rate should increase as more nodes join the network.
 BitTorrent~\cite{cohen2003incentives} is an example of such a system,
 where peers interact with each other to exchange files without any global bottleneck.
+% Early blockchain systems may run in a network of thousands of nodes, but the performance does not scale.
+% On the other hand, as we will see in~\Cref{sec:acs-background}, Byzantine consensus algorithms perform well but only when in a small network.
+% In this work, our goal is to overcome the limitations of early blockchain systems and Byzantine consensus algorithms to create a horizontally scalable blockchain.
 
-Early blockchain systems may run in a network of thousands of nodes, but the performance does not scale.
-On the other hand, as we will see in~\Cref{sec:acs-background}, Byzantine consensus algorithms perform well but only when in a small network.
-In this work, our goal is to overcome the limitations of early blockchain systems and Byzantine consensus algorithms to create a horizontally scalable blockchain.
-
-\subsection{Limitations}
-Our work aims to significantly lower the transaction bound.
-However, the price to pay is that the Sybil attack~\cite{douceur2002sybil} prevention mechanism moves from the blockchain consensus protocol to the application layer.
-For example, social network based Sybil defence mechanisms use graph structure of real-world relationships~\cite{yu2006sybilguard}.
+\subsection*{Limitations}
+Since our consensus protocol is application neutral, it does not attempt to prevent the Sybil attack~\cite{douceur2002sybil}.
+A good defence mechanism requires application specific information.
+For example, a social network based Sybil defence mechanisms use graph structure of real-world relationships~\cite{yu2006sybilguard}.
 Online marketplaces such as Amazon use the rating of buyer and sellers.
-Since our system is application neutral, we do not provide an explicit Sybil defence mechanism.
-On the other hand, our system also has no restrictions on the Sybil defence technique
+% Since our system is application neutral, we do not provide an explicit Sybil defence mechanism.
+On the other hand, our system also has no restrictions on the Sybil defence mechanism
 and applications built on top of our system can use the best mechanism for their purpose.
 
 For the same reason, we do not explicitly consider spam or denial of service attacks.
