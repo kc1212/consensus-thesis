@@ -13,12 +13,11 @@ The novelty of the validation protocol is that it uses point-to-point communicat
 i.e. nodes only validate the transactions of interest,
 this enables our horizontal scalability property.
 
-The research question we asked in~\Cref{ch:problem} is the following.
+This work answers the research question stated in~\Cref{ch:problem}.
 \begin{displayquote}
 \emph{Is it possible to design a blockchain consensus protocol that is fault tolerant, scalable and can reach global consensus?}
 \end{displayquote}
-We answer it in the affirmative.
-Fault tolerance is guaranteed if $n \ge 3t + 1$ by using ACS as a building block.
+Concretely, fault tolerance is guaranteed if $n \ge 3t + 1$ by using ACS as a building block.
 While $t$ may be small compared to the population size $N$,
 we show that the probability for the system to fail is low even when $n \ge 3t + 1$ does not hold as long as the proportion of malicious nodes is not close to a third of $N$.
 For example, if there the population size is 1000 and 20\% of the nodes are malicious,

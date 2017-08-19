@@ -1,17 +1,16 @@
 \chapter{Implementation and experimental results}
 \label{ch:implementation}
 
-To build up the confidence of the horizontal scalability claim from our analytical results,
-we must verify the same property experimentally.
-Hence, we give an open source prototype implementation of our system.
-Our implementation runs on a network with over 1000 node.
-Each node sends transactions to each other autonomously, 
-which allows us to evaluate our analytical claims.
+We evaluate our system experimentally to ultimately understand its scalability characteristics as well as limitations.
+Concretely,
+we give an open source prototype implementation that runs on a network with over 1000 node.
+Nodes in our implementation make transactions autonomously with each other and then we collect the results for analysis.
 
-We begin this chapter with a description of the implementation in \Cref{sec:implementation}.
-Then, we move on to describing our experimental setup in \Cref{sec:experimental-setup} which includes a discussion on the system parameters and the physical infrastructure which we use.
-Finally, \Cref{sec:comms-cost-experiment} and onwards follows the same structure as the Performance analysis (\Cref{sec:performance-analysis}),
-where we analyse the performance experimentally rather than analytically and compare both results.
+This chapter begins with a description of the implementation in \Cref{sec:implementation}.
+Then, we describe our experimental setup in \Cref{sec:experimental-setup},
+which includes a discussion on the system parameters and the physical infrastructure which we use.
+Finally, \Cref{sec:comms-cost-experiment} and onwards follows the same structure as \Cref{sec:performance-analysis},
+where we analyse the performance experimentally rather than analytically and compare the results.
 
 
 \section{Implementation}
@@ -55,11 +54,8 @@ Both of which are provided by libnacl~\footnote{\url{https://pypi.python.org/pyp
 
 The goal of the experiment is to run the three protocols---consensus protocol,
 transaction protocol and validation protocol---simultaneously and analyse the communication cost, the consensus duration and the global throughput.
-We investigate these properties under the following four parameters.
+We investigate these properties under the following parameters.
 \begin{enumerate}
-  \item The transaction rate $r_{\text{tx}}$ per node. This is not comparable to the others because it is fixed at 2 TX/s.
-        Nevertheless, it is a good value because, as we show later,
-        it hits a bottleneck in extreme cases which helps us understand the limitations of our design.
   \item The number of facilitators $n \in \{4, 8, \dots, 32\}$.
         The maximum $n$ is 32 because the limitation in liberasurecode mentioned in \Cref{sec:implementation},
         but our results give a good indication of how our system may function for larger numbers of $n$.
@@ -87,7 +83,10 @@ To coordinate nodes on many different machines,
 we employ a discovery server to inform every node the IP addresses and port numbers of every other node.
 It is only run before the experiment and is not used during the experiment.
 
-Finally, since Bitcoin transactions are approximately 500 bytes~\cite{txsize},
+Finally, the transaction rate $r_{\text{tx}}$ is fixed at 2 TX/s for every node.
+This value, as we show later,
+creates a bottleneck in extreme cases which helps us understand the limitations of our design.
+Since Bitcoin transactions are approximately 500 bytes~\cite{txsize},
 we use a uniformly random transaction size sampled between 400 and 600 bytes.
 
 
@@ -130,8 +129,8 @@ We check our analytical results experimentally and demonstrate horizontal scalab
       \label{fig:round-duration-random}
     \end{subfigure}%
   }
-  \caption{Round duration does not increase linearly with the population size. 
-  This is likely due to the additional hashing operation required for larger consensus result.}
+  \caption{Round duration does not increase linearly with the population size,
+  which is likely due to the additional hashing operation required for larger consensus result.}
   \label{fig:round-duration}
 \end{figure}
 
@@ -140,10 +139,10 @@ The most important aspect is that these results show a linear increase.
 This reinforces our analytical result in~\Cref{sec:cons-complexity}.
 Note that regardless of whether the transactions are performed with a random neighbour or with a fixed neighbour,
 the magnitude of the communication cost is similar.
-Both peak at about 100 MB.
-This is expected because the consensus protocol is decoupled from the transaction protocol and the validation protocol.
-Finally, the rate for which the communication cost increases is higher when the number of facilitators is higher.
-This is also expected because the ACS algorithm has a polynomial term with respect to $n$ in its communication complexity.
+Both peak at about 100 MB,
+which is expected because the consensus protocol is decoupled from the transaction protocol and the validation protocol.
+Finally, the rate for which the communication cost increases is higher when the number of facilitators is higher,
+which is also expected because the ACS algorithm has a polynomial term with respect to $n$ in its communication complexity.
 
 We are also interested in how communication costs translate to time.
 Hence, for the same experiment, we record the duration in seconds and the result is shown in~\Cref{fig:round-duration}.
@@ -182,8 +181,8 @@ We observe a near linear relationship, which is due to the near linear relations
 Again, we believe the difference is minor and it is possible to remove the extra overhead.
 
 More interestingly, there is a large difference in communication cost between the two modes of transaction.
-When transacting with only one neighbour, the communication cost is low because only one agreed fragment needs to be communicated for every round in order to validate all transactions of that round.
-This is because agreed fragments are cached.
+When transacting with only one neighbour, the communication cost is low because only one agreed fragment needs to be communicated for every round in order to validate all transactions of that round,
+which is because agreed fragments are cached.
 On the other hand,
 if every node is transacting with a random node, then it is likely the case that one agreed fragment needs to be communicated for every transaction.
 Hence the communication cost we see in~\Cref{fig:tx-comms-random} is much higher than in~\Cref{fig:tx-comms-fixed}.
@@ -225,14 +224,14 @@ Evidently, the throughput has a linear relationship with the population size.
 This result is a strong indication of the horizontal scalability which we aimed to achieve.
 It also matches with our analytical result.
 
-Note that the throughput decreases slightly as the number of facilitators increases.
-This is due to the additional communication cost for running ACS with a high number of facilitators.
+Note that the throughput decreases slightly as the number of facilitators increases,
+which is due to the additional communication cost for running ACS with a high number of facilitators.
 That is, if the network is congested then the nodes may not have enough bandwidth to send validation responses timely.
 
 For~\Cref{fig:global-throughput-fixed},
 the magnitude of our throughput may not be self-evident at first glance.
-Recall that we fixed our $r_\text{tx}$ to 2, but how is it possible to have around 4800 transactions per second for 1200 nodes (which is 4 TX/s)?
-This is due to the way validated transactions are calculated.
+Recall that we fixed our $r_\text{tx}$ to 2, but how is it possible to have around 4800 transactions per second for 1200 nodes (4 TX/s)?
+This result is due to the way validated transactions are calculated.
 Transactions are between two parties, hence if every node makes two transactions per second,
 every node also expects to receive two transactions per second.
 Hence, for every node, the TX blocks are created at 4 per second.

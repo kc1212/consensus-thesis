@@ -1,18 +1,16 @@
 \chapter{Analysis of correctness and performance}
 \label{ch:analysis}
 
-Up to this point, we described our system specification in detail.
-Of course, specification alone does not establish any truths.
-In this chapter, we evaluate our system analytically.
-First, we show it has the desired properties.
-That is, the properties of the consensus protocol and the validation protocol (\Cref{def:consensus} and \Cref{def:validation} respectively) should hold.
-Then we analyse the performance, especially the throughput,
-and show that it out performs early blockchain systems.
-Finally, we consider the case where the $n \ge 3t + 1$ assumption is violated and show the effect of it in our system.
+In this chapter,
+we evaluate our system analytically to check whether it correctly implements the TrustChain consensus protocol (\Cref{def:consensus})
+and the TrustChain validation protocol (\Cref{def:validation}) in~\Cref{sec:correctness}.
+Further, we analyse the performance and especially the throughput to understand the scalability characteristics in~\Cref{sec:performance-analysis}.
+Finally, we consider the case where the $n \ge 3t + 1$ assumption is violated and show the effect of it in our system in~\Cref{sec:highly-adversarial}.
 
 \section{Correctness in the presence of faults}
-Our first objective is to show that \Cref{def:consensus} holds for our consensus protocol.
-Then, building on top of it, we show \Cref{def:validation} holds for the validation protocol.
+\label{sec:correctness}
+Our first objective is to show that our consensus protocol $\Pi_c$ described in~\Cref{sec:cons-protocol} is in fact a TrustChain consensus protocol defined in~\Cref{def:consensus}.
+Then, building on top of it, we show that our validation protocol $\Pi_v$ described in~\Cref{sec:vd-protocol} conforms to the TrustChain validation protocol defined in~\Cref{def:validation}.
 The resulting theorem shows that only using CP blocks in the consensus algorithm implies consensus on TX blocks.
 
 % Our first objective in this section is to establish truths regarding the correctness of our protocol.
@@ -22,14 +20,14 @@ The resulting theorem shows that only using CP blocks in the consensus algorithm
 
 \subsection{Correctness of the consensus protocol}
 
-We begin our analysis by establishing truths on the four properties in \Cref{def:consensus},
+We begin our analysis by establishing the four properties in \Cref{def:consensus},
 namely agreement, validity, fairness and termination for an arbitrary round.
 Using these results, we use mathematical induction to show that they hold for all rounds.
 
 \begin{lemma}
 \label{lemma:agreement}
-For an arbitrary round $r$
-if $\F_{r}$ is known by all correct nodes and one correct node outputs a list of facilitators $\F_{r+1}$,
+If for an arbitrary round $r$,
+$\F_{r}$ is known by all correct nodes and one correct node outputs a list of facilitators $\F_{r+1}$,
 then all correct nodes output $\F_{r+1}$.
 \end{lemma}
 \begin{proof}
@@ -49,26 +47,23 @@ Since $\textsf{get\_facilitators}(\cdot)$ is a deterministic algorithm and the i
 
 \begin{lemma}
 \label{lemma:validity}
-For an arbitrary round $r$,
-if $\F_r$ is known by all correct nodes and any correct node outputs $\F_{r+1}$,
-then (a) $|\C_{r+1}| \ge N - t$ must hold for the $\C_{r+1}$ which was used to create $\F_{r+1}$,
-(b) $\F_{r+1}$ must contain at least $n - t$ honest nodes and
-(c) $|\F_{r+1}| = n$.
+If for an arbitrary round $r$,
+$\F_r$ is known by all correct nodes and any correct node outputs $\F_{r+1}$,
+then (a) $|\C_{r+1}| \ge N - t$ must hold for the $\C_{r+1}$ which was used to create $\F_{r+1}$ and (b) $|\F_{r+1}| = n$.
 \end{lemma}
 \begin{proof}
 The validity follows from the validity property of ACS and the definition of our model,
 namely $N \ge n + t$ and $n \ge 3t + 1$.
 Given $\F_r$, since $N \ge n + t$ , there is at least $n$ nodes that would send their CP block to $\F_r$.
 From the validity property of ACS, we know the output must contain the input of at least $n - 2t$ nodes.
-But $n -t$ facilitators must have received $N - t$ valid CP blocks, so $|\C_{r+1}| \ge N-t$, this proves (a).
-There are at least $n-t$ honest nodes in $\F_{r+1}$ which follows from our assumption, this proves (b).
-Finally, since $N-t \ge (n+t) -t = n$ and $\textsf{get\_facilitators}(\cdot)$ outputs $n$ items, $|\F_{r+1}| = n$ and this proves (c).
+But $n -t$ facilitators must have received $N - t$ valid CP blocks, so $|\C_{r+1}| \ge N-t$ and this proves (a).
+Since $N-t \ge (n+t) -t = n$ and $\textsf{get\_facilitators}(\cdot)$ outputs $n$ items, so $|\F_{r+1}| = n$ and this proves (b).
 \end{proof}
 
 \begin{lemma}
 \label{lemma:fairness}
-For an arbitrary round $r$,
-if $\F_r$ is known by all correct nodes then
+If for an arbitrary round $r$,
+$\F_r$ is known by all correct nodes then
 every node with a CP block in $\C_{r+1}$ should have an equal probability to be elected as a facilitator in $\F_{r+1}$.
 \end{lemma}
 \begin{proof}
@@ -84,8 +79,8 @@ namely the output of $\textsf{get\_facilitators}(\cdot)$.
 
 \begin{lemma}
 \label{lemma:termination}
-For an arbitrary round $r$,
-if $\F_r$ is known by all correct nodes then
+If for an arbitrary round $r$,
+$\F_r$ is known by all correct nodes then
 every correct node eventually outputs some $\F_{r + 1}$.
 \end{lemma}
 \begin{proof}
@@ -97,39 +92,36 @@ Finally, the results are eventually disseminated to all the nodes.
 \end{proof}
 
 From Lemmas \ref{lemma:agreement}, \ref{lemma:validity}, \ref{lemma:fairness} and \ref{lemma:termination},
-we have shown that the 4 properties of \Cref{def:consensus} holds when assuming the existence of some $\F_r$.
-Thus, to proof the whole of \Cref{def:consensus},
-we need to proof these 4 properties under the universal quantifier.
+we have shown that the four properties of \Cref{def:consensus} holds when assuming the existence of some $\F_r$.
+Now we need to proof these properties under the universal quantifier on $r$.
 We do this using mathematical induction.
 
 \begin{theorem}
 \label{theorem:consensus}
-For all rounds,
-the consensus protocol satisfies agreement, validity, fairness and termination (\Cref{def:consensus}).
+For all rounds, $\Pi_c$ implements a TrustChain consensus protocol (\Cref{def:consensus}).
 \end{theorem}
 \begin{proof}
-We proof using mathematical induction.
+We prove using mathematical induction.
 
 In the base case ($r = 1$), agreement, validity fairness and termination follows directly from the bootstrap protocol.
 Note that the result is $\F_1$, which indicates the facilitators that are agreed in round 1, who are responsible for driving the ACS protocol in round 2.
 
 For the inductive step,
-we assume that the 4 properties hold in round $r$ and prove that they also hold in round $r + 1$.
+we assume that the four properties hold in round $r$ and prove that they also hold in round $r + 1$.
 Using Lemmas \ref{lemma:agreement}, \ref{lemma:validity}, \ref{lemma:fairness} and \ref{lemma:termination},
 it directly follows from modus ponens that these properties hold for $r + 1$.
 Due to the principals of mathematical induction, these properties hold for all $r$.
 \end{proof}
 
 \subsection{Correctness of the validation protocol}
-The consensus protocol,
-which ensures consensus on CP blocks and facilitators,
-is the backbone for consensus on transactions.
-In this section, we build on top of \Cref{theorem:consensus} to show that the properties except for liveness in \Cref{def:validation} can be satisfied.
+ $\Pi_c$ ensures consensus on CP blocks and facilitators,
+which makes it the building block for reaching consensus on transactions.
+In this section, we build on top of \Cref{theorem:consensus} to show that our validation protocol described in \Cref{sec:vd-protocol} has the agreement and validity properties of a TrustChain validation protocol defined in \Cref{def:validation}.
 
 \begin{theorem}
 \label{theorem:validation-agreement}
 % (Agreement of the validation protocol)
-The validation protocol satisfies agreement and validity properties.
+$\Pi_v$ satisfies the agreement and validity properties of a TrustChain validation protocol (\Cref{def:validation}).
 \end{theorem}
 \begin{proof}
 We proof the agreement property by contradiction.
@@ -170,9 +162,9 @@ We believe in a relaxed model, i.e. a weakly synchronous model, a stronger valid
 
 \subsection{Impossibility of liveness}
 \Cref{theorem:validation-agreement} is a major result that allows significantly improved performance over traditional blockchain systems,
-but it does not have all the properties of a typical Byzantine consensus protocol.
-Now we show a negative result, where the liveness property of \Cref{def:validation} cannot be attained.
-Meaning that transactions with adversaries cannot always be validated.
+but it does not have all the properties of a typical Byzantine consensus problem.
+Now we show a negative result, where the liveness property of \Cref{def:validation} cannot be attained in $\Pi_v$,
+meaning that transactions made with adversaries cannot always be validated.
 
 \begin{lemma}
 There exists a valid transaction that cannot be validated eventually.
@@ -193,15 +185,14 @@ Thus, to stay relevant in the system, the adversary needs to comply with the pro
 
 \section{Performance analysis}
 \label{sec:performance-analysis}
-This section aims to analytically answer the scalability aspect of our research question.
-That is, does the global throughput increase linearly with respect to the population size?
-We begin by looking at the communication and time complexity of the consensus protocol,
+This section aims to analytically answer whether our system is horizontally scalable.
+We begin by looking at the communication and time complexity of the consensus protocol $\Pi_c$,
 and then the bandwidth requirement for a single transaction.
 We build on top of those results to analyse the global throughput.
 
 \subsection{Communication complexity of the consensus protocol}
 \label{sec:cons-complexity}
-The consensus protocol can be seen as three parts,
+$\Pi_c$ can be seen as three parts,
 so the communication complexity is the sum of these parts.
 The first part is when every node sends their CP block to all the facilitators, which is $O(Nn)$ since there are $N$ nodes and $n$ facilitators.
 Or simply $O(N)$ if we consider $n$ as a constant.
@@ -295,6 +286,7 @@ We verify both of these claims experimentally in~\Cref{ch:implementation}.
 % then only one agreed fragment need to be exchanged as it contains all the transactions rather than $x$ agreed fragments.
 
 \section{Effect of a highly adversarial environment}
+\label{sec:highly-adversarial}
 
 Our last study considers the effect when the number of adversaries is more than $t$.
 This is useful because in practice it is difficult to guarantee that $t$ satisfies $n \ge 3t + 1$,
@@ -326,7 +318,7 @@ the expected value is close to the number of black balls that we can tolerate.
 \begin{figure}[h]
   \centering
   \includegraphics[width=1.0\textwidth]{hypergeometric}
-  \caption{Plot of the probability of selecting more than $\lfloor \frac{n-1}{3} \rfloor$ black balls for
+  \caption{Probability of selecting more than $\lfloor \frac{n-1}{3} \rfloor$ black balls for
   different value of $t$ with $N$ fixed at 2000.}
   \label{fig:hypergeometric}
 \end{figure}

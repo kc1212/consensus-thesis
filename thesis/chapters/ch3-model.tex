@@ -276,7 +276,7 @@ For convenience, the function $\textsf{agreed\_fragment}(\cdot)$ represents the 
 \section{Consensus protocol}
 \label{sec:cons-protocol}
 
-Our consensus protocol runs on top of Extended TrustChain.
+Our consensus protocol $\Pi_c$ runs on top of Extended TrustChain.
 It uses an unmodified asynchronous common subset (ACS) algorithm as the key building block.
 The objectives of the protocol are to
     allow honest nodes always make progress (in the form of creating new CP blocks),
@@ -285,7 +285,7 @@ The objectives of the protocol are to
 Concretely, we define the following.
 \begin{definition}
 \label{def:consensus}
-\textbf{\emph{TrustChain consensus}}
+\textbf{\emph{TrustChain consensus protocol}}
 
 A TrustChain consensus protocol is correct if the following holds for every round $r$:
 \begin{enumerate}
@@ -313,7 +313,7 @@ Before describing the protocol in detail,
 we take a brief detour to give background on ACS as it is the primary building block.
 Then we move on to describe the two phases of our consensus protocol---bootstrap phase and consensus phase.
 
-\subsection{Background on asynchronous subset consensus}
+\subsection{Background on asynchronous common subset}
 \label{sec:acs-background}
 
 The best way to explain ACS is to contrast it with the typical Byzantine consensus.
@@ -346,7 +346,7 @@ It allows any party to propose a value and the result is the set union of all th
 Concretely, ACS needs to satisfy the following properties (adapted from~\cite{miller2016honey}).
 \begin{definition}
 \label{def:acs}
-\textbf{\emph{Asynchronous subset consensus}}
+\textbf{\emph{Asynchronous common subset}}
 
 There are $n$ nodes, of which at most $t$ might experience Byzantine fault.
 Node $i$ starts with a non-empty set of input values $C_i$.
@@ -482,7 +482,7 @@ it walks through the steps needed for a node to be selected as a facilitator usi
 \section{Transaction protocol}
 \label{sec:tx-protocol}
 
-The TX protocol, shown in \Cref{alg:tx-proto}, is run by all nodes.
+The TX protocol $\Pi_t$, shown in \Cref{alg:tx-proto}, is run by all nodes.
 It is also known as True Halves, first described informally by Veldhuisen~\cite[Chapter~3.2]{truehalves}.
 Nodes that wish to initiate a transaction calls $\textsf{new\_tx}(pk_v, m, txid)$ (\Cref{alg:new-tx}) with the intended counterparty $v$ identified by $pk_v$ and message $m$.
 $txid$ should be a uniformly distributed random value, i.e. $txid \in_R \{0, 1\}^{256}$.
@@ -502,7 +502,7 @@ Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 \end{algorithm}
 
 \begin{algorithm}
-    \caption{The TX protocol which runs in the context of node $u$.}
+    \caption{The TX protocol $\Pi_t$ runs in the context of node $u$.}
     \label{alg:tx-proto}
 
     \begin{algorithmic}
@@ -600,15 +600,16 @@ $F_{v, j}$ is the corresponding fragment received from $v$.}
 \end{algorithm}
 
 \subsection{Validation protocol}
-Our validation protocol,
+Our validation protocol $\Pi_v$,
 shown in~\Cref{alg:vd-proto},
 is designed to classify transactions according to the aforementioned validity definition.
 If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends $\langle \texttt{vd\_req}, txid \rangle$ to $v$.
 The desired properties of the validation protocol are as follows.
 \begin{definition}
 \label{def:validation}
-\textbf{\emph{Properties of the validation protocol}}
+\textbf{\emph{TrustChain validation protocol}}
 
+A TrustChain validation protocol is correct if the following properties hold.
 \begin{enumerate}
     \item \emph{Agreement}:
         If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
@@ -625,7 +626,7 @@ The desired properties of the validation protocol are as follows.
 \end{definition}
 
 \begin{algorithm}
-\caption{Validation protocol which runs in the context of $u$}
+\caption{Validation protocol $\Pi_v$ which runs in the context of $u$}
 \label{alg:vd-proto}
 
 \begin{algorithmic}
