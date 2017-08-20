@@ -2,7 +2,7 @@
 \label{ch:conclusion}
 
 In this work we introduced an application neutral blockchain system which we call \textsc{Checo}.
-We add checkpoint block to the existing TrustChain data structure for use in our consensus protocol.
+We add checkpoint block to the existing TrustChain data structure to capture the system state.
 The round based consensus protocol uses ACS as a building block to reach consensus on checkpoint blocks.
 The consensus result, which is a set of checkpoint blocks, lets nodes elect new facilitators and create new checkpoint blocks.
 To make transactions, nodes use the transaction protocol,
@@ -13,17 +13,16 @@ The novelty of the validation protocol is that it uses point-to-point communicat
 i.e. nodes only validate the transactions of interest,
 this enables our horizontal scalability property.
 
-This work answers the research question stated in~\Cref{ch:problem}.
+This work answers the research question stated in~\Cref{sec:research-question}.
 \begin{displayquote}
-\emph{Is it possible to design a blockchain consensus protocol that is fault tolerant, scalable and can reach global consensus?}
+\emph{How can we design a blockchain consensus protocol that is fault-tolerant,
+horizontally scalable,
+and able to reach global consensus?}
 \end{displayquote}
 Concretely, fault tolerance is guaranteed if $n \ge 3t + 1$ by using ACS as a building block.
 While $t$ may be small compared to the population size $N$,
 we show that the probability for the system to fail is low even when $n \ge 3t + 1$ does not hold as long as the proportion of malicious nodes is not close to a third of $N$.
-For example, if there the population size is 1000 and 20\% of the nodes are malicious,
-the probability for a round to potentially to fail is bounded below $2.6 \times 10^{-16}$.
-This probability bound would decrease as the population size increases.
-Horizontal scalability property is demonstrated both analytically and experimentally.
+The horizontal scalability property is demonstrated both analytically and experimentally.
 Unlike sharding protocols, the property holds regardless of transaction characteristics and needs no parameter selection.
 Finally, we achieve global consensus on transactions via consensus on checkpoint blocks.
 
@@ -42,7 +41,8 @@ We hope to experiment our prototype in a more realistic environment.
 For example, DeterLab~\cite{mirkovic2012teaching} lets users simulate network delay,
 which is important for discovering issue that may only occur in hostile environments.
 To understand our system further, we hope to experiment with a real platform with real users such as Tribler~\cite{pouwelse2008tribler}.
-For instance, the TrustChain in Tribler stores the number of bytes uploaded and downloaded between users, but it has no global consensus.
+For instance, the standard TrustChain in Tribler is used for accounting internet traffic between users,
+but it has no global consensus.
 It would be useful to integrate our consensus protocol into Tribler to prevent misreporting attacks.
 More importantly, it gives us an opportunity to observe the characteristics of our system in the real world and how it evolves with new features or alterations.
 
@@ -54,7 +54,7 @@ For future work, we propose the following two ways to improve fault tolerance.
 First, use a reputation mechanism to select facilitators rather than simply selecting them randomly so that faulty nodes are less likely to be selected.
 This technique of course heavily depends on the application,
 for P2P file sharing systems the reputation score may be the number of bytes contributed to the network.
-Second, instead of using ACS we use a proof-of-stake (PoS) scheme which means that nodes with more stake in the system get more vote.
+Second, instead of using ACS we use a proof-of-stake (PoS) scheme (e.g., Ouroboros~\cite{kiayias2017ouroboros}) which means that nodes with more stake in the system get more vote.
 In an ideal PoS scheme, the system can tolerate any fault if the majority of the stake holders are honest.
 
 Finally, as mentioned in~\Cref{sec:permissionless}, we wish to evaluate our system (analytically and experimentally) in the permissionless settings.

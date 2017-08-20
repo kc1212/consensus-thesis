@@ -3,11 +3,11 @@
 
 In this chapter,
 we evaluate our system analytically to check whether it correctly implements the TrustChain consensus protocol (\Cref{def:consensus})
-and the TrustChain validation protocol (\Cref{def:validation}) in~\Cref{sec:correctness}.
-Further, we analyse the performance and especially the throughput to understand the scalability characteristics in~\Cref{sec:performance-analysis}.
-Finally, we consider the case where the $n \ge 3t + 1$ assumption is violated and show the effect of it in our system in~\Cref{sec:highly-adversarial}.
+and the TrustChain validation protocol (\Cref{def:validation}).
+Further, we analyse the performance and especially the throughput to understand the scalability characteristics.
+Finally, we consider the case where the $n \ge 3t + 1$ assumption is violated and show the effect of it in our system.
 
-\section{Correctness in the presence of faults}
+\section{Correctness analysis}
 \label{sec:correctness}
 Our first objective is to show that our consensus protocol $\Pi_c$ described in~\Cref{sec:cons-protocol} is in fact a TrustChain consensus protocol defined in~\Cref{def:consensus}.
 Then, building on top of it, we show that our validation protocol $\Pi_v$ described in~\Cref{sec:vd-protocol} conforms to the TrustChain validation protocol defined in~\Cref{def:validation}.
@@ -49,7 +49,7 @@ Since $\textsf{get\_facilitators}(\cdot)$ is a deterministic algorithm and the i
 \label{lemma:validity}
 If for an arbitrary round $r$,
 $\F_r$ is known by all correct nodes and any correct node outputs $\F_{r+1}$,
-then (a) $|\C_{r+1}| \ge N - t$ must hold for the $\C_{r+1}$ which was used to create $\F_{r+1}$ and (b) $|\F_{r+1}| = n$.
+then (a) $|\C_{r+1}| \ge N - t$ and (b) $|\F_{r+1}| = n$.
 \end{lemma}
 \begin{proof}
 The validity follows from the validity property of ACS and the definition of our model,
@@ -57,7 +57,7 @@ namely $N \ge n + t$ and $n \ge 3t + 1$.
 Given $\F_r$, since $N \ge n + t$ , there is at least $n$ nodes that would send their CP block to $\F_r$.
 From the validity property of ACS, we know the output must contain the input of at least $n - 2t$ nodes.
 But $n -t$ facilitators must have received $N - t$ valid CP blocks, so $|\C_{r+1}| \ge N-t$ and this proves (a).
-Since $N-t \ge (n+t) -t = n$ and $\textsf{get\_facilitators}(\cdot)$ outputs $n$ items, so $|\F_{r+1}| = n$ and this proves (b).
+Since $N-t \ge (n+t) -t = n$ and $\textsf{get\_facilitators}(\C_{r+1})$ outputs $n$ items, so $|\F_{r+1}| = n$ and this proves (b).
 \end{proof}
 
 \begin{lemma}
@@ -69,12 +69,12 @@ every node with a CP block in $\C_{r+1}$ should have an equal probability to be 
 \begin{proof}
 We already established that $|\C_{r+1}| \ge N - t \ge n$ from \Cref{lemma:validity}.
 Then the proof directly follows from the random oracle model.
-Recall that the luck value is computed using $\textsf{H}(\C_{r+1}, || pk_u)$.
+Recall that the luck value is computed using $\textsf{H}(\C_{r+1} || pk_u)$.
 Since $pk_u$ is unique for every node that has a CP block in $\C_{r+1}$,
 the output of $\textsf{H}(\cdot)$ is uniformly random.
-This effectively generates a random permutation
+This effectively generates a random permutation,
 so every node has the same probability of being in the top $n$ for the ordered sequence,
-namely the output of $\textsf{get\_facilitators}(\cdot)$.
+namely the output of $\textsf{get\_facilitators}(\C_{r+1})$.
 \end{proof}
 
 \begin{lemma}
@@ -98,13 +98,15 @@ We do this using mathematical induction.
 
 \begin{theorem}
 \label{theorem:consensus}
-For all rounds, $\Pi_c$ implements a TrustChain consensus protocol (\Cref{def:consensus}).
+$\Pi_c$ implements a TrustChain consensus protocol (\Cref{def:consensus}).
 \end{theorem}
 \begin{proof}
 We prove using mathematical induction.
 
 In the base case ($r = 1$), agreement, validity fairness and termination follows directly from the bootstrap protocol.
-Note that the result is $\F_1$, which indicates the facilitators that are agreed in round 1, who are responsible for driving the ACS protocol in round 2.
+Note that the result is $\F_1$,
+which represents the set of facilitators agreed in round 1,
+are responsible for driving the ACS protocol in round 2.
 
 For the inductive step,
 we assume that the four properties hold in round $r$ and prove that they also hold in round $r + 1$.
@@ -114,9 +116,9 @@ Due to the principals of mathematical induction, these properties hold for all $
 \end{proof}
 
 \subsection{Correctness of the validation protocol}
- $\Pi_c$ ensures consensus on CP blocks and facilitators,
+$\Pi_c$ ensures consensus on CP blocks and facilitators,
 which makes it the building block for reaching consensus on transactions.
-In this section, we build on top of \Cref{theorem:consensus} to show that our validation protocol described in \Cref{sec:vd-protocol} has the agreement and validity properties of a TrustChain validation protocol defined in \Cref{def:validation}.
+In this section, we build on top of \Cref{theorem:consensus} to show that our validation protocol $\Pi_v$ described in \Cref{sec:vd-protocol} has the agreement and validity properties of a TrustChain validation protocol defined in \Cref{def:validation}.
 
 \begin{theorem}
 \label{theorem:validation-agreement}
@@ -125,8 +127,7 @@ $\Pi_v$ satisfies the agreement and validity properties of a TrustChain validati
 \end{theorem}
 \begin{proof}
 We proof the agreement property by contradiction.
-From~\Cref{alg:get-validity},
-we use the fact that $F_{u, i}$ and $t_{u, i}$ are valid.
+Recall that $F_{u, i}$ and $t_{u, i}$ used in \Cref{alg:get-validity} are valid.
 Without loss of generality, suppose for some transaction with TX block $t$,
 node $u$ decides \emph{valid} but node $v$ decides \emph{invalid}.
 Then there exists a fragment $F' = \{ \dots, t', c'\}$ which $u$ received that contains a valid pair of $t$---$t'$.
@@ -138,7 +139,7 @@ In other words, the sender of $F''$ must be able to create some $t''$ that has t
 But this is only possible if the adversary can compute the inverse of $H(\cdot)$ with non-negligible probability.
 Thus we have a contradiction and this completes the agreement proof.
 
-Our protocol uses \Cref{alg:get-validity} which is also the validity definition,
+$\Pi_v$ directly uses \Cref{alg:get-validity} which is also the validity definition,
 so the validity property is also satisfied.
 \end{proof}
 
@@ -147,8 +148,10 @@ Like in our prior work~\cite{implicitconsensus}, we call this behaviour implicit
 One of the main advantages of our scheme over running a consensus algorithm on all the transactions is that 
 the transaction throughput is no longer dependent on the consensus algorithm---ACS.
 This enables horizontal scalability where adding new nodes would lead to higher global transaction rate.
-In addition, a convenient consequence \Cref{theorem:validation-agreement} is unforgeability.
-That is, no polynomial time adversary is able to create two chains, $F = \{ \dots, t, c\}$ and $F' = \{ \dots, t', c\}$, with correct hash pointers and the same end of chain $c$.
+In addition, a convenient consequence of \Cref{theorem:validation-agreement} is unforgeability.
+That is, no adversary is able to create two chains,
+$F = \{ \dots, t, c\}$ and $F' = \{ \dots, t', c\}$,
+with correct hash pointers and the same end of chain $c$ with non-negligible probability.
 % Another way to think about it is if a transaction can be forged, then it cannot be agreed.
 
 A stronger version of the validity definition exists.
@@ -157,7 +160,7 @@ then the transaction state is always valid in addition to our current validity d
 Under our purely asynchronous model, we cannot guarantee this stronger version.
 Since the adversary can delay any message for any amount of time,
 it can make sure all \texttt{tx\_req} messages are delivered in a round later than the round which the message is sent.
-Effectively, the transaction pair would always be in different rounds and the validation protocol would not output \emph{valid}.
+Effectively, the pair would always be in different rounds and the validation protocol would not output \emph{valid}.
 We believe in a relaxed model, i.e. a weakly synchronous model, a stronger validity definition is possible.
 
 \subsection{Impossibility of liveness}
@@ -167,12 +170,12 @@ Now we show a negative result, where the liveness property of \Cref{def:validati
 meaning that transactions made with adversaries cannot always be validated.
 
 \begin{lemma}
-There exists a valid transaction that cannot be validated eventually.
+There exists a valid transaction that cannot be eventually validated.
 \end{lemma}
 \begin{proof}
 Suppose nodes $u$ and $v$ correctly performed the TX protocol to create a transaction.
 Then when $u$ wants to validate it, it does so by sending \texttt{vd\_req} message to $v$.
-$v$ can act maliciously and ignore all \texttt{vd\_req} message, then the transaction can never be validated.
+$v$ can act maliciously and ignore all \texttt{vd\_req} message from $u$, then the transaction can never be validated.
 \end{proof}
 Although this is a negative result, it does not put the adversary in an advantageous position.
 If the adversary is observed to ignore validation requests, then the honest nodes may prefer not to transact with her in the future.
@@ -219,22 +222,23 @@ Thus the combined communication complexity is $O(N)$ for a constant $n$.
 
 \subsection{Duration of the consensus protocol}
 \label{sec:cons-duration}
-In order to make arguments on bandwidth or throughput in our purely asynchronous model, which are concepts that depend on time,
-we must make some assumptions regarding our model to make arguments on the duration of the consensus protocol.
-Note that it is not the same as the time complexity typically used in distributed systems.
+In order to make arguments on the duration of $\Pi_c$, the bandwidth or throughput in our purely asynchronous model,
+which are concepts that depend on time,
+we must make additional assumptions.
+Note that the duration we are interested in is not the same as the time complexity typically used in distributed systems.
 In the analysis of distributed algorithms, time complexity is often in terms of the number of rounds.
 For example, ACS runs in a constant number of rounds because of its sub-protocols---reliable broadcast and binary Byzantine consensus---also run in a constant number of rounds~\cite{miller2016honey}.
 However, in practice, making a unit of communication always has some overhead associated with it, for example serialising and writing it to some network socket.
 Hence, for the remainder of our performance analysis, we add the following to our computational model.
 For every unit of communication, we assume they take some non-negligible but constant time to perform.
-Hence, from~\Cref{sec:cons-complexity} and the fact that the consensus protocol uses a constant number of rounds,
-it follows that the consensus protocol has a duration of $O(N)$.
+Hence, from~\Cref{sec:cons-complexity} and the fact that $\Pi_c$ runs in a constant number of rounds,
+it follows that $\Pi_c$ has a duration of $O(N)$.
 
 \subsection{Communication cost for transactions}
 \label{sec:communication-cost-for-tx}
 Geared with the results above,
-we are ready to analyse the amount of data required to be transmitted over a link per transaction.
-Which we call the communication cost per transaction.
+we are ready to analyse the amount of data required to be transmitted over a link per transaction,
+which we call the communication cost per transaction.
 To create and then validate a transaction,
 the communication cost per transaction is of $O(l)$,
 where $l$ is the length of the agreed fragment.
@@ -244,17 +248,18 @@ The other messages (\texttt{tx\_req}, \texttt{tx\_resp} and \texttt{vd\_req}) ar
 If we assume that every node performs transactions at a constant rate of $r_{\text{tx}}$ per second.
 Then
 $$l = r_{\text{tx}} D_{\text{c}},$$
-where $D_{\text{c}}$ is the duration a round of the consensus protocol.
+where $D_{\text{c}}$ is the duration of a round of the consensus protocol.
 But from \Cref{sec:cons-duration},
 we know that $D_{\text{c}}$ is of $O(N)$, thus the communication cost per transaction is $O(N)$.
-This is intuitive because round duration would be longer if there are more CP blocks (more $N$), which means that the agreed fragments are longer (assuming nodes transact at a constant rate).
-The behaviour is verified experimentally in \Cref{ch:implementation}.
+This result is intuitive because round duration would be longer if there are more CP blocks (more $N$), which means that the agreed fragments are longer (assuming nodes transact at a constant rate).
+This behaviour is verified experimentally in \Cref{ch:implementation}.
 
 \subsection{Linear global throughput}
 \label{sec:global-throughput}
 Using our results so far, we are able to analyse the global throughput.
 First, we clarify the bandwidth definition, which is ``the data rate at which a network link or a network path can transfer''~\cite{prasad2003bandwidth}.
-Now, suppose every node has some fixed bandwidth $C$ per link, $N$ links and are making transactions at $r_{\text{tx}}$ per second.
+Now, suppose every node has $N$ links which connect to every other node,
+every link has a fix bandwidth $C$ and every node makes $r_{\text{tx}}$ transactions per second.
 Then we have the inequality
 $$NC \ge r_{\text{tx}} l,$$
 where $l$ is the length of the agreed fragment as before.
@@ -264,16 +269,17 @@ We note that the inequality does not hold if the node is only transacting with a
 This is because it cannot use all the bandwidth available in all the links.
 In the extreme case, if the node is only transacting with one other node, then it can only use the bandwidth of one link which is only $C$.
 However, if that is the case, we can intelligently cache the \texttt{vd\_resp} messages as described in~\Cref{sec:caching}.
-For this work, we analyse the worst case where every node transacts with a random node from the population,
+Hence, we analyse the worst case where every node transacts with a random node from the population,
 and a new \texttt{vd\_resp} must be sent for every \texttt{vd\_req} message.
 
 Consider the case where the system is making use of all the bandwidth, i.e. $NC = r_{\text{tx}} l$.
 Recall that $l$ is of $O(N)$, that means LHS and RHS both grow linearly with respect to $N$.
-Hence, there exists some constant $r_\text{tx}$ that makes use of all the available bandwidth regardless of $N$.
-Finally, if every node in the network is transacting at a constant rate, then the global throughput (in terms of transactions per second) is linear w.r.t. the population size $N$.
+Hence, there exists some $r_\text{tx}$ that makes use of all the available bandwidth regardless of $N$.
+Finally, if every node in the network is transacting at $r_{\text{tx}}$ per second,
+then the global throughput (in terms of transactions per second) is linear w.r.t. the population size $N$.
 If the system is not making use of all the bandwidth.
-We also maintain a constant transaction rate by the same argument.
-Thus a global throughput is also linear w.r.t. $N$.
+We also maintain a constant transaction rate by the same argument,
+so the global throughput is also linear w.r.t. $N$.
 We verify both of these claims experimentally in~\Cref{ch:implementation}.
 
 % The upshot of this analysis is that our system scales nicely at a global throughput of $O(N)$ until the population gets too large.
@@ -342,11 +348,11 @@ $$
 $$
 
 The bound is not tight, but it is useful for picking parameters for a desired level of fault tolerance.
-For some fixed $n$, since $0 \le \alpha \le \lfloor \frac{n-1}{3} \rfloor/n < (\lfloor  \frac{n - 1}{3} \rfloor + 1) / n$,
+If $n$ is fixed, since $0 \le \alpha \le \lfloor \frac{n-1}{3} \rfloor/n < (\lfloor  \frac{n - 1}{3} \rfloor + 1) / n$,
 the probability is maximum when the squared term is minimum at $\alpha = \lfloor \frac{n-1}{3} \rfloor/n$.
 The probability is minimum when the squared term is maximum at $\alpha = 0$.
 Hence, if $n$ is known, then we can pick a $\alpha$ such that the probability becomes small.
 On the other hand, if $\alpha$ is fixed, but small, we may increase $n$ to achieve the same.
 To put this into perspective,
-suppose $n = 1000$ and $\alpha = 1/5$, i.e. a fifth of the nodes are malicious.
-Then the probability to draw more black balls than the threshold is only $2.6 \times 10^{-16}$.
+suppose $n = 100$ and $\alpha = 1/10$, i.e. 10\% of the nodes are malicious,
+then the probability to draw more black balls than the threshold is $9.9 \times 10^{-6}$.

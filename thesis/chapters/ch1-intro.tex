@@ -2,9 +2,11 @@
 \label{ch:intro}
 
 We live in a world where technologies have become vital for our welfare and success.
-The internet, for instance, gave us the ability of efficiently exchange information on a global scale.
+The internet, for instance, gave us the ability to efficiently exchange information on a global scale.
 However, in contrast to its original design, the internet and in particular the world wide web is becoming increasingly centralised.
-The domain name system (root name server), certificate authorities (root CA), to name a few, carry enormous responsibilities and are a central point of failure.
+The root name server in the domain name system,
+the root certificate authority in our public key infrastructure,
+to name a few, carry enormous responsibilities and are a central point of failure.
 The  same can be said for many other services such are online marketplaces,
 cloud services and even our banking system.
 The 2008 financial crisis is an example of the banking system making poor choices which resulted in a
@@ -18,7 +20,7 @@ The primary innovation is the consensus mechanism which prevents double spending
 The double spending problem can be seen as an inconsistency issue.
 For example, $C$ has 5 units of currency in her account.
 If $C$ can simultaneously claim that she transferred 5 units to $A$ but also 5 units to $B$, then the system is inconsistent.
-Bitcoin and many of its derivatives (e.g., Litecoin\footnote{\url{https://litecoin.org}} and Dogecoin\footnote{\url{http://dogecoin.org}}) solve the inconsistency problem with a consensus algorithm.
+Bitcoin and many of its derivatives (e.g., Litecoin\footnote{\url{https://litecoin.org}} and Dogecoin\footnote{\url{http://dogecoin.com}}) solve the inconsistency problem with a consensus algorithm.
 The goal of the algorithm is to reach agreement on a set of valid transactions. 
 This effectively eliminates inconsistencies.
 
@@ -31,7 +33,7 @@ It is important to note that every block depends on the previous block.
 Hence the name blockchain.
 This property ensures malicious nodes cannot easily rewrite history if they do not have a majority of the network's computing power.
 Consequently, it is unlikely for more than one blockchain to exist in the network for a long period of time.
-Thus every party sees a consistent blockchain which solves the double spending problem.
+Thus, every party sees a consistent blockchain which solves the double spending problem.
 % Further, due to the reward mechanism,
 % people are incentivised to act as miners and keep the system running.
 
@@ -65,7 +67,7 @@ A recent empirical study by Croman et al.~\cite{croman2016scaling} has shown tha
 But given the bandwidth and latency constraints of today's network,
 it is not possible to have more than 27 transactions per second.
 To achieve transaction rates higher than that, it will lead to unfairness for nodes that do not have a good network connection.
-Thus fundamental changes are necessary to run at the scale of centralised payment processors such as Visa,
+Thus, fundamental changes are necessary to run at the scale of centralised payment processors such as Visa,
 which is in the order of tens of thousands transactions per second~\cite{visa}.
 
 The Bitcoin community understands the issue and many proposals exist with the aim to make Bitcoin more scalable.
@@ -88,23 +90,23 @@ There is no need for the customer or the owner to report the transaction to any 
 because both parties are happy with the transaction.
 On the other hand, if the customer leaves without paying the bill,
 then the owner would report the incident to some central authority, e.g., the police.
-On the contrary, in blockchain systems, every transaction is effectively sent to the miners,
+On the contrary, in blockchain systems, every transaction, regardless of whether it is valid or invalid, are sent to the miners,
 which can be seen as a collective authority.
 This consequently leads to limited scalability because every transaction must be validated by the authority even when most of the transactions are legitimate.
 
 Using the aforementioned insight,
 we explore an alternative consensus model for blockchain systems where transactions themselves do not reach consensus,
 but nevertheless verifiable at a later stage by any node in the network.
-We call our protocol \textsc{Checo}, derived from \emph{che}ckpoint \emph{co}nsensus.
-Informally, our system works as follows.
-Every node stores its own blockchain and every block is one transaction.
+We call our system \textsc{Checo}, derived from \emph{che}ckpoint \emph{co}nsensus.
+From a high level, our system works as follows.
+Every node stores its own hash chain and every block contains only one transaction.
 We randomly select nodes in every round, the selected ones are called facilitators.
 Facilitators reach consensus not on the individual transactions,
 but on the state of every chain represented by a single digest, called a checkpoint block.
 If a checkpoint block of some node is in consensus, 
 then that node can prove to any other node that it holds a set of transactions that compute (form a chain) to the checkpoint block.
-This immediately shows that those transactions are tamper-proof.
-The key difference from related work is the independence of the transaction validation phase.
+As a result, those transactions are tamper-proof.
+The key difference from the early blockchain systems is the independence of the transaction validation phase.
 Prior systems such a Bitcoin and Ethereum entangled the consensus algorithm with the transaction validation, restricting performance.
 By splitting this functionality we achieved horizontal scalability in the general case.
 That is, by adding new nodes into the network, the global transaction rate should increase proportionally,
@@ -113,9 +115,9 @@ regardless of the choice of system parameters.
 Our main contributions are the following.
 \begin{itemize}
     \item We formally introduce a blockchain system---\textsc{Checo}.
-        It uses individual hash chains and checkpoints on every node to achieve
+        It uses individual hash chains and checkpoint blocks on every node to achieve
         horizontally scalable in the general case for the first time.
-    \item We formally analyse \textsc{Checo} to ensure correctness as defined in our architecture.
+    \item We formally analyse \textsc{Checo} to ensure correctness as defined in our system architecture.
     \item We provide an implementation and then experiment with up to 1200 nodes,
         our results show strong evidence of horizontal scalability.
 \end{itemize}

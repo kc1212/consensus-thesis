@@ -1,11 +1,11 @@
 \chapter{Problem description}
 \label{ch:problem}
 
-From the Introduction, we saw that early blockchain systems face a scalability problem.
+We saw that early blockchain systems face a scalability problem.
 In particular, the use proof-of-work is unlikely to reach a transaction rate suitable for ubiquitous use.
 Many attempts to fix the scalability problem exist in academia as well as the industry.
 In this chapter, we describe the related work in the form of a mini taxonomy and identify areas for improvement and limitations.
-Then we state our research question which aims to overcome some of the limitations.
+Then, we state our research question which aims to overcome some of the limitations.
 
 \section{Related work and mini taxonomy}
 \label{sec:taxonomy}
@@ -13,7 +13,8 @@ Then we state our research question which aims to overcome some of the limitatio
 Blockchain research has seen a surge in recent years from both the industry and academia,
 this resulted in a myriad of blockchain systems with different approaches to scalability.
 To understand the current state-of-the-art,
-we classify various blockchain systems by their scalability approach.
+we classify various block\-chain systems by their scalability approach,
+beginning with the baseline.
 
 \subsection{Early blockchain systems}
 This category represents the baseline,
@@ -24,19 +25,19 @@ The typical examples are proof-of-work based systems such as Bitcoin, Ethereum a
 In Bitcoin, nodes compete in solving puzzles.
 The first node solves the puzzle has the privilege to create a new block.
 The level of consensus of a block containing many transactions is determined by how deep it is in the Bitcoin blockchain,
-also called the number of confirmation.
+which is also called the number of confirmation.
 The probability of a block being orphaned drops exponentially as the depth increases~\cite{bitcoin}.
 Nevertheless, the probability of the highest block being orphaned is non-negligible.
 
 The advantage of this approach is that it can be used in a large network.
 In fact, prior to Bitcoin, there was no internet-scale consensus protocol.
-Bitcoin is also fault-tolerant because attackers can not out pace honest users in finding new blocks unless they have a majority of the hash power.
-As long as the majority is honest and reasonable measures are taken to prevent the selfish mining attack~\cite{eyal2014majority}.
+Bitcoin is also fault-tolerant because attackers can not out pace honest users in finding new blocks unless they have a majority of the computational power,
+as long as the majority is honest and reasonable measures are taken to prevent the selfish mining attack~\cite{eyal2014majority}.
 The disadvantage, however, is that transactions are never in consensus with a probability of 1---no consensus finality.
 Hence double spending is possible for transactions that do not have a large number of confirmations.
 Furthermore, as we mentioned in the~\Cref{ch:intro},
 the performance is limited due to the fact that blocks are of fixed size and are generated at fixed intervals.
-Thus early blockchain systems do not achieve horizontal scalability.
+Thus early blockchain systems do not scale.
 
 % Our system significantly improves upon Bitcoin and other classical blockchain systems in performance, scalability and consensus finality.
 % The results described in \Cref{ch:analysis} and \Cref{ch:implementation}, show that we have horizontal scalability,
@@ -63,7 +64,7 @@ The best examples are Lightning Network~\cite{lightningnetwork} and Duplex Micro
 
 Off-chain transaction systems are implemented using multi-signature addresses~\cite{bitcoinmultisig} and hashed time-locked Bitcoin contracts~\cite{bitcointimelock}.
 In the simplest case, 
-if two parties wish to make transactions,
+if two parties wish to make frequent transactions,
 they open a payment channel in the form of a multi-signature Bitcoin address (for two parties it would be a 2-of-2 signature address).
 Each of the party must also deposit some Bitcoins in the multi-signature address,
 this is called the opening transaction.
@@ -78,15 +79,15 @@ even if the two parties made thousands or millions of transactions in between.
 The two-party scheme can be extended to a network of channels,
 which allows two parties to make off-chain transactions without an open channel as long as they are connected by nodes that do.
 
-The advantage of such systems is that they act as add-ons to Bitcoin wish already has a large number of users.
+The advantage of such systems is that they act as add-ons to Bitcoin, which already has a large number of users.
 Thus, if enough of the network wish for it (by setting a new block version),
 then a large number of users will instantly benefit from it.
 Some implementations already exist\footnote{For example \url{https://github.com/lightningnetwork/lnd}.},
 but at the time of writing SegWit is not activated yet which is a prerequisite for Lightning Network.
 
 On the other hand, payment channel complicates user experience and leads to centralisation.
-As we mentioned earlier, each node must deposit some Bitcoins into a multi-signature account.
-The users must pick a suitable amount.
+As we mentioned earlier, each node must deposit some Bitcoins into a multi-signature account,
+so the users are responsible for picking a suitable amount.
 If the deposit is too low it would not allow large transactions.
 If the deposit is too high the user is locked out of much of its Bitcoins for use outside of the channel.
 In addition, the user must proactively check whether the counterparty has broadcasted an old channel state so that the user does not lose Bitcoins.
@@ -106,8 +107,8 @@ but to the best of our knowledge, its exact scalability characteristics are not 
 
 This category of systems uses traditional Byzantine consensus algorithms such as PBFT~\cite{castro1999practical}.
 In essence, they contain a fixed set of nodes (sometimes called validating peer) that run a Byzantine consensus algorithm to decide on new blocks.
-This technique is often used in permissioned system where the validators must be predetermined.
-For example, Hyperledger Fabric~\cite{cachin2016architecture}.
+This technique is often used in permissioned system where the validators must be predetermined,
+for example, Hyperledger Fabric~\cite{cachin2016architecture}.
 
 A nice aspect of Byzantine consensus and in particular PBFT is that it can handle much more transactions than classical blockchain systems.
 PBFT can, for example, achieve 10,000 TX/s if the number of validating peer is under 16~\cite[Section 5.2]{miller2016honey}.
@@ -130,13 +131,13 @@ Moreover, the validating peers are predetermined which makes the system unsuitab
 % Such functionalities we believe is better to be built into the backbone rather than having it as an add on.
 
 \subsection{Combining proof-of-work with Byzantine consensus}
-Recent research has developed a class of hybrid systems which uses PoW for committee election,
+Recent research has developed a class of hybrid systems which uses proof-of-work (PoW) for committee election,
 and Byzantine consensus algorithms to agree on transactions.
-This design is primarily for permissionless system because the PoW leader election aspect prevents Sybils.
 % And then they use a Byzantine consensus algorithm to actually reach consensus on a set of transactions within the committee.
 Some examples are SCP~\cite{luu2015scp}, ByzCoin~\cite{kogias2016enhancing} and Solidus~\cite{abraham2016solidus}.
 
-This technique overcomes the early blockchain scalability issue by delegating the transaction validation to the Byzantine consensus protocol (e.g., PBFT in ByzCoin~\cite{kogias2016enhancing}).
+This technique overcomes the early blockchain scalability issue by delegating the transaction validation to the Byzantine consensus protocol (e.g., PBFT in ByzCoin~\cite{kogias2016enhancing})
+while keeping the permissionless nature by using PoW.
 A major tradeoff of such systems is that they cannot guarantee correctness when there is a large number of malicious nodes (but less than a majority).
 For SCP, ByzCoin and Solidus, they all have some probability to elect more than $t$ Byzantine nodes into the committee,
 where $t$ is typically just under a third of the committee size (a lower bound of Byzantine consensus~\cite{pease1980reaching}).
@@ -146,7 +147,7 @@ Further, due to the fact that these systems must reach consensus on all transact
 
 \subsection{Sharding}
 
-Sharding is a technique to achieve horizontal scalability by grouping nodes into multiple committees or shards.
+Sharding is a technique to achieve horizontal scalability by grouping nodes into multiple committees, also known as shards.
 Nodes within a single shard run a Byzantine consensus algorithm to agree on a set of transactions that belong to that specific shard.
 An intra-shard protocol is needed for transactions that involve nodes from more than one shard.
 The number of shards grows linearly with respect to the total computational power in the network.
@@ -154,7 +155,7 @@ This scheme achieves horizontal scalability because if every shard commits trans
 then adding more shard would naturally result in a linear increase of global throughput.
 Examples of blockchain systems that use sharding are Elastico~\cite{luu2016elastico} and OmniLedger~\cite{kokoris2017omniledger}.
 
-The biggest limitation of sharding is that it is only optimal is transactions stay in the same shard.
+The biggest limitation of sharding is that it is only optimal if transactions stay in the same shard.
 In fact, Elastico cannot atomically process inter-shard transactions.
 OmniLedger has an inter-shard transaction protocol but choosing a good shard size is difficult.
 A large shard size would make the system less scalable because the Byzantine consensus algorithm must be run by a large number of nodes.
@@ -166,12 +167,12 @@ the adversaries have more opportunities to compromise the system.
 \subsection{Blockchain without global consensus}
 
 Tangle~\cite{tangle}, Corda~\cite{corda} and the original TrustChain~\cite{multichain} do not use global consensus at all.
-In this scheme, every node has their own chain.
+In these schemes, every node has their own chain.
 Transactions between nodes are recorded on their respective chains.
 This effectively results in a directed acyclic graph.
 By avoiding global consensus, this approach achieves extremely desirable scalability properties similar to BitTorrent~\cite{cohen2003incentives}.
 
-On the other hand, the application and security are limited.
+On the other hand, the application and security properties are limited.
 A malicious node can easily lie to other nodes regarding its own chain by simply presenting one version of reality to a set of nodes and another version to a different set.
 Thus the network will have a conflicting view on the state of the malicious node.
 Applications such as digital cash can not be implemented on top of such systems because consistency is needed in solving the double spending problem.
@@ -191,13 +192,14 @@ Applications such as digital cash can not be implemented on top of such systems 
 % Our transaction rate is affected by the validation protocol in the worst case scenario as we saw in~\Cref{sec:evaluation}.
 
 \section{Research question}
+\label{sec:research-question}
 
 We saw in~\Cref{sec:taxonomy} that the majority of the systems cannot achieve horizontal scalability.
-To the best of our knowledge, only two systems---Elastico~\cite{luu2016elastico} and OmniLedger~\cite{kokoris2017omniledger}---has experimentally demonstrated horizontal scalability.
+To the best of our knowledge, only two systems---Elastico~\cite{luu2016elastico} and OmniLedger~\cite{kokoris2017omniledger}---have experimentally demonstrated horizontal scalability.
 However, these techniques rely on sharding, thus the performance highly depends on transaction characteristics and the shard size parameter because inter-shard transactions are slow.
 Furthermore, all the systems described in~\Cref{sec:taxonomy} are complete blockchain systems designed for a concrete application.
 We wish to design a blockchain consensus protocol that can be used in many applications.
-For example, the accounting of detailed internet traffic in Tribler~\cite{pouwelse2008tribler, multichain} and decentralised market\footnote{\url{https://github.com/Tribler/tribler/blob/devel/Tribler/community/tradechain/__init__.py}}.
+For example, the accounting of detailed internet traffic in Tribler~\cite{pouwelse2008tribler, multichain} and decentralised market in Tribler\footnote{\url{https://github.com/Tribler/tribler/blob/devel/Tribler/community/tradechain/__init__.py}}.
 Hence our research question is the following.
 \begin{displayquote}
 \emph{How can we design a blockchain consensus protocol that is fault-tolerant,
@@ -205,19 +207,17 @@ horizontally scalable,
 and able to reach global consensus?}
 \end{displayquote}
 
-In order to make sense of our research question, we must first define \emph{blockchain consensus protocol}.
+In order to make sense of our research question, we must first explain \emph{blockchain consensus protocol}.
 Typical blockchain systems are application specific.
 For example, the application in Bitcoin (any many of its derivatives) is digital cash, the application in Namecoin is domain name registration~\cite{namecoin} and the application in Siacoin is cloud storage~\cite{siacoin}.
 Underneath these applications lies the blockchain consensus protocol which has the goal of reaching consensus on transactions or state changes.
-In the case of Bitcoin, it is proof-of-work (PoW).
-It is not concerned with the structure of the transactions,
-it works by simply treating transactions as a blob of data and hashes them with the previous block.
-In this work, we focus on the blockchain consensus protocol rather than any specific application.
-Because it is the scalability bottleneck and is necessary for any blockchain based application.
+In the case of Bitcoin, it is PoW,
+because it is not concerned with the structure of the transactions.
+In this work, we focus on the blockchain consensus protocol rather than any specific application because it is the scalability bottleneck and is necessary for any blockchain based application.
 % Also, it should be possible to build any kind of application on top our system.
 % We do not impose on a consensus algorithm, as long as it satisfies the properties of atomic broadcast which we describe in~\Cref{sec:overview-cons}.
 
-In the remainder of this section, we expand on our research question and visit each of our requirements in detail.
+In the remainder of this section, we expand on our research question and visit each aspect in detail.
 At the end of this section, we describe some issues that we do not consider as a part of our design,
 which is the result of not focusing on any specific application.
 
@@ -228,14 +228,15 @@ It stops many types of malicious activities because the agreed state, or a repre
 We emphasise on the notion of a representation of the state because in contrary to traditional blockchains,
 it does not necessarily mean the set of all transactions that have ever happened.
 The state can be a small, but verifiable representation of all the transactions.
-As an extreme example, a single digest of the complete history can represent the state.
-It is even verifiable as long as there are nodes that store the history.
+As an extreme example, a single digest computed from the complete history can represent the state.
+It is verifiable as long as there are nodes that store the history.
 
 \subsection*{Fault-tolerance}
 % WHY WE NEED FAULT-TOLERANCE
 Similar to many blockchain systems,
 our system should be unaffected in the presence of powerful adversaries.
-In particular, adversaries are Byzantine meaning that they can have arbitrary behaviour.
+In particular, adversaries are Byzantine,
+meaning that they can have arbitrary behaviour.
 Thus anything is possible from simply omitting messages to colluding with each other in order to undermine the whole system.
 
 There is another aspect of fault tolerance that is transaction verifiability.
@@ -260,7 +261,7 @@ A good defence mechanism requires application specific information.
 For example, a social network based Sybil defence mechanisms use graph structure of real-world relationships~\cite{yu2006sybilguard}.
 Online marketplaces such as Amazon use the rating of buyer and sellers.
 % Since our system is application neutral, we do not provide an explicit Sybil defence mechanism.
-On the other hand, our system also has no restrictions on the Sybil defence mechanism
+On the other hand, our system has no restrictions on the Sybil defence mechanism
 and applications built on top of our system can use the best mechanism for their purpose.
 
 For the same reason, we do not explicitly consider spam or denial of service attacks.

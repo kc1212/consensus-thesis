@@ -1,7 +1,7 @@
 \chapter{Implementation and experimental results}
 \label{ch:implementation}
 
-We evaluate our system experimentally to ultimately understand its scalability characteristics as well as limitations.
+We evaluate our system experimentally to ultimately understand its scalability characteristics as well as its limitations.
 Concretely,
 we give an open source prototype implementation that runs on a network with over 1000 node.
 Nodes in our implementation make transactions autonomously with each other and then we collect the results for analysis.
@@ -10,7 +10,7 @@ This chapter begins with a description of the implementation in \Cref{sec:implem
 Then, we describe our experimental setup in \Cref{sec:experimental-setup},
 which includes a discussion on the system parameters and the physical infrastructure which we use.
 Finally, \Cref{sec:comms-cost-experiment} and onwards follows the same structure as \Cref{sec:performance-analysis},
-where we analyse the performance experimentally rather than analytically and compare the results.
+where we analyse the performance experimentally.
 
 
 \section{Implementation}
@@ -52,17 +52,16 @@ Both of which are provided by libnacl~\footnote{\url{https://pypi.python.org/pyp
 \section{Experimental setup}
 \label{sec:experimental-setup}
 
-The goal of the experiment is to run the three protocols---consensus protocol,
-transaction protocol and validation protocol---simultaneously and analyse the communication cost, the consensus duration and the global throughput.
+The goal of the experiment is to run \textsc{Checo} and analyse the communication cost, the consensus duration and the global throughput.
 We investigate these properties under the following parameters.
 \begin{enumerate}
   \item The number of facilitators $n \in \{4, 8, \dots, 32\}$.
         The maximum $n$ is 32 because the limitation in liberasurecode mentioned in \Cref{sec:implementation},
-        but our results give a good indication of how our system may function for larger numbers of $n$.
+        but our results in~\Cref{sec:varying-facilitator-experiment} give a good indication of how our system may function for a larger $n$.
   \item The population size $N \in \{200, 300, \dots, 1200\}$.
         $N$ stops at 1200 is due to our physical setup, which we describe next.
   \item The two modes of transaction.
-        The first mode is the \emph{fixed-neighbour} mode where nodes only transact with their immediate neighbour which is predetermined. 
+        The first mode is the \emph{fixed-neighbour} mode where nodes only transact with one predetermined node. 
         This minimises the data volume per validated transaction because agreed fragment can be cached.
         The second mode is in the other extreme which we call the \emph{random-neighbour} mode,
         where every transaction is with a random node out of the $N$ nodes in the system.
@@ -110,7 +109,7 @@ We check our analytical results experimentally and demonstrate horizontal scalab
       \label{fig:round-comms-random}
     \end{subfigure}%
   }
-  \caption{Communication cost for the consensus protocol per round increases linearly with population size.
+  \caption{Experimental result of the communication cost per round for the consensus protocol.
   The error bars are larger for higher population size or higher number of facilitators is because rounds take longer thus they are repeated fewer times.}
   \label{fig:round-comms}
 \end{figure}
@@ -129,8 +128,7 @@ We check our analytical results experimentally and demonstrate horizontal scalab
       \label{fig:round-duration-random}
     \end{subfigure}%
   }
-  \caption{Round duration does not increase linearly with the population size,
-  which is likely due to the additional hashing operation required for larger consensus result.}
+  \caption{Experimental result of the round duration per round for the consensus protocol.}
   \label{fig:round-duration}
 \end{figure}
 
@@ -156,7 +154,7 @@ Then the non-facilitator nodes simply use it if there are enough signatures.
 
 \section{Communication cost for transaction and validation protocols}
 
-\begin{figure}[h]
+\begin{figure}[tb]
   \centering
   \makebox[\linewidth][c]{%
   \begin{subfigure}[b]{0.7\textwidth}
@@ -170,7 +168,8 @@ Then the non-facilitator nodes simply use it if there are enough signatures.
     \label{fig:tx-comms-random}
   \end{subfigure}
   }
-  \caption{Communication cost per verified transaction has similar (near linear) trend as~\Cref{fig:round-duration}.
+  \caption{Experimental result of the communication cost per verified transaction.
+  It has a similar, near linear, trend as~\Cref{fig:round-duration}.
   Fluctuation for the fixed-neighbour mode exists because the cache mechanism is unpredictable.}
   \label{fig:tx-comms}
 \end{figure}
@@ -181,8 +180,7 @@ We observe a near linear relationship, which is due to the near linear relations
 Again, we believe the difference is minor and it is possible to remove the extra overhead.
 
 More interestingly, there is a large difference in communication cost between the two modes of transaction.
-When transacting with only one neighbour, the communication cost is low because only one agreed fragment needs to be communicated for every round in order to validate all transactions of that round,
-which is because agreed fragments are cached.
+When transacting with only one neighbour, the communication cost is low because only one agreed fragment needs to be communicated for every round in order to validate all transactions of that round.
 On the other hand,
 if every node is transacting with a random node, then it is likely the case that one agreed fragment needs to be communicated for every transaction.
 Hence the communication cost we see in~\Cref{fig:tx-comms-random} is much higher than in~\Cref{fig:tx-comms-fixed}.
@@ -196,10 +194,10 @@ Then it is possible to have sent two or more validation requests for some transa
 In this case, the remote would respond with two or more of the same agreed fragments,
 which results in extra (wasted) communication cost, and this is the source of the fluctuation seen in~\Cref{fig:tx-comms-fixed}.
 The result in~\Cref{fig:tx-comms-random} reinforces our argument.
-It is a lot more stable because for every transaction it is almost always the case that an agreed fragment is needed to validate it.
+It is a lot more stable because for every transaction it is almost always the case that a new agreed fragment is needed to validate it.
 
 \section{Linear global throughput}
-\begin{figure}[h]
+\begin{figure}[tb]
   \centering
   \makebox[\linewidth][c]{%
   \begin{subfigure}[b]{0.7\textwidth}
@@ -224,8 +222,8 @@ Evidently, the throughput has a linear relationship with the population size.
 This result is a strong indication of the horizontal scalability which we aimed to achieve.
 It also matches with our analytical result.
 
-Note that the throughput decreases slightly as the number of facilitators increases,
-which is due to the additional communication cost for running ACS with a high number of facilitators.
+Note that the throughput decreases slightly as the number of facilitators increases.
+This effect is due to the additional communication cost for running ACS with a high number of facilitators.
 That is, if the network is congested then the nodes may not have enough bandwidth to send validation responses timely.
 
 For~\Cref{fig:global-throughput-fixed},
@@ -264,13 +262,13 @@ As a result, the global throughput is lower when transacting with random nodes t
     \label{fig:backlog-random}
   \end{subfigure}
   }
-  \caption{A limitation of our system is when nodes are transacting with many random nodes,
-  then the network cannot keep up with the large number of agreed fragments that need to be communicated between nodes.
-  Hence the slope of validated transactions grows at a slower rate in~\Cref{fig:backlog-random}.}
+  \caption{Demonstration of the network bottleneck.
+  Note that the slope of validated transactions grows at a slower rate in~\Cref{fig:backlog-random} than in~\Cref{fig:backlog-fixed}.}
   \label{fig:backlog}
 \end{figure}
 
 \section{Communication cost with varying number of facilitators}
+\label{sec:varying-facilitator-experiment}
 Up to this point we focused on the effect of communication cost, throughput and so on with respect to the population size.
 In this section, we consider a varying number of facilitators,
 which gives us an insight into our system performance may perform when the number of facilitators is higher than 32.
@@ -295,7 +293,7 @@ which gives us an insight into our system performance may perform when the numbe
 
 \Cref{fig:facilitators-round-comms} shows the communication cost of the consensus protocol for varying numbers of facilitators.
 There is strong evidence that the communication cost grows polynomially.
-We expect this because of there are polynomial terms in the ACS communication complexity---$O(n^2|v| + \lambda n^3 \log n)$.
+We expect this behaviour because of there are polynomial terms in the ACS communication complexity---$O(n^2|v| + \lambda n^3 \log n)$.
 This also means that the rounds would take longer to complete and transactions would take longer to verify.
 On the other hand, we get better fault tolerance.
 Thus a linear increase in fault tolerance ($t$) costs a polynomial increase in communication cost.

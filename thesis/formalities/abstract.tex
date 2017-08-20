@@ -36,16 +36,16 @@ However, scalability remains a key challenge.
 Without a horizontally scalable solution, blockchain systems remain unsuitable for ubiquitous use.
 % what's the solution?
 We design a novel blockchain system called \textsc{Checo}.
-Each node in our system maintains individual hash chains,
+Each node in our system maintains a personal hash chain,
 which only stores transactions that the node is involved in.
 A consensus is reached on special blocks called checkpoint blocks rather than on all the transactions.
-Checkpoint blocks are effectively a hash pointer to the individual hash chains,
-thus a single checkpoint block may represent a large set of transaction blocks.
+Checkpoint blocks are effectively a hash pointer to the personal hash chains,
+thus a single checkpoint block may represent a large set of transactions.
 The consensus protocol does not imply transaction validity.
-Hence we include a validation protocol which allows nodes to verify that transactions are correctly recorded,
-which indirectly achieves consensus on transactions.
+Hence we introduce a validation protocol which allows nodes to verify that the transactions are correctly recorded,
+meaning that consensus on transactions is achieved indirectly via checkpoint blocks.
 % how good is the solution?
-We implement a prototype and evaluate it experimentally.
+We evaluate \textsc{Checo} analytically and experimentally.
 Our results show a strong indication of horizontal scalability even in the worst case,
 where every transaction is made with a randomly selected node.
 \end{abstract}
