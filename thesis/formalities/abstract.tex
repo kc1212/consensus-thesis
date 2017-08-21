@@ -33,21 +33,22 @@ Dr. Z. Erkin                            & Delft University of Technology \\
 % what's the problem?
 Blockchain systems have the potential to decentralise many traditionally centralised systems.
 However, scalability remains a key challenge.
-Without a horizontally scalable solution, blockchain systems remain unsuitable for ubiquitous use.
+Without a horizontally scalable solution,
+where performance increases by adding more nodes to the system,
+blockchain systems remain unsuitable for ubiquitous use.
 % what's the solution?
 We design a novel blockchain system called \textsc{Checo}.
 Each node in our system maintains a personal hash chain,
 which only stores transactions that the node is involved in.
 A consensus is reached on special blocks called checkpoint blocks rather than on all the transactions.
 Checkpoint blocks are effectively a hash pointer to the personal hash chains,
-thus a single checkpoint block may represent a large set of transactions.
-The consensus protocol does not imply transaction validity.
-Hence we introduce a validation protocol which allows nodes to verify that the transactions are correctly recorded,
-meaning that consensus on transactions is achieved indirectly via checkpoint blocks.
+thus a single checkpoint block may represent an arbitrarily large set of transactions.
+We introduce a validation protocol so that any node can check the validity of any transaction.
+Since it is a point-to-point protocol, we achieve horizontal scalability.
 % how good is the solution?
-We evaluate \textsc{Checo} analytically and experimentally.
-Our results show a strong indication of horizontal scalability even in the worst case,
-where every transaction is made with a randomly selected node.
+We analytically evaluate our system and proof a number of highly desirable correctness properties.
+Further, we give a free and open-source implementation of \textsc{Checo} and evaluate it experimentally.
+Our results show a strong indication of horizontal scalability.
 \end{abstract}
 
 \clearpage

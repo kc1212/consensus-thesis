@@ -1,11 +1,12 @@
 \chapter{System architecture}
 \label{ch:model}
 
-Our system consists of three protocols---the consensus protocol, the transaction protocol and the validation protocol.
-It is based on our prior work on TrustChain~\cite{multichain},
+In this chapter, we break away from the early blockchain paradigm and introduce a novel system that is application neutral,
+horizontally scalable and will never have a block size debate.
+In particular, our system consists of three protocols---the consensus protocol, the transaction protocol and the validation protocol.
+It is based on our prior research on TrustChain~\cite{multichain} at Delft,
 where every node independently interacts with each other via their own hash chain\footnote{TrustChain is originally called MultiChain but the name has changed to TrustChain}.
 
-The goal of this chapter is to detail our system specification.
 We begin our discussion with an intuitive overview of the architecture in \Cref{sec:system-overview}.
 Next, we give the formal description, starting with the model and assumptions in \Cref{sec:model-assumptions}, 
 and then the three protocols which make up the complete system.
@@ -13,13 +14,15 @@ Finally, we discuss a few variations of our design and their respective tradeoff
 
 \section{System overview}
 \label{sec:system-overview}
-The architecture is visualised in~\Cref{fig:architecture}.
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.7\textwidth]{architecture}
-\caption{Overview of the system architecture}
+\caption{Overview of \textsc{Checo} architecture.}
 \label{fig:architecture}
 \end{figure}
+
+The architecture of \textsc{Checo} is visualised in~\Cref{fig:architecture}.
 It consists of one data structure---Extended TrustChain, and three protocols.
 The protocols have distinct roles which are evident from their names.
 They run concurrently and do not interact with each other.
@@ -27,9 +30,8 @@ The only synchronization happens on the Extended TrustChain layer, where all the
 We first describe each component individually, starting with Extended TrustChain, and then explain how they fit together.
 
 \subsection*{TrustChain and Extended TrustChain}
-Extended TrustChain naturally builds on top of the standard TrustChain. 
-Thus we first describe the standard TrustChain.
-Our description has a minor difference when compared to the description in~\cite{multichain},
+We first describe the standard TrustChain and then the Extended TrustChain.
+Our description of the standard TrustChain has a minor difference when compared to the description in~\cite{multichain},
 we remark the difference when it occurs.
 
 % \subsubsection*{Standard TrustChain}
@@ -91,7 +93,9 @@ starting a new execution immediately after the previous one is completed.
 This approach is necessary because blockchain systems always need to reach consensus on new values proposed by the nodes in the system,
 or CP blocks in our case.
 
-The high communication complexity of Byzantine consensus algorithms prohibits us from running it on a large network.
+The communication complexity of Byzantine consensus algorithms typically grows polynomially w.r.t the number of nodes,
+which prohibits us from running it on a large network.
+For example, one of the most recent work tested with up to 104 nodes and the algorithm took almost 6 minutes to complete~\cite{miller2016honey}.
 Thus, at the beginning of every Byzantine consensus algorithm execution,
 we randomly elect a set of nodes---called facilitators---to collect CP blocks from every other node and use those blocks as the input to the Byzantine consensus algorithm, and then run it.
 After the algorithm completes,

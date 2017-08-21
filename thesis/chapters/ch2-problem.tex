@@ -2,26 +2,25 @@
 \label{ch:problem}
 
 We saw that early blockchain systems face a scalability problem.
-In particular, the use proof-of-work is unlikely to reach a transaction rate suitable for ubiquitous use.
+In particular, the use PoW is unlikely to reach a transaction rate suitable for ubiquitous use.
 Many attempts to fix the scalability problem exist in academia as well as the industry.
-In this chapter, we describe the related work in the form of a mini taxonomy and identify areas for improvement and limitations.
-Then, we state our research question which aims to overcome some of the limitations.
+In this chapter, we describe the related work and identify their limitations.
+Then, we state our research question which aims to overcome some of these.
 
-\section{Related work and mini taxonomy}
+\section{Related work}
 \label{sec:taxonomy}
 
 Blockchain research has seen a surge in recent years from both the industry and academia,
 this resulted in a myriad of blockchain systems with different approaches to scalability.
 To understand the current state-of-the-art,
-we classify various block\-chain systems by their scalability approach,
-beginning with the baseline.
+we classify various block\-chain systems by their scalability approach.
 
 \subsection{Early blockchain systems}
 This category represents the baseline,
 which are systems with a probabilistic consensus algorithm.
 That is, transactions never reach consensus with a probability of 1.
 Given sufficient computational power, adversaries are able to undo any transaction.
-The typical examples are proof-of-work based systems such as Bitcoin, Ethereum and other Altcoins.
+The typical examples are PoW based systems such as Bitcoin, Ethereum and other Altcoins.
 In Bitcoin, nodes compete in solving puzzles.
 The first node solves the puzzle has the privilege to create a new block.
 The level of consensus of a block containing many transactions is determined by how deep it is in the Bitcoin blockchain,
@@ -30,12 +29,12 @@ The probability of a block being orphaned drops exponentially as the depth incre
 Nevertheless, the probability of the highest block being orphaned is non-negligible.
 
 The advantage of this approach is that it can be used in a large network.
-In fact, prior to Bitcoin, there was no internet-scale consensus protocol.
-Bitcoin is also fault-tolerant because attackers can not out pace honest users in finding new blocks unless they have a majority of the computational power,
+In fact, prior to Bitcoin, there was no Internet-scale consensus protocol.
+Bitcoin is also fault-tolerant because attackers can not outpace honest users in finding new blocks unless they have a majority of the computational power,
 as long as the majority is honest and reasonable measures are taken to prevent the selfish mining attack~\cite{eyal2014majority}.
 The disadvantage, however, is that transactions are never in consensus with a probability of 1---no consensus finality.
 Hence double spending is possible for transactions that do not have a large number of confirmations.
-Furthermore, as we mentioned in the~\Cref{ch:intro},
+Furthermore, as we mentioned in~\Cref{ch:intro},
 the performance is limited due to the fact that blocks are of fixed size and are generated at fixed intervals.
 Thus early blockchain systems do not scale.
 
@@ -76,8 +75,14 @@ To close the channel, the parties simply broadcast the latest net settlement to 
 this is called the closing transaction.
 Effectively, only two transactions need to be broadcasted to the Bitcoin network---the opening and the closing transaction,
 even if the two parties made thousands or millions of transactions in between.
+
 The two-party scheme can be extended to a network of channels,
 which allows two parties to make off-chain transactions without an open channel as long as they are connected by nodes that do.
+For example, if a channel exists between node $A$ and $B$, and a channel exists between node $B$ and $C$,
+then $A$ can pay $C$ via the intermediary $B$.
+The result is that there is no need to create a payment channel with every node in the network.
+If some key nodes, acting as payment hubs, are well-connected,
+then nodes can make off-chain transactions to a large number of other nodes by opening only one channel with a payment hub.
 
 The advantage of such systems is that they act as add-ons to Bitcoin, which already has a large number of users.
 Thus, if enough of the network wish for it (by setting a new block version),
@@ -107,12 +112,12 @@ but to the best of our knowledge, its exact scalability characteristics are not 
 
 This category of systems uses traditional Byzantine consensus algorithms such as PBFT~\cite{castro1999practical}.
 In essence, they contain a fixed set of nodes (sometimes called validating peer) that run a Byzantine consensus algorithm to decide on new blocks.
-This technique is often used in permissioned system where the validators must be predetermined,
+This technique is often used in permissioned systems where the validators must be predetermined,
 for example, Hyperledger Fabric~\cite{cachin2016architecture}.
 
 A nice aspect of Byzantine consensus and in particular PBFT is that it can handle much more transactions than classical blockchain systems.
 PBFT can, for example, achieve 10,000 TX/s if the number of validating peer is under 16~\cite[Section 5.2]{miller2016honey}.
-Further, in contrast to proof-of-work, PBFT consensus is final.
+Further, in contrast to PoW, PBFT consensus is final.
 That is, transaction history cannot be re-written if it is already in the blockchain.
 
 The major drawback of Byzantine consensus based systems is that it does not scale in terms of the number of validating peers.
@@ -130,8 +135,8 @@ Moreover, the validating peers are predetermined which makes the system unsuitab
 % We hope to design and implement smart contracts by adding additional logic to the transaction protocol and the validation protocol.
 % Such functionalities we believe is better to be built into the backbone rather than having it as an add on.
 
-\subsection{Combining proof-of-work with Byzantine consensus}
-Recent research has developed a class of hybrid systems which uses proof-of-work (PoW) for committee election,
+\subsection{Combining PoW with Byzantine consensus}
+Recent research has developed a class of hybrid systems which uses PoW for committee election,
 and Byzantine consensus algorithms to agree on transactions.
 % And then they use a Byzantine consensus algorithm to actually reach consensus on a set of transactions within the committee.
 Some examples are SCP~\cite{luu2015scp}, ByzCoin~\cite{kogias2016enhancing} and Solidus~\cite{abraham2016solidus}.
@@ -146,6 +151,7 @@ Classical blockchain does not have this problem because they do not use Byzantin
 Further, due to the fact that these systems must reach consensus on all transactions, none of them achieves horizontal scalability.
 
 \subsection{Sharding}
+\label{sec:sharding}
 
 Sharding is a technique to achieve horizontal scalability by grouping nodes into multiple committees, also known as shards.
 Nodes within a single shard run a Byzantine consensus algorithm to agree on a set of transactions that belong to that specific shard.
@@ -153,7 +159,7 @@ An intra-shard protocol is needed for transactions that involve nodes from more 
 The number of shards grows linearly with respect to the total computational power in the network.
 This scheme achieves horizontal scalability because if every shard commits transactions at the same throughput,
 then adding more shard would naturally result in a linear increase of global throughput.
-Examples of blockchain systems that use sharding are Elastico~\cite{luu2016elastico} and OmniLedger~\cite{kokoris2017omniledger}.
+Examples of blockchain systems that use sharding are Elastico~\cite{luu2016elastico} and Omni\-Ledger~\cite{kokoris2017omniledger}.
 
 The biggest limitation of sharding is that it is only optimal if transactions stay in the same shard.
 In fact, Elastico cannot atomically process inter-shard transactions.
@@ -161,12 +167,14 @@ OmniLedger has an inter-shard transaction protocol but choosing a good shard siz
 A large shard size would make the system less scalable because the Byzantine consensus algorithm must be run by a large number of nodes.
 A small shard size would result in a large number of inter-shard transactions which also hinder scalability.
 The authors of OmniLedger noted that inter-shard transactions have significantly higher latency compared to the consensus protocol~\cite{kokoris2017omniledger}.
-Furthermore, since no shards can be compromised for the system to function correctly,
-the adversaries have more opportunities to compromise the system.
+Furthermore, using smaller shards is a security risk.
+Every shard is fault-tolerant up to at most a third of the shard size.
+If the total number of malicious nodes remain fixed, then as the shard size decreases,
+it is more probably for a shard to fail.
 
 \subsection{Blockchain without global consensus}
 
-Tangle~\cite{tangle}, Corda~\cite{corda} and the original TrustChain~\cite{multichain} do not use global consensus at all.
+Tangle~\cite{tangle}, Corda~\cite{corda} and the original TrustChain~\cite{multichain} avoid the need of global consensus.
 In these schemes, every node has their own chain.
 Transactions between nodes are recorded on their respective chains.
 This effectively results in a directed acyclic graph.
@@ -195,8 +203,8 @@ Applications such as digital cash can not be implemented on top of such systems 
 \label{sec:research-question}
 
 We saw in~\Cref{sec:taxonomy} that the majority of the systems cannot achieve horizontal scalability.
-To the best of our knowledge, only two systems---Elastico~\cite{luu2016elastico} and OmniLedger~\cite{kokoris2017omniledger}---have experimentally demonstrated horizontal scalability.
-However, these techniques rely on sharding, thus the performance highly depends on transaction characteristics and the shard size parameter because inter-shard transactions are slow.
+To the best of our knowledge, only the two systems described in~\Cref{sec:sharding} have experimentally demonstrated horizontal scalability.
+However, these techniques rely on sharding, thus the performance highly depends on the transaction characteristics and the shard size parameter.
 Furthermore, all the systems described in~\Cref{sec:taxonomy} are complete blockchain systems designed for a concrete application.
 We wish to design a blockchain consensus protocol that can be used in many applications.
 For example, the accounting of detailed internet traffic in Tribler~\cite{pouwelse2008tribler, multichain} and decentralised market in Tribler\footnote{\url{https://github.com/Tribler/tribler/blob/devel/Tribler/community/tradechain/__init__.py}}.
@@ -258,15 +266,15 @@ where peers interact with each other to exchange files without any global bottle
 \subsection*{Limitations}
 Since our consensus protocol is application neutral, it does not attempt to prevent the Sybil attack~\cite{douceur2002sybil}.
 A good defence mechanism requires application specific information.
-For example, a social network based Sybil defence mechanisms use graph structure of real-world relationships~\cite{yu2006sybilguard}.
+For example, a social network based Sybil defence mechanisms use random walks in real-world social graphs~\cite{yu2006sybilguard}.
 Online marketplaces such as Amazon use the rating of buyer and sellers.
+Cryptocurrencies use PoW to vote on the latest block.
 % Since our system is application neutral, we do not provide an explicit Sybil defence mechanism.
-On the other hand, our system has no restrictions on the Sybil defence mechanism
-and applications built on top of our system can use the best mechanism for their purpose.
-
-For the same reason, we do not explicitly consider spam or denial of service attacks.
-Without a concrete application, it is difficult to distinguish a super active user from an attacker.
-
+For the same reason, we do not explicitly consider spam or denial of service attacks 
+because without a concrete application,
+it is difficult to distinguish a super active user from an attacker.
+For this work,
+we assume that it is the role of application developer to find a reputation mechanism or a trust model suitable for defending against such attacks.
 
 % Scalability is indeed one of the key challenges we face in blockchain systems today.
 % Bitcoin~\cite{bitcoin}, the largest permissionless\footnote{Explain permissionless} blockchain system

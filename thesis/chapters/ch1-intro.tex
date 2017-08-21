@@ -24,7 +24,7 @@ Bitcoin and many of its derivatives (e.g., Litecoin\footnote{\url{https://liteco
 The goal of the algorithm is to reach agreement on a set of valid transactions. 
 This effectively eliminates inconsistencies.
 
-In Bitcoin's case, the consensus algorithm is called \emph{proof-of-work}.
+In Bitcoin's case, the consensus algorithm is called \emph{proof-of-work} (PoW).
 Where miners (parties that run the Bitcoin network) collect transactions and compete in solving a puzzle.
 The puzzle is easy to verify but difficult to solve.
 Only the miner that solves it can generate a valid block containing all the collected transactions.
@@ -38,7 +38,7 @@ Thus, every party sees a consistent blockchain which solves the double spending 
 % people are incentivised to act as miners and keep the system running.
 
 Bitcoin has had its ups and downs, but overall it has grown into an enormous system.
-Its power consumption is as high as Republic of Ireland~\cite{o2014bitcoin}.
+Its power consumption is as high as the Republic of Ireland~\cite{o2014bitcoin}.
 Its market capitalisation, at the time of writing, is over 60 billion USD and growing (see \Cref{fig:market-cap}).
 \begin{figure}[h]
 \centering
@@ -59,7 +59,7 @@ Since every Bitcoin transaction is at least 250 bytes, it computes to about 7 tr
 Due to this limitation, it is not uncommon to see a long backlog of about 20,000 transactions\footnote{\url{https://blockchain.info/unconfirmed-transactions/}}.
 A few months ago the backlog even reached 100,000, which meant new transactions would take at least 11 hours to be written to the blockchain~\cite{bitcoinbacklog}.
 This issue has plagued the Bitcoin community for some time and is the root cause for the block size debate, which some call a civil war~\cite{bitcoincivilwar}.
-Parties that are for the increase in block size argue that a larger block would improve the transaction rate.
+Parties which are for an increase in block size argue that a larger block would improve the transaction rate.
 Parties against it argue that it would make mining more centralised because blocks take longer to propagate through the network.
 It also requires a hard (non-backwards compatible) fork,
 which risks consensus failure and devaluation.
@@ -74,12 +74,21 @@ The Bitcoin community understands the issue and many proposals exist with the ai
 The most prominent one is Segregated Witness or SegWit~\cite{segwit}.
 It moves the signature data to the end of the block and uses a variable block size up to 4 MB.
 The effect is that the first 1 MB of the block is still backwards compatible, thus there is no need for a hard fork.
-It also solves the transaction malleability problem~\cite{bitcoinmalleability} which paves the way for off-chain transactions via Lightning Network~\cite{lightningnetwork}.
-However, some fear SegWit is not enough and wish to see a hard fork that uses ``Adjustable Blocksize Cap'' that increase the maximum block size even further to 8 MB~\cite{bitcoincash}.
+It also solves the transaction malleability problem~\cite{bitcoinmalleability} which paves the way for off-chain transactions via the Lightning Network~\cite{lightningnetwork}.
+However, some fear SegWit is not sufficient and wish to see a hard fork that uses an ``Adjustable Blocksize Cap'' that increases the maximum block size even further to 8 MB~\cite{bitcoincash}.
 The ongoing civil war resulted in a Bitcoin fork, called Bitcoin Cash~\cite{bitcoincasharticle}.
 At the time of writing, it is too early to speculate how these proposals and forks may affect the scalability properties of Bitcoin.
 But the conclusion that we can draw from the scalability debate is that the Bitcoin design is fundamentally not scalable,
 and it is highly non-trivial to ``patch'' the problem.
+
+Moreover, Bitcoin is far from distributed.
+It is more accurate to say Bitcoin is made in China~\cite{madeinchina}.
+The combination of cheap electronics and electricity has made China one of the most profitable place to mine Bitcoins.
+At the time of writing, China holds about 80\% of the hashing power~\cite{bitcoinpool}.
+Effectively putting China in control of the 60 billion-dollar ecosystem.
+If the government decides to flex its totalitarian muscles,
+then it would spell the end of the ecosystem.
+
 
 \section{Contributions}
 In this work, we take the advice of Croman et al.~\cite{croman2016scaling} and Vukoli\'{c}~\cite{vukolic2015quest} and rethink the blockchain architecture.
@@ -97,24 +106,24 @@ This consequently leads to limited scalability because every transaction must be
 Using the aforementioned insight,
 we explore an alternative consensus model for blockchain systems where transactions themselves do not reach consensus,
 but nevertheless verifiable at a later stage by any node in the network.
-We call our system \textsc{Checo}, derived from \emph{che}ckpoint \emph{co}nsensus.
-From a high level, our system works as follows.
-Every node stores its own hash chain and every block contains only one transaction.
-We randomly select nodes in every round, the selected ones are called facilitators.
-Facilitators reach consensus not on the individual transactions,
-but on the state of every chain represented by a single digest, called a checkpoint block.
-If a checkpoint block of some node is in consensus, 
-then that node can prove to any other node that it holds a set of transactions that compute (form a chain) to the checkpoint block.
-As a result, those transactions are tamper-proof.
-The key difference from the early blockchain systems is the independence of the transaction validation phase.
-Prior systems such a Bitcoin and Ethereum entangled the consensus algorithm with the transaction validation, restricting performance.
-By splitting this functionality we achieved horizontal scalability in the general case.
-That is, by adding new nodes into the network, the global transaction rate should increase proportionally,
-regardless of the choice of system parameters.
-
+A verified transaction is guaranteed to be tamper-proof and irrefutable.
+% We call our system \textsc{Checo}, derived from \emph{che}ckpoint \emph{co}nsensus.
+% From a high level, our system works as follows.
+% Every node stores its own hash chain and every block contains only one transaction.
+% We randomly select nodes in every round, the selected ones are called facilitators.
+% Facilitators reach consensus not on the individual transactions,
+% but on the state of every chain represented by a single digest, called a checkpoint block.
+% If a checkpoint block of some node is in consensus, 
+% then that node can prove to any other node that it holds a set of transactions that compute (form a chain) to the checkpoint block.
+% As a result, those transactions are tamper-proof.
+% The key difference from the early blockchain systems is the independence of the transaction validation phase.
+% Prior systems such a Bitcoin and Ethereum entangled the consensus algorithm with the transaction validation, restricting performance.
+% By splitting this functionality we achieved horizontal scalability in the general case.
+% That is, by adding new nodes into the network, the global transaction rate should increase proportionally,
+% regardless of the choice of system parameters.
 Our main contributions are the following.
 \begin{itemize}
-    \item We formally introduce a blockchain system---\textsc{Checo}.
+    \item We formally introduce a blockchain system---\textsc{Checo}\footnote{Derived from \emph{che}ckpoint \emph{co}nsensus.}.
         It uses individual hash chains and checkpoint blocks on every node to achieve
         horizontally scalable in the general case for the first time.
     \item We formally analyse \textsc{Checo} to ensure correctness as defined in our system architecture.
