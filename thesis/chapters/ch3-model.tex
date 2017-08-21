@@ -50,7 +50,8 @@ An example of is shown in \Cref{fig:trustchain-bad}.
     Every block is denoted by $t_{i,j}$, where $i$ is the node ID and $j$ is the sequence number of the block.
     The arrows represent hash pointers and the dotted lines represent references.
     The blocks at the ends of the dotted lines are pairs of each other.
-    The red block behind $t_{b, 6}$ indicates a fork.}
+    The red block behind $t_{b, 6}$ indicates a fork.
+    Blocks of index 0 (e.g. $t_{b, 0}$) are genesis blocks.}
     \label{fig:trustchain-bad}
 \end{figure}
 
@@ -75,11 +76,11 @@ From this point on, we use TrustChain to mean the Extended TrustChain unless exp
 \begin{figure}
     \includegraphics[width=0.9\textwidth]{trustchain-bad-cp}
     \centering
-    \caption{
-    An example of Extended TrustChain.
+    \caption{An example of Extended TrustChain.
     The circles represent CP blocks,
     they also have hash pointers (arrow) but do not have references (dotted line).
-    Note that the sequence number counter do not change, it is shared with TX blocks.}
+    Note that the sequence number counter do not change, it is shared with TX blocks.
+    CP blocks of index 0 (e.g. $c_{b, 0}$) are genesis blocks.}
     \label{fig:trustchain-bad-cp}
 \end{figure}
 
