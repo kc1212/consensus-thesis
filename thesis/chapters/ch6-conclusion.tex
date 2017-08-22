@@ -1,12 +1,11 @@
 \chapter{Conclusion}
 \label{ch:conclusion}
 
-In this work we introduced an application neutral blockchain system which we call \textsc{Checo}.
+In this work, we introduced an application neutral blockchain system which we call \textsc{Checo}.
 We add checkpoint block to the existing TrustChain data structure to capture the system state.
 The round based consensus protocol uses ACS as a building block to reach consensus on checkpoint blocks.
 The consensus result, which is a set of checkpoint blocks, lets nodes elect new facilitators and create new checkpoint blocks.
-To make transactions, nodes use the transaction protocol,
-which is adapted from an existing work called True Halves.
+The existing work on True Halves is formalised to act as our transaction protocol.
 Finally, we introduce a validation protocol which ensures that if agreed fragments for some transaction exists,
 then nodes reach agreement on the validity of that transaction.
 The novelty of the validation protocol is that it uses point-to-point communication,
@@ -36,10 +35,10 @@ Much of it is from the fact that it does not have a concrete application.
 We do not attempt to prevent the Sybil attack, spam or DoS because the accuracy of the defence depends on the understanding of the application.
 For instance, without any application, it would be impossible to distinguish between a very active node from a spammer because the content of the transaction ($m$) carry no meaning.
 
-Our experiment is carried out in a somewhat idealised world (DAS-5).
-We hope to experiment our prototype in a more realistic environment.
+Our experiment is conducted in a somewhat idealised world (DAS-5).
+We hope to study our prototype in a more realistic environment.
 For example, DeterLab~\cite{mirkovic2012teaching} lets users simulate network delay,
-which is important for discovering issue that may only occur in hostile environments.
+which is essential for discovering issues that may only occur in hostile environments.
 To understand our system further, we hope to experiment with a real platform with real users such as Tribler~\cite{pouwelse2008tribler}.
 For instance, the standard TrustChain in Tribler is used for accounting internet traffic between users,
 but it has no global consensus.
@@ -48,14 +47,14 @@ More importantly, it gives us an opportunity to observe the characteristics of o
 
 The fault tolerance property is adequate for permissioned systems where nodes have relatively more trust between each other.
 However, it is not adequate for permissionless systems,
-which usually aim to tolerate fault that involve a minority of the network,
+which usually aim to tolerate fault that involves a minority of the network,
 which can be just shy of 50\%.
 For future work, we propose the following two ways to improve fault tolerance.
 First, use a reputation mechanism to select facilitators rather than simply selecting them randomly so that faulty nodes are less likely to be selected.
 This technique of course heavily depends on the application,
 for P2P file sharing systems the reputation score may be the number of bytes contributed to the network.
 Second, instead of using ACS we use a proof-of-stake (PoS) scheme (e.g., Ouroboros~\cite{kiayias2017ouroboros}) which means that nodes with more stake in the system get more vote.
-In an ideal PoS scheme, the system can tolerate any fault if the majority of the stake holders are honest.
+In an ideal PoS scheme, the system can tolerate any fault if the majority of the stakeholders are honest.
 
 Finally, as mentioned in~\Cref{sec:permissionless}, we wish to evaluate our system (analytically and experimentally) in the permissionless settings.
-This would enable our protocol to be applied to a much wider range of applications.
+It would enable our protocol to be applied to a much wider range of applications.

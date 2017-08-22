@@ -4,12 +4,13 @@
 In this chapter,
 we evaluate our system analytically to check whether it correctly implements the TrustChain consensus protocol (\Cref{def:consensus})
 and the TrustChain validation protocol (\Cref{def:validation}).
-Further, we analyse the performance and especially the throughput to understand the scalability characteristics.
+Further, we analyse the performance and in particular the throughput to understand the scalability characteristics.
 Finally, we consider the case where the $n \ge 3t + 1$ assumption is violated and show the effect of it in our system.
 
 \section{Correctness analysis}
 \label{sec:correctness}
-Our first objective is to show that our consensus protocol $\Pi_c$ described in~\Cref{sec:cons-protocol} is in fact a TrustChain consensus protocol defined in~\Cref{def:consensus}.
+Our first objective is to show that our consensus protocol $\Pi_c$ described in~\Cref{sec:cons-protocol} is,
+in fact, a TrustChain consensus protocol defined in~\Cref{def:consensus}.
 Then, building on top of it, we show that our validation protocol $\Pi_v$ described in~\Cref{sec:vd-protocol} conforms to the TrustChain validation protocol defined in~\Cref{def:validation}.
 The resulting theorem shows that only using CP blocks in the consensus algorithm implies consensus on TX blocks.
 
@@ -33,11 +34,11 @@ then all correct nodes output $\F_{r+1}$.
 \begin{proof}
 The argument follows from the protocol description.
 Given that $\F_r$ is known,
-correct nodes will send CP blocks to all members in $\F_r$.
-The ACS algorithm starts independently whenever the facilitator has $N - t$ valid CP blocks
+correct nodes will send CP blocks to all members of $\F_r$.
+For each facilitator, the ACS algorithm starts independently whenever the facilitator has $N - t$ valid CP blocks
 (recall from \Cref{sec:consensus-phase} that invalid blocks are ones with an invalid signature or has a duplicate signature).
-It cannot make progress until $n-t$ honest facilitators start algorithm,
-but this eventually happens because there are $N - t$ correct nodes and all correct facilitator eventually receives $N -t$ valid CP blocks.
+No honest facilitator can make progress until $n-t$ honest facilitators start algorithm,
+but this eventually happens because there are $N - t$ correct nodes and all correct facilitator eventually receive $N -t$ valid CP blocks.
 At the end of ACS, $\C_{r+1}$ is created and then broadcasted along with the signature of the facilitators.
 Due to the agreement property of ACS (\Cref{def:acs}),
 every correct node should receive at least $n - t$ valid signatures on the agreed $\C_{r+1}$.
@@ -72,9 +73,8 @@ Then the proof directly follows from the random oracle model.
 Recall that the luck value is computed using $\textsf{H}(\C_{r+1} || pk_u)$.
 Since $pk_u$ is unique for every node that has a CP block in $\C_{r+1}$,
 the output of $\textsf{H}(\cdot)$ is uniformly random.
-This effectively generates a random permutation,
-so every node has the same probability of being in the top $n$ for the ordered sequence,
-namely the output of $\textsf{get\_facilitators}(\C_{r+1})$.
+As a result, the output of $\textsf{get\_facilitators}(\C_{r+1})$ is a random permutation of all the nodes in $\C_{r+1}$ truncated to $n$.
+Thus, every node has the same probability of becoming a facilitator.
 \end{proof}
 
 \begin{lemma}
@@ -139,7 +139,7 @@ In other words, the sender of $F''$ must be able to create some $t''$ that has t
 But this is only possible if the adversary can compute the inverse of $H(\cdot)$ with non-negligible probability.
 Thus we have a contradiction and this completes the agreement proof.
 
-$\Pi_v$ directly uses \Cref{alg:get-validity} which is also the validity definition,
+$\Pi_v$ directly uses \Cref{alg:get-validity}, which is also the validity definition,
 so the validity property is also satisfied.
 \end{proof}
 
@@ -149,7 +149,7 @@ One of the main advantages of our scheme over running a consensus algorithm on a
 the transaction throughput is no longer dependent on the consensus algorithm---ACS.
 This enables horizontal scalability where adding new nodes would lead to higher global transaction rate.
 In addition, a convenient consequence of \Cref{theorem:validation-agreement} is unforgeability.
-That is, no adversary is able to create two chains,
+That is, no adversary can create two chains,
 $F = \{ \dots, t, c\}$ and $F' = \{ \dots, t', c\}$,
 with correct hash pointers and the same end of chain $c$ with non-negligible probability.
 % Another way to think about it is if a transaction can be forged, then it cannot be agreed.
@@ -175,7 +175,7 @@ There exists a valid transaction that cannot be eventually validated.
 \begin{proof}
 Suppose nodes $u$ and $v$ correctly performed the TX protocol to create a transaction.
 Then when $u$ wants to validate it, it does so by sending \texttt{vd\_req} message to $v$.
-$v$ can act maliciously and ignore all \texttt{vd\_req} message from $u$, then the transaction can never be validated.
+$v$ can act maliciously and ignore all \texttt{vd\_req} message from $u$, and then the transaction can never be validated.
 \end{proof}
 Although this is a negative result, it does not put the adversary in an advantageous position.
 If the adversary is observed to ignore validation requests, then the honest nodes may prefer not to transact with her in the future.
@@ -188,7 +188,7 @@ Thus, to stay relevant in the system, the adversary needs to comply with the pro
 
 \section{Performance analysis}
 \label{sec:performance-analysis}
-This section aims to analytically answer whether our system is horizontally scalable.
+This section aims to answer whether our system is horizontally scalable analytically.
 We begin by looking at the communication and time complexity of the consensus protocol $\Pi_c$,
 and then the bandwidth requirement for a single transaction.
 We build on top of those results to analyse the global throughput.
@@ -222,7 +222,7 @@ Thus the combined communication complexity is $O(N)$ for a constant $n$.
 
 \subsection{Duration of the consensus protocol}
 \label{sec:cons-duration}
-In order to make arguments on the duration of $\Pi_c$, the bandwidth or throughput in our purely asynchronous model,
+To make arguments on the duration of $\Pi_c$, the bandwidth or throughput in our purely asynchronous model,
 which are concepts that depend on time,
 we must make additional assumptions.
 Note that the duration we are interested in is not the same as the time complexity typically used in distributed systems.
@@ -231,7 +231,7 @@ For example, ACS runs in a constant number of rounds because of its sub-protocol
 However, in practice, making a unit of communication always has some overhead associated with it, for example serialising and writing it to some network socket.
 Hence, for the remainder of our performance analysis, we add the following to our computational model.
 For every unit of communication, we assume they take some non-negligible but constant time to perform.
-Hence, from~\Cref{sec:cons-complexity} and the fact that $\Pi_c$ runs in a constant number of rounds,
+Hence, from our results in~\Cref{sec:cons-complexity} and the fact that $\Pi_c$ runs in a constant number of rounds,
 it follows that $\Pi_c$ has a duration of $O(N)$.
 
 \subsection{Communication cost for transactions}
@@ -242,21 +242,20 @@ which we call the communication cost per transaction.
 To create and then validate a transaction,
 the communication cost per transaction is of $O(l)$,
 where $l$ is the length of the agreed fragment.
-This can be seen from the fact that the largest message by far is the \texttt{vd\_resp} message,
+This result can be seen from the fact that the largest message by far is the \texttt{vd\_resp} message,
 which contains the agreed fragment.
 The other messages (\texttt{tx\_req}, \texttt{tx\_resp} and \texttt{vd\_req}) are constant factors.
-If we assume that every node performs transactions at a constant rate of $r_{\text{tx}}$ per second.
-Then
+If we assume that every node performs transactions at a constant rate of $r_{\text{tx}}$ per second, then
 $$l = r_{\text{tx}} D_{\text{c}},$$
 where $D_{\text{c}}$ is the duration of a round of the consensus protocol.
 But from \Cref{sec:cons-duration},
-we know that $D_{\text{c}}$ is of $O(N)$, thus the communication cost per transaction is $O(N)$.
+we know that $D_{\text{c}}$ is of $O(N)$; thus the communication cost per transaction is $O(N)$.
 This result is intuitive because round duration would be longer if there are more CP blocks (more $N$), which means that the agreed fragments are longer (assuming nodes transact at a constant rate).
 This behaviour is verified experimentally in \Cref{ch:implementation}.
 
 \subsection{Linear global throughput}
 \label{sec:global-throughput}
-Using our results so far, we are able to analyse the global throughput.
+Using our results so far, we can analyse the global throughput.
 First, we clarify the bandwidth definition, which is ``the data rate at which a network link or a network path can transfer''~\cite{prasad2003bandwidth}.
 Now, suppose every node has $N$ links which connect to every other node,
 every link has a fix bandwidth $C$ and every node makes $r_{\text{tx}}$ transactions per second.
@@ -265,22 +264,20 @@ $$NC \ge r_{\text{tx}} l,$$
 where $l$ is the length of the agreed fragment as before.
 The inequality suggests that the rate for which transactions and validations are made cannot exceed the total bandwidth of all the links.
 
-We note that the inequality does not hold if the node is only transacting with a subset of the population.
-This is because it cannot use all the bandwidth available in all the links.
+We note that the inequality does not hold if the node is only transacting with a subset of the population,
+which is because it cannot use all the bandwidth available in all the links.
 In the extreme case, if the node is only transacting with one other node, then it can only use the bandwidth of one link which is only $C$.
 However, if that is the case, we can intelligently cache the \texttt{vd\_resp} messages as described in~\Cref{sec:caching}.
 Hence, we analyse the worst case where every node transacts with a random node from the population,
 and a new \texttt{vd\_resp} must be sent for every \texttt{vd\_req} message.
 
 Consider the case where the system is making use of all the bandwidth, i.e. $NC = r_{\text{tx}} l$.
-Recall that $l$ is of $O(N)$, that means LHS and RHS both grow linearly with respect to $N$.
+Recall that $l$ is of $O(N)$, which means LHS and RHS both grow linearly with respect to $N$.
 Hence, there exists some $r_\text{tx}$ that makes use of all the available bandwidth regardless of $N$.
 Finally, if every node in the network is transacting at $r_{\text{tx}}$ per second,
 then the global throughput (in terms of transactions per second) is linear w.r.t. the population size $N$.
-If the system is not making use of all the bandwidth.
-We also maintain a constant transaction rate by the same argument,
-so the global throughput is also linear w.r.t. $N$.
-We verify both of these claims experimentally in~\Cref{ch:implementation}.
+We also maintain a constant transaction rate by the same argument if the system is not making use of all the bandwidth.
+Both claims are verified experimentally in~\Cref{ch:implementation}.
 
 % The upshot of this analysis is that our system scales nicely at a global throughput of $O(N)$ until the population gets too large.
 % Then we maintain a constant global throughput.

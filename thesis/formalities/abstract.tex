@@ -41,7 +41,7 @@ We design a novel blockchain system called \textsc{Checo}.
 Each node in our system maintains a personal hash chain,
 which only stores transactions that the node is involved in.
 A consensus is reached on special blocks called checkpoint blocks rather than on all the transactions.
-Checkpoint blocks are effectively a hash pointer to the personal hash chains,
+Checkpoint blocks are effectively a hash pointer to the personal hash chains;
 thus a single checkpoint block may represent an arbitrarily large set of transactions.
 We introduce a validation protocol so that any node can check the validity of any transaction.
 Since it is a point-to-point protocol, we achieve horizontal scalability.

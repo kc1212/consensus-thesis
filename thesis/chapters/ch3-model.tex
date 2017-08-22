@@ -18,7 +18,7 @@ Finally, we discuss a few variations of our design and their respective tradeoff
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.7\textwidth]{architecture}
-\caption{Overview of \textsc{Checo} architecture.}
+\caption{The four components of \textsc{Checo}.}
 \label{fig:architecture}
 \end{figure}
 
@@ -81,7 +81,7 @@ From this point on, we use TrustChain to mean the Extended TrustChain unless exp
     \caption{An example of Extended TrustChain.
     The circles represent CP blocks,
     they also have hash pointers (arrow) but do not have references (dotted line).
-    Note that the sequence number counter do not change, it is shared with TX blocks.
+    Note that the sequence number counter does not change, it is shared with TX blocks.
     CP blocks of index 0 (e.g. $c_{b, 0}$) are genesis blocks.}
     \label{fig:trustchain-bad-cp}
 \end{figure}
@@ -95,12 +95,13 @@ or CP blocks in our case.
 
 The communication complexity of Byzantine consensus algorithms typically grows polynomially w.r.t the number of nodes,
 which prohibits us from running it on a large network.
-For example, one of the most recent work tested with up to 104 nodes and the algorithm took almost 6 minutes to complete~\cite{miller2016honey}.
+For example, one of the most recent works tested with up to 104 nodes and the algorithm took almost 6 minutes to complete~\cite{miller2016honey}.
 Thus, at the beginning of every Byzantine consensus algorithm execution,
 we randomly elect a set of nodes---called facilitators---to collect CP blocks from every other node and use those blocks as the input to the Byzantine consensus algorithm, and then run it.
 After the algorithm completes,
 the facilitators output a set of CP blocks which we call the consensus result.
-The result is then propagated to the network and the next algorithm execution begins.
+The result is then propagated to the network,
+and the next algorithm execution begins.
 
 \subsection*{Transaction and validation protocols}
 The TX protocol is a simple request and response protocol.
@@ -120,7 +121,7 @@ to create a different chain that begins and ends with the same two CP blocks.
 
 
 \subsection*{The complete system}
-The complete system is essentially the concurrent composition of the three aforementioned protocols,
+The complete system is essentially the concurrent composition of the three protocols above;
 all making use the Extended TrustChain data structure.
 
 Our sub-protocol design gives us the highly desirable non-blocking property.
@@ -159,8 +160,8 @@ In our model, we consider $N$ nodes, which is the population size.
 $n$ of them are facilitators, $t$ nodes are malicious and the inequality
 $n \ge 3t + 1$ must hold.
 This inequality is from the work of Pease, Shostak and Lamport, where they show a network of $n$ nodes cannot reach Byzantine agreement with $t \ge n/3$~\cite{pease1980reaching}.
-Further, the inequality $N \ge n + t$ must also hold so that there are enough honest nodes in the network to run the consensus protocol,
-the exact reason becomes clear in~\Cref{sec:consensus-phase}.
+Further, the inequality $N \ge n + t$ must also hold so that there are enough honest nodes in the network to run the consensus protocol;
+the exact reason becomes apparent in~\Cref{sec:consensus-phase}.
 
 Our threat model is as follows. 
 We use a restricted version of the adaptive corruption model.
@@ -667,20 +668,20 @@ For example, if every facilitator is honest, a node would receive $n$ consensus 
 Furthermore, realistic networks do not offer a broadcast primitive,
 i.e. firewalls may block incoming messages from certain nodes.
 
-An improvement is use an epidemic protocol~\cite{eugster2004epidemic} instead, it is also known as gossip protocol.
+An improvement is to use an epidemic protocol~\cite{eugster2004epidemic} instead, also known as gossip protocol.
 Typical epidemic protocols work as follows.
 Every node buffers every message it receives up to some buffer size $b$.
 Then it forwards the messages $t$ number of times.
 Every time the message is sent to $f$ random neighbours, $f$ is often called the fan-out.
-The upside of using an epidemic protocol is that the communication cost is distributed more evenly between nodes,
-which is especially true with a lazy push approach where the node who just received a message would push the message ID (e.g., digest) to its $f$ random neighbours,
+The upside of using an epidemic protocol is that the communication cost is distributed more evenly between nodes.
+It is especially true with a lazy push approach where the node who just received a message would push the message ID (e.g., digest) to its $f$ random neighbours,
 and only push the full message if the neighbour explicitly requests the message~\cite{leitao2007epidemic}.
 With this, nodes typically only need to receive one consensus result message instead of $n$.
 
 A down side of an epidemic protocol is that it usually takes $O(\log N)$ time to infect the whole network,
 whereas broadcasting is constant time.
 Another downside of some epidemic protocols (e.g., eager push) is that it is difficult to guarantee delivery.
-It is especially true when the parameters are not chosen correctly in a network that is only partially connected (but every node is nevertheless reachable).
+It is particularly the case when the parameters are not chosen correctly in a network that is only partially connected (but every node is nevertheless reachable).
 If the delivery cannot be guaranteed, 
 then we cannot guarantee liveness in our consensus protocol because a future facilitator may miss the memo.
 Picking parameters are difficult in practice because the network configuration is unknown and the total number of nodes might also be unknown.
@@ -689,7 +690,7 @@ Picking parameters are difficult in practice because the network configuration i
 \subsection{Using timing assumption in the permissionless setting}
 \label{sec:permissionless}
 Our model is purely asynchronous, where we make no timing assumptions anywhere in the protocol.
-However, in many applications it is often fine to make timing assumptions.
+However, in many applications, it is often fine to make timing assumptions.
 For example, TCP relies on timeout for its retransmission and the \texttt{nLockTime} property in Bitcoin transactions makes the transaction unspendable until some time in the future (either Unix time or block height)~\cite{bitcoindevguide}.
 A limitation of our system is that we use the parameter $N$ in our algorithms, which makes it unsuitable for the permissionless environment where users can join and leave at will.
 In this section we show how making a timing assumption would allow us to operate in the permissionless setting.
@@ -699,10 +700,11 @@ which is the only place where we used $N$ as a parameter.
 To introduce timing, instead of waiting for $N-t$ messages, we wait for some time $D$,
 such that $D$ is sufficiently long for honest nodes to send their CP blocks to the facilitators.
 Consequently, this removes the need for a PKI because the collected CP blocks may be from nodes that nobody has seen in the past.
-However, choosing the parameter $D$ is difficult and depends on a number of factors such as the network condition, message size, and so on.
+However, choosing the parameter $D$ is difficult and depends on many factors such as the network condition, message size, and so on.
 Overestimating it would make agreed fragments much longer than usual, which increases communication costs for validation.
 Underestimating it would lead to unfairness where users with a poor internet connection will have a lower chance to be selected as a facilitator in the next round.
-Nevertheless, there is a significant gain for making the timing assumption and that is the ability to operate in the permissionless setting which we explain next.
+Nevertheless, there is a significant gain for making the timing assumption,
+and that is the ability to operate in the permissionless setting which we explain next.
 
 Suppose a new node wish to join the network and the facilitators are known (this can be done with a public registry).
 It simply sends its latest CP block to the facilitators.
@@ -723,9 +725,9 @@ We can take our privacy-preserving property one step further by introducing anot
 The result is shown in~\Cref{fig:compact}.
 
 \begin{figure}
-    \includegraphics[width=0.7\textwidth]{compact}
+    \includegraphics[width=0.6\textwidth]{compact}
     \centering
-    \caption{The chain on the left represent direct chaining of full blocks,
+    \caption{The chain on the left represents direct chaining of full blocks,
     where the digest in ``Prev'' is simply the digest of the previous full block.
     The chain on the right uses compact blocks, represented by the smaller squares.
     Compact blocks also form a chain as before, but they each have a hash pointer to the full block, identified by ``Seq'' and ``Digest''.}
@@ -744,7 +746,7 @@ Each compact block has a corresponding full block (either a CP block or a TX blo
 The relationship is uniquely identified with Seq or Digest.
 Recall that our original validation protocol requires the nodes to send the agreed fragment containing the full blocks.
 With compact blocks, it is only necessary to send the compact version of the agreed fragment.
-The validation then proceeds in a similar fashion,
+The validation then proceeds similarly,
 provided that the pair of the to-be-validated TX block is known.
 
 The space saving of this approach depends on the size of the full blocks.
@@ -776,7 +778,7 @@ our scheme is not suitable.
 For such applications, we need to guarantee that there are no forks from the genesis block leading up to the TX block of interest.
 
 We offer two approaches to do total fork detection.
-First and the easiest solution is to simply ask for the complete hash chain of the counterparty.
+First and the easiest solution is to ask for the complete hash chain of the counterparty.
 The verifier can be sure that there are no forks if the following conditions hold.
 \begin{enumerate}
     \item The hash pointers are correct.
@@ -784,12 +786,12 @@ The verifier can be sure that there are no forks if the following conditions hol
     \item The TX of interest is in the chain.
 \end{enumerate}
 We use this approach in our prior work on Implicit Consensus~\cite{implicitconsensus}.
-Nodes employ caching to minimise communication costs, we call this effect spontaneous sharding.
+Nodes employ caching to minimise communication costs, and we call this effect spontaneous sharding.
 
 The second approach is probabilistic but with only a constant communication overhead over our current design.
 For a node, observe that if all of its agreed fragments has a transaction with an honest node,
 then the complete chain is effectively validated in a distributed manner.
-The only way for an attacker to make a fork is to make sure that the agreed fragment containing the fork has no transactions with honest nodes.
+The only way for an attacker to make a fork is to ensure that the agreed fragment containing the fork has no transactions with honest nodes.
 Such malicious behaviour is prevented probabilistically using a challenge-response protocol as follows.
 Suppose node $A$ wish to make a transaction with node $B$.
 $A$ first sends a challenge to $B$ asking it to prove that it holds a valid agreed fragment between some consensus round specified by $A$.
