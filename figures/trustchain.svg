@@ -10,8 +10,8 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="195.46278mm"
-   height="171.01877mm"
-   viewBox="0 0 195.46278 171.01876"
+   height="171.36629mm"
+   viewBox="0 0 195.46278 171.36628"
    version="1.1"
    id="svg8"
    inkscape:version="0.92+devel unknown"
@@ -494,9 +494,9 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1"
      inkscape:cx="313.38296"
-     inkscape:cy="316.37217"
+     inkscape:cy="316.37213"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer16"
+     inkscape:current-layer="layer12"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1029"
@@ -527,7 +527,8 @@
      id="layer10"
      inkscape:label="arrows"
      sodipodi:insensitive="true"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(0,0.34752975)">
     <path
        transform="translate(-6.2090477,-69.20221)"
        style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -621,7 +622,7 @@
      id="layer3"
      inkscape:label="bad-tx"
      style="display:inline"
-     transform="translate(-6.2090478,-69.20221)"
+     transform="translate(-6.2090478,-68.85468)"
      sodipodi:insensitive="true">
     <path
        style="display:inline;fill:#000000;fill-rule:evenodd;stroke:#ff0000;stroke-width:0.26499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.06, 1.06;stroke-dashoffset:0;stroke-opacity:1"
@@ -635,7 +636,8 @@
      id="layer11"
      inkscape:label="extra-tx"
      style="display:none"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     transform="translate(0,0.34752975)">
     <path
        transform="translate(-6.2090477,-69.20221)"
        style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.26458332;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833327, 1.05833327;stroke-dashoffset:0;stroke-opacity:1"
@@ -659,8 +661,8 @@
      inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="good-tx"
-     style="display:none"
-     transform="translate(-6.2090478,-69.20221)"
+     style="display:inline"
+     transform="translate(-6.2090478,-68.85468)"
      sodipodi:insensitive="true">
     <path
        style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.26458332;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.05833327, 1.05833327;stroke-dashoffset:0;stroke-opacity:1"
@@ -673,7 +675,8 @@
      id="layer9"
      inkscape:label="phantom"
      style="display:inline"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     transform="translate(0,0.34752975)">
     <rect
        style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#ff0000;stroke-width:0.5233441;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4485-9-3-1"
@@ -687,7 +690,7 @@
      inkscape:groupmode="layer"
      id="layer1"
      style="display:inline"
-     transform="translate(-6.2090478,-69.20221)"
+     transform="translate(-6.2090478,-68.85468)"
      sodipodi:insensitive="true">
     <rect
        style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5233441;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -783,7 +786,8 @@
      id="layer6"
      inkscape:label="tx"
      style="display:none"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     transform="translate(0,0.34752975)">
     <rect
        style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5233441;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4485-6"
@@ -825,7 +829,8 @@
      id="layer7"
      inkscape:label="cp"
      style="display:inline"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     transform="translate(0,0.34752975)">
     <circle
        style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.25357792;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="path9224"
@@ -862,7 +867,8 @@
      id="layer8"
      inkscape:label="heights"
      style="display:inline"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     transform="translate(0,0.34752975)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:4.23333311px;line-height:6.61458349px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -997,8 +1003,7 @@
      id="layer13"
      inkscape:label="heights-t"
      style="display:none"
-     sodipodi:insensitive="true"
-     transform="translate(0,-0.34753014)">
+     sodipodi:insensitive="true">
     <text
        transform="translate(0,0.34752976)"
        xml:space="preserve"
@@ -1075,7 +1080,6 @@
      id="layer14"
      inkscape:label="heights-c"
      style="display:inline"
-     transform="translate(0,-0.34753014)"
      sodipodi:insensitive="true">
     <text
        xml:space="preserve"
@@ -1153,7 +1157,7 @@
      id="layer2"
      inkscape:label="annotation-tx"
      style="display:none;opacity:1"
-     transform="translate(-6.2090478,-69.20221)">
+     transform="translate(-6.2090478,-68.85468)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:6.61458302px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -1200,7 +1204,8 @@
      id="layer5"
      inkscape:label="annotation-cp"
      style="display:none"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     transform="translate(0,0.34752975)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -1224,8 +1229,7 @@
      id="layer12"
      inkscape:label="promoter-registration"
      style="display:none"
-     sodipodi:insensitive="true"
-     transform="translate(0,-0.34753014)">
+     sodipodi:insensitive="true">
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458302px;font-family:sans-serif;-inkscape-font-specification:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -1286,8 +1290,7 @@
      inkscape:groupmode="layer"
      id="layer15"
      inkscape:label="genesis"
-     style="display:inline"
-     transform="translate(0,-0.34753014)">
+     style="display:inline">
     <g
        transform="rotate(9.0067599,25.531136,663.28991)"
        id="g6075-3">
@@ -1357,7 +1360,8 @@
      id="layer17"
      inkscape:label="genesis-cp"
      style="display:inline"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     transform="translate(0,0.34752975)">
     <circle
        transform="translate(0,-0.34753013)"
        style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.25357792;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
@@ -1429,7 +1433,8 @@
      id="layer16"
      inkscape:label="genesis-tx"
      style="display:none;filter:url(#filter6410)"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     transform="translate(0,0.34752975)">
     <rect
        style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.5233441;stroke-linecap:butt;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4485-6-3-8-8"

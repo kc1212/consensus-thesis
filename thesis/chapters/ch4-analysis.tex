@@ -58,7 +58,7 @@ namely $N \ge n + t$ and $n \ge 3t + 1$.
 Given $\F_r$, since $N \ge n + t$ , there is at least $n$ nodes that would send their CP block to $\F_r$.
 From the validity property of ACS, we know the output must contain the input of at least $n - 2t$ nodes.
 But $n -t$ facilitators must have received $N - t$ valid CP blocks, so $|\C_{r+1}| \ge N-t$ and this proves (a).
-Since $N-t \ge (n+t) -t = n$ and $\textsf{get\_facilitators}(\C_{r+1})$ outputs $n$ items, so $|\F_{r+1}| = n$ and this proves (b).
+Since $N-t \ge (n+t) -t = n$ and $\textsf{get\_facilitators}(\C_{r+1}, n)$ outputs $n$ items, so $|\F_{r+1}| = n$ and this proves (b).
 \end{proof}
 
 \begin{lemma}
@@ -73,7 +73,7 @@ Then the proof directly follows from the random oracle model.
 Recall that the luck value is computed using $\textsf{H}(\C_{r+1} || pk_u)$.
 Since $pk_u$ is unique for every node that has a CP block in $\C_{r+1}$,
 the output of $\textsf{H}(\cdot)$ is uniformly random.
-As a result, the output of $\textsf{get\_facilitators}(\C_{r+1})$ is a random permutation of all the nodes in $\C_{r+1}$ truncated to $n$.
+As a result, the output of $\textsf{get\_facilitators}(\C_{r+1}, n)$ is a random permutation of all the nodes in $\C_{r+1}$ truncated to $n$.
 Thus, every node has the same probability of becoming a facilitator.
 \end{proof}
 

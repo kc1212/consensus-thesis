@@ -46,8 +46,8 @@ Nevertheless, the probability of the highest block being orphaned is non-negligi
 
 The advantage of this approach is that it can be used in a large network.
 In fact, prior to Bitcoin, there was no Internet-scale consensus protocol.
-Bitcoin is also fault-tolerant because attackers can not outpace honest users in finding new blocks unless they have a majority of the computational power,
-as long as the majority is honest and reasonable measures are taken to prevent the selfish mining attack~\cite{eyal2014majority}.
+Bitcoin is also fault-tolerant because attackers can not outpace honest users in finding new blocks unless they have a majority of the computational power
+(assuming reasonable measures are taken to prevent the selfish mining attack~\cite{eyal2014majority}).
 The disadvantage, however, is that transactions are never in consensus with a probability of 1---no consensus finality.
 Hence double spending is possible for transactions that do not have a large number of confirmations.
 Furthermore, as we mentioned in~\Cref{ch:intro},
@@ -162,7 +162,7 @@ while keeping the permissionless nature by using PoW.
 A major tradeoff of such systems is that they cannot guarantee correctness when there is a large number of malicious nodes (but less than a majority).
 For ByzCoin and Solidus, they all have some probability to elect more than $t$ Byzantine nodes into the committee,
 where $t$ is typically just under a third of the committee size (a lower bound of Byzantine consensus~\cite{pease1980reaching}).
-This problem is especially difficult to solve because the committee is always much smaller than the population size which has more than $t$ Byzantine nodes.
+This problem is difficult to solve because the committee is always much smaller than the population size which typically has more than $t$ Byzantine nodes.
 Classical blockchain does not have this problem because they do not use Byzantine consensus.
 Further, due to the fact that these systems must reach consensus on all transactions, none of them achieves horizontal scalability.
 
@@ -182,7 +182,6 @@ In fact, Elastico cannot atomically process inter-shard transactions.
 OmniLedger has an inter-shard transaction protocol but choosing a good shard size is difficult.
 A large shard size would make the system less scalable because the Byzantine consensus algorithm must be run by a large number of nodes.
 A small shard size would result in a large number of inter-shard transactions which also hinder scalability.
-The authors of OmniLedger noted that inter-shard transactions have significantly higher latency compared to the consensus protocol~\cite{kokoris2017omniledger}.
 Furthermore, using smaller shards is a security risk.
 Every shard is fault-tolerant up to at most a third of the shard size.
 If the total number of malicious nodes remain fixed, then as the shard size decreases,
@@ -191,7 +190,7 @@ it is more probably for a shard to fail.
 \subsection{Blockchain without global consensus}
 
 Tangle~\cite{tangle}, Corda~\cite{corda} and the original TrustChain~\cite{multichain} avoid the need of global consensus.
-In these schemes, every node has their own chain.
+In these schemes, every node has their own hash chain.
 Transactions between nodes are recorded on their respective chains.
 This effectively results in a directed acyclic graph.
 By avoiding global consensus, this approach achieves extremely desirable scalability properties similar to BitTorrent~\cite{cohen2003incentives}.
@@ -244,18 +243,17 @@ In this work, we focus on the blockchain consensus protocol rather than any spec
 % We do not impose on a consensus algorithm, as long as it satisfies the properties of atomic broadcast which we describe in~\Cref{sec:overview-cons}.
 
 In the remainder of this section, we expand on our research question and visit each aspect in detail.
-At the end of this section, we describe some issues that we do not consider as a part of our design,
+At the end of this section, we describe some issues that out of the scope of this work,
 which is the result of not focusing on any particular application.
 
 \subsection*{Global consensus}
 % WHY WE NEED GLOBAL CONSENSUS?
 Having consensus is essential in blockchain systems.
-It stops many types of malicious activities because the agreed state, or a representation of it, must have the consent of the honest nodes in the network.
-We emphasise on the notion of a representation of the state because in contrary to traditional blockchains,
-it does not necessarily mean the set of all transactions that have ever happened.
-The state can be a small, but verifiable representation of all the transactions.
-As an extreme example, a single digest computed from the complete history can represent the state.
-It is verifiable as long as there are nodes that store the history.
+It stops many types of malicious activities because the agreed state,
+or a representation of it, must have the consent of the honest nodes in the network.
+For example, if two honest nodes attempt to verify the same transaction,
+it cannot be the case that one node thinks that the transaction is valid, but the other thinks it is invalid,
+as long as the number of malicious nodes is below the threshold that the system can tolerate.
 
 \subsection*{Fault-tolerance}
 % WHY WE NEED FAULT-TOLERANCE
@@ -264,13 +262,7 @@ our system should be unaffected in the presence of powerful adversaries.
 In particular, adversaries are Byzantine,
 meaning that they can have arbitrary behaviour.
 Thus anything is possible from simply omitting messages to colluding with each other to undermine the whole system.
-
-There is another aspect of fault tolerance that is transaction verifiability.
-All transactions must be eventually verifiable to maintain system integrity.
-Further, the validation result must be consistent.
-For example, if two different honest nodes attempt to verify the same transaction,
-it cannot be the case that one node thinks that the transaction is valid, but the other thinks it is invalid.
-Furthermore, just like transactions in cryptocurrencies, they should be tamper-proof and irrefutable.
+As a result, just like cryptocurrencies, our transactions should be tamper-proof and irrefutable.
 
 \subsection*{Horizontal scalability}
 
@@ -285,9 +277,9 @@ where peers interact with each other to exchange files without any global bottle
 \subsection*{Limitations}
 Since our consensus protocol is application neutral, it does not attempt to prevent the Sybil attack~\cite{douceur2002sybil}.
 A good defence mechanism requires application specific information.
-For example, a social network based Sybil defence mechanisms use random walks in real-world social graphs~\cite{yu2006sybilguard}.
+For example, a social network based Sybil defence mechanism uses random walks in real-world social graphs~\cite{yu2006sybilguard}.
 Online marketplaces such as Amazon use the rating of buyer and sellers.
-Cryptocurrencies use PoW to decide on the latest block.
+Cryptocurrencies use PoW to decide on new blocks.
 % Since our system is application neutral, we do not provide an explicit Sybil defence mechanism.
 For the same reason, we do not explicitly consider spam or denial of service attacks because,
 without a concrete application,

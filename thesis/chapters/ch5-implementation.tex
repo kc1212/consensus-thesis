@@ -95,6 +95,7 @@ we use a uniformly random transaction size sampled between 400 and 600 bytes.
 The remainder of this chapter follows the same structure as the performance analysis in~\Cref{sec:performance-analysis}.
 We check our analytical results experimentally and demonstrate horizontal scalability.
 
+\afterpage{
 \begin{figure}[tb]
   \centering
   \makebox[\linewidth][c]{%
@@ -131,7 +132,8 @@ We check our analytical results experimentally and demonstrate horizontal scalab
   \caption{Experimental result of the round duration per round for the consensus protocol.}
   \label{fig:round-duration}
 \end{figure}
-
+\clearpage
+}
 \Cref{fig:round-comms} shows the relationship between the communication cost of the consensus protocol per round and the population size.
 The most important aspect is that these results show a linear increase,
 which reinforces our analytical result in~\Cref{sec:cons-complexity}.
@@ -197,6 +199,8 @@ The result in~\Cref{fig:tx-comms-random} reinforces our argument.
 It is a lot more stable because for every transaction it is almost always the case that a new agreed fragment is needed to validate it.
 
 \section{Linear global throughput}
+
+\afterpage{
 \begin{figure}[tb]
   \centering
   \makebox[\linewidth][c]{%
@@ -216,6 +220,26 @@ It is a lot more stable because for every transaction it is almost always the ca
   \label{fig:global-throughput}
 \end{figure}
 
+\begin{figure}[tb]
+  \centering
+  \makebox[\linewidth][c]{%
+  \begin{subfigure}[b]{0.7\textwidth}
+    \includegraphics[width=\textwidth]{neighbour-fixed/timeseries}
+    \caption{Transactions are with fixed neighbours.}
+    \label{fig:backlog-fixed}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.7\textwidth}
+    \includegraphics[width=\textwidth]{neighbour-random/timeseries}
+    \caption{Transactions are with random neighbours.}
+    \label{fig:backlog-random}
+  \end{subfigure}
+  }
+  \caption{Demonstration of the network bottleneck.
+  Note that the slope of validated transactions grows at a slower rate in~\Cref{fig:backlog-random} than in~\Cref{fig:backlog-fixed}.}
+  \label{fig:backlog}
+\end{figure}
+\clearpage
+}
 
 Finally, the global throughput results are shown in~\Cref{fig:global-throughput}.
 Evidently, the throughput has a linear relationship with the population size.
@@ -249,32 +273,24 @@ Note that the horizontal ``lines'' where no new validated transactions are made 
 On the other hand in~\Cref{fig:backlog-random}, the validation protocol clearly cannot ``keep up'' with the rate which the transactions are made.
 As a result, the global throughput is lower when transacting with random nodes than only with neighbours.
 
-\begin{figure}[tb]
-  \centering
-  \makebox[\linewidth][c]{%
-  \begin{subfigure}[b]{0.7\textwidth}
-    \includegraphics[width=\textwidth]{neighbour-fixed/timeseries}
-    \caption{Transactions are with fixed neighbours.}
-    \label{fig:backlog-fixed}
-  \end{subfigure}%
-  \begin{subfigure}[b]{0.7\textwidth}
-    \includegraphics[width=\textwidth]{neighbour-random/timeseries}
-    \caption{Transactions are with random neighbours.}
-    \label{fig:backlog-random}
-  \end{subfigure}
-  }
-  \caption{Demonstration of the network bottleneck.
-  Note that the slope of validated transactions grows at a slower rate in~\Cref{fig:backlog-random} than in~\Cref{fig:backlog-fixed}.}
-  \label{fig:backlog}
-\end{figure}
-
 \section{Communication cost with varying number of facilitators}
 \label{sec:varying-facilitator-experiment}
 Up to this point, we focused on the effect of communication cost, throughput and so on with respect to the population size.
 In this section, we consider a varying number of facilitators,
 which gives us an insight into our system performance may perform when the number of facilitators is higher than 32.
 
-\begin{figure}[tb]
+\Cref{fig:facilitators-round-comms} shows the communication cost of the consensus protocol for varying numbers of facilitators.
+There is substantial evidence that the communication cost grows polynomially.
+We expect this behaviour because of there are polynomial terms in the ACS communication complexity---$O(n^2|v| + \lambda n^3 \log n)$,
+which means that the rounds would take longer to complete and transactions would take longer to verify.
+On the other hand, we get better fault tolerance.
+Thus a linear increase in fault tolerance ($t$) costs a polynomial increase in communication cost.
+
+The same experiment viewed from the perspective of time is shown in~\Cref{fig:facilitators-round-duration}.
+Similarly, the duration increases polynomially for a linear increase in fault tolerance.
+
+\afterpage{
+\begin{figure}[bt]
   \centering
   \makebox[\linewidth][c]{%
   \begin{subfigure}[b]{0.7\textwidth}
@@ -292,9 +308,22 @@ which gives us an insight into our system performance may perform when the numbe
   \label{fig:facilitators-round-comms}
 \end{figure}
 
-\Cref{fig:facilitators-round-comms} shows the communication cost of the consensus protocol for varying numbers of facilitators.
-There is substantial evidence that the communication cost grows polynomially.
-We expect this behaviour because of there are polynomial terms in the ACS communication complexity---$O(n^2|v| + \lambda n^3 \log n)$,
-which means that the rounds would take longer to complete and transactions would take longer to verify.
-On the other hand, we get better fault tolerance.
-Thus a linear increase in fault tolerance ($t$) costs a polynomial increase in communication cost.
+\begin{figure}[bt]
+  \centering
+  \makebox[\linewidth][c]{%
+  \begin{subfigure}[b]{0.7\textwidth}
+    \includegraphics[width=\textwidth]{neighbour-fixed/round-duration-vs-facilitators}
+    \caption{Transactions are with fixed neighbours.}
+    \label{fig:facilitators-round-duration-fixed}
+  \end{subfigure}%
+  \begin{subfigure}[b]{0.7\textwidth}
+    \includegraphics[width=\textwidth]{neighbour-random/round-duration-vs-facilitators}
+    \caption{Transactions are with random neighbours.}
+    \label{fig:facilitators-round-duration-random}
+  \end{subfigure}
+  }
+  \caption{The consensus duration increases polynomially with respect to the number of facilitators.}
+  \label{fig:facilitators-round-duration}
+\end{figure}
+\clearpage
+}
