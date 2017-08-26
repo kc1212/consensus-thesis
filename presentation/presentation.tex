@@ -98,10 +98,10 @@
 
 \begin{frame}{The dangers of centralisation:~Examples}
   \begin{itemize}
-    \item Baidu's promoted search result on experimental medical care caused death of a student~\cite{weizexi}
     \item Facebook can predict your opinions and desires better than your spouse~\cite{youyou2015computer}
     \item With intimate knowledge of the individuals,
       Facebook creates ``psychographic'' profiles in political campaigns~\cite{psychographic}
+    \item Baidu's promoted search result on experimental medical care caused death of a student~\cite{weizexi}
   \end{itemize}
   \note{
     \begin{itemize}
@@ -145,8 +145,8 @@
 
 \begin{frame}{Blockchain:~not there yet}
   \begin{itemize}
-    \item Early blockchain systems do not scale
-    \item Bitcoin is limited to 7 transactions per second
+    \item Consensus algorithm of early blockchain systems do not scale
+    \item Bitcoin (PoW) is limited to 7 transactions per second
     \item 100,000 transaction backlog in May 2017
     \item We require horizontal scalability for ubiquitous use
     \item More nodes = better performance and throughput
@@ -190,8 +190,8 @@
 \begin{frame}{\subsecname}
   \begin{block}{}
     \Large{
-    How can we design a \emph{blockchain consensus protocol} that is \emph{fault tolerant},
-    \emph{scalable} and able to reach \emph{global consensus?}
+    How can we design a \emph{blockchain consensus protocol} that is \emph{fault-tolerant},
+    \emph{horizontally scalable}, and able to reach \emph{global consensus?}
     }
   \end{block}
     \note{
@@ -362,7 +362,7 @@
 \begin{frame}{\subsecname:~properties}
 \label{def:consensus}
 The consensus protocol has the following properties in every round $r$.
-\begin{enumerate}
+\begin{itemize}
     \item \emph{Agreement}:
         Every correct outputs the same set of facilitators.
     \item \emph{Validity}:
@@ -371,7 +371,7 @@ The consensus protocol has the following properties in every round $r$.
         Every node with a CP block in the consensus result should have an equal probability of becoming a facilitator.
     \item \emph{Termination}:
         Every correct node eventually outputs a set of facilitators.
-\end{enumerate}
+\end{itemize}
 \end{frame}
 
 \subsection{Transaction protocol}
@@ -433,26 +433,27 @@ The consensus protocol has the following properties in every round $r$.
 \note{No need to request for fragment every time a TX needs to be validated. Upon receiving a fragment, validate as many TX as possible.}
 \end{frame}
 
+\begin{frame}{Throughput vs population size (fixed neighbour)}
+  \begin{figure}[h]
+  \includegraphics[width=0.9\textwidth]{throughput-vs-population-large}
+  \centering
+  \end{figure}
+\end{frame}
+
 \section{Conclusion}
 \begin{frame}{\secname}
-  \begin{block}{Research question}
+  Out work answers the research question.
+  \begin{block}{}
     How can we design a \emph{blockchain consensus protocol} that is \emph{fault tolerant},
-    \emph{scalable} and able to reach \emph{global consensus?}
+    \emph{horizontally-scalable}, and able to reach \emph{global consensus?}
   \end{block}
-Our system achieve the following
-\begin{itemize}
-  \item Fault tolerant up to $t$ nodes
-  \item Horizontal scalability
-  \item Global consensus on CP blocks
-\end{itemize}
 \end{frame}
 
 \begin{frame}{Future work}
 \begin{itemize}
-\item Improve fault tolerance
-\item Improve fork detection
+\item Implement and experiment with a concrete application
 \item Analyse the system in the permissionless environment
-\item Concrete application
+\item Improve fault tolerance
 \end{itemize}
 \end{frame}
 
