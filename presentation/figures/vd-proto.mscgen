@@ -1,0 +1,12 @@
+msc {
+  Alice, Bob, Carol;
+
+  Alice -> Bob [label="FRAGMENT REQUEST: txid"];
+  Alice -> Carol [label="FRAGMENT REQUEST: txid"];
+
+  Bob -> Alice [label="FRAGMENT RESPONSE: txid, F"];
+  Carol -> Alice [label="FRAGMENT RESPONSE: txid, F'"];
+
+  --- [label="Alice runs the validation function"];
+
+}

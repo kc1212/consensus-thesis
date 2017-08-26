@@ -1,0 +1,10 @@
+msc {
+  Alice, Bob;
+
+  --- [label="Alice generates TX block: t"];
+  Alice -> Bob [label="REQUEST: t"];
+
+  --- [label="Bob generates the pair of t: t'"];
+  Bob -> Alice [label="RESPONSE: t'"];
+
+}
