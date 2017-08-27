@@ -34,18 +34,18 @@ we use a uniformly random transaction size sampled between 400 and 600 bytes.
 The global throughput results are shown in~\Cref{fig:global-throughput}.
 We consider~\Cref{fig:global-throughput-fixed} as the ideal case,
 where nodes only make transactions with a fixed node.
-We consider \Cref{fig:global-throughput-random} as the worst case,
+\Cref{fig:global-throughput-random} is the worst case,
 where nodes make transactions with random nodes and the caching mechanism is unlikely to be used.
-Observe that the transaction rate is much lower in~\Cref{fig:global-throughput-random}.
-This is because the communication of an agreed fragment is necessary to verify every transaction (no caching),
+Observe that the transaction rate is much lower in~\Cref{fig:global-throughput-random},
+which is because the communication of an agreed fragment is necessary to verify every transaction (no caching),
 putting a strain on our network infrastructure.
-In practice, we do not expect such behaviour to occur as it is possible to cache agreed fragments.
+% In practice, we do not expect such behaviour to occur as it is possible to cache agreed fragments.
 
 For~\Cref{fig:global-throughput-fixed},
 the magnitude of our throughput may not be self-evident at first glance.
 Recall that we fixed the transaction rate to 2 TPS,
-but how is it possible to have around 4800 transactions per second for 1200 nodes (which is 4 TX/s)?
-This is due to the way validated transactions are calculated.
+but how is it possible to have around 4800 transactions per second for 1200 nodes (which is 4 TPS)?
+It is due to the way validated transactions are calculated.
 Transactions are between two parties, hence if every node makes two transactions per second,
 every node also expects to receive two transactions per second.
 Hence, for every node, the TX blocks are created at 4 per second.
@@ -53,10 +53,10 @@ Validation requests are sent at the same rate, which explains the magnitude.
 Overall, the throughput has a linear relationship with the population size.
 This result is a strong indication of the horizontal scalability which we aimed to achieve.
 
-The communication complexity of the consensus protocol grows polynomially as the number of facilitators grows linearly.
-Hence, the consensus protocol will take longer to complete and larger fragments must be sent for transaction verification.
-The result is that transactions verification will take longer.
-On the other hand, it does not significantly impact the throughput.
+The downside of our design is that the communication complexity of the consensus protocol grows polynomially as the number of facilitators grows linearly.
+Hence, the consensus protocol will take longer to complete, and larger fragments must be sent for transaction verification.
+On the other hand, it does not significantly impact the throughput;
+only the transaction verification delay is affected.
 We refer the reader to~\cite[Chapter 5]{checo} for additional analysis of the effect of the number of facilitators as well as other experimental results.
 
 % The difference in magnitude between \Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random} is caused by the caching mechanism mentioned earlier.

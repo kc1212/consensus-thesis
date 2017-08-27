@@ -9,32 +9,32 @@ Transactions can be in one of three states---\emph{valid}, \emph{invalid} and \e
 We seek a protocol that satisfies the following properties.
 \begin{itemize}
     \item \emph{Agreement}:
-        If any correct node decides on the validity (except when it is \emph{unknown}) of a transaction,
-        then all other correct nodes are able to reach the same conclusion or \emph{unknown}.
+        If any correct node decides on the validity of a transaction, except when it is \emph{unknown},
+        then all other correct nodes are able to reach the same conclusion or decide \emph{unknown}.
     \item \emph{Scalability}:
         If every node makes transactions at the same rate,
         then as $N$ increases,
         the global transaction rate should increase linearly w.r.t. $N$.
 \end{itemize}
 
-Note that the agreement property is similar, but a relaxed version of what is often seen in Byzantine consensus problems.
+Note that the agreement property is similar, but a relaxed version of what is often seen in a Byzantine consensus problem.
 Namely, the property only holds if honest nodes do not output \emph{unknown}.
 For example, for a transaction, it is OK if two honest nodes output \emph{valid} and \emph{unknown}, but it is not OK to output \emph{valid} and \emph{invalid}.
 Our problem does not have a termination property, also known as liveness.
-Instead, nodes are incentivised to complete the protocol execution, we describe this phenomenon in~\Cref{sec:correctness-of-validity}.
+Instead, nodes are incentivised to complete the protocol execution;
+we describe this phenomenon in~\Cref{sec:correctness-of-validity}.
 
 The problem is purposefully made to be application neutral,
 i.e. there are no constraints on the semantics of transactions.
-This is so that the protocol can act as a backbone to many applications.
+This formulation is so that the protocol can act as a building block to many applications.
 Due to this fact, we also do not consider global fork prevention or detection,
-as some application may not need such strong guarantees such as the accounting of detailed internet traffic in Tribler~\cite{pimotte, pouwelse2008tribler}.
+as some application may not need such strong guarantees such as the accounting of internet traffic in Tribler~\cite{pimotte, pouwelse2008tribler}.
 On the other hand, we give two alternative constructions that do have fork detection in~\Cref{sec:fork}.
 
 \textbf{System model.\quad}
 We assume purely asynchronous channels with eventual delivery.
 Thus in no stage of the protocol are we allowed to make timing assumptions.
 The adversary has full control of the delivery schedule and the message ordering of all messages.
-But they are not allowed to drop messages except for their own\footnote{Reliability can be achieved in unreliable networks by resending messages or using some error correction code.}.
 
 \textbf{Security assumptions.\quad}
 The malicious nodes are Byzantine,

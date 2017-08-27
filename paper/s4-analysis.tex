@@ -1,31 +1,30 @@
 \section{Correctness and Fault Tolerance Analysis}
 \label{sec:analysis}
 We evaluate our system analytically to ensure the desired properties (\Cref{def:consensus} and \Cref{def:validation}) hold.
-An informal argument is given in this section, we refer to~\cite[Chapter 4]{checo} for an in-depth analysis.
+An informal argument is given in this section.
+We refer to~\cite[Chapter 4]{checo} for an in-depth analysis.
 
 \subsection{Correctness of the Consensus Protocol}
-Recall that the consensus protocol properties (\Cref{def:consensus}) has
-four items---agreement, validity, termination and fairness.
-The first three hold due to the following facts.
+$\Pi_c$ correctly implements the \textsc{Checo} consensus protocol (\Cref{def:consensus}) due to the following.
+The agreement, validity and termination properties hold because:
 \begin{itemize}
-    \item The CP blocks sent to the facilitators are eventually delivered and then ACS eventually starts.
+    \item The CP blocks sent to the facilitators are eventually delivered, and then ACS eventually starts.
     \item Agreement, validity and termination hold for ACS as they are the properties of ACS and are proven to hold in~\cite{miller2016honey}.
     \item The consensus result and signatures are eventually disseminated to all the nodes,
         so honest nodes must hold the same result as the honest facilitators.
 \end{itemize}
-
 Fairness holds because we model $\textsf{H}(\cdot)$ as a query to the random oracle.
 Sorting nodes by the luck value $\textsf{H}(\C || pk)$ can be seen as a random permutation of a list of nodes.
-Therefore every node has the same probability of becoming a facilitator.
+Therefore every node with a CP block in the consensus result has the same probability of becoming a facilitator.
 
 \subsection{Correctness of the Validation Protocol}
 \label{sec:correctness-of-validity}
 Using the previous result,
-we show that the agreement and validity properties (from~\Cref{def:validation}) hold for the validation protocol.
+we show that $\Pi_v$ implements the agreement and validity properties of a \textsc{Checo} validation protocol (\Cref{def:validation}).
 
 The validity property holds because we use $\textsf{get\_validity}(\cdot)$ in the validation protocol.
 The agreement property holds because we model $\textsf{H}(\cdot)$ as a query to a random oracle.
-Suppose two honest nodes decided on two different states, \emph{valid} and \emph{invalid} for the same transaction.
+That is, suppose two honest nodes decided on two different states, \emph{valid} and \emph{invalid} for the same transaction.
 For that to happen, two agreed fragments must exist for the same transaction,
 but these fragments must also have the same agreed enclosure.
 Recall that blocks form a hash chain.
@@ -34,21 +33,23 @@ So this is not possible unless the adversary can compute the inverse of $\textsf
 Liveness, unfortunately, does not hold in our model.
 A malicious node can act honestly when running the transaction protocol,
 but then never respond to any validation requests.
-Therefore there are transactions that can never be validated.
+Therefore some transactions can never be validated.
 Nevertheless, the malicious node will be at an economic loss if it is not responsive because honest nodes are less likely to make contact with nodes that do not respond to validation requests.
+If the probabilistic fork detection proposal (\Cref{sec:fork}) is used,
+the uncooperative nodes will have more incentive to participate in the protocol.
 
-A stronger version of the validity definition exists.
-That is, if two honest nodes make a transaction,
-then the transaction state is always valid in addition to our current validity definition.
-Under our purely asynchronous model, we cannot guarantee this stronger version.
-Since the adversary can delay any message for any amount of time,
-it can make sure all \texttt{tx\_req} messages are delivered in a round later than the round which the message is sent.
-Effectively, the transaction pair would always be in different rounds and the validation protocol would not output \emph{valid}.
-We believe in a relaxed model, i.e. a weakly synchronous model, a stronger validity definition is possible.
+% A stronger version of the validity definition exists.
+% That is, if two honest nodes make a transaction,
+% then the transaction state is always valid in addition to our current validity definition.
+% Under our purely asynchronous model, we cannot guarantee this stronger version.
+% Since the adversary can delay any message for any amount of time,
+% it can make sure all \texttt{tx\_req} messages are delivered in a round later than the round which the message is sent.
+% Effectively, the transaction pair would always be in different rounds and the validation protocol would not output \emph{valid}.
+% We believe in a relaxed model, i.e. a weakly synchronous model, a stronger validity definition is possible.
 
 \subsection{Fault Tolerance}
-Finally, we consider the effect when the number of adversaries is more than $t$.
-This is useful because in practice it is difficult to guarantee that $t$ satisfies $n \ge 3t + 1$,
+Finally, we consider the effect when the number of adversaries is more than $t$,
+which is useful because in practice it is difficult to guarantee that $t$ satisfies $n \ge 3t + 1$,
 especially when $N$ is large.
 Hence we are interested in the probability for this to happen under our facilitator election process.
 The problem is modelled by a hypergeometric distribution,
@@ -75,10 +76,13 @@ The bound is not tight, but it is useful for picking parameters for the desired 
 If $n$ is known, then we can pick a $\alpha$ such that the probability becomes small.
 On the other hand, if $\alpha$ is fixed, we may increase $n$ to achieve the same.
 Furthermore, hypergeometric distributions have light tails with ``faster-than-exponential fall-off''~\cite{skala2013hypergeometric}.
-So the probability of picking more than $\lfloor \frac{n-1}{3} \rfloor$ malicious nodes drops of exponentially as the expected value moves away from $\lfloor \frac{n-1}{3} \rfloor$.
+So the probability of picking more than $\lfloor \frac{n-1}{3} \rfloor$ malicious nodes drops off exponentially as the expected value moves away from $\lfloor \frac{n-1}{3} \rfloor$.
 To put this into perspective,
-suppose $n = 1000$ and $\alpha = 1/5$, i.e. a fifth of the nodes are malicious.
-Then the probability to elect more malicious nodes than the threshold is only $2.6 \times 10^{-16}$.
+suppose $n = 100$ and $\alpha = 1/10$, i.e. 10\% of the nodes are malicious,
+then the probability to elect more malicious nodes than the threshold is $9.9 \times 10^{-6}$.
+% To put this into perspective,
+% suppose $n = 1000$ and $\alpha = 1/5$, i.e. a fifth of the nodes are malicious.
+% Then the probability to elect more malicious nodes than the threshold is only $2.6 \times 10^{-16}$.
 
 
 

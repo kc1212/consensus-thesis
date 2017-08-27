@@ -6,8 +6,8 @@ To describe \textsc{Checo}, we first give an informal overview and then move on 
 Early blockchain systems that use a global ledger are difficult to scale because every node must reach consensus on all the transactions that ever existed.
 Instead, we introduce an alternative architecture where every node has their own genesis block and hash chain.
 The nodes only store transactions (TX) that they are involved in on their hash chain.
-Transactions are stored in TX blocks and every block only contains one transaction.
-A transaction between two nodes should therefore result in two TX blocks on the hash chains of those nodes.
+Transactions are stored in TX blocks, and every block only contains one transaction.
+A transaction between two nodes should, therefore, result in two TX blocks on their respective hash chains.
 We introduce a special block called checkpoint (CP) block,
 which represents the state of a hash chain in the form of a hash pointer.
 Then, a collection of CP blocks from all nodes would represent the state of the whole system.
@@ -16,14 +16,14 @@ A visualisation can be seen in~\Cref{fig:trustchain-good-cp}.
 \centering
 \includegraphics[width=\linewidth]{trustchain-good-cp}
 \caption{Visualisation of the data structure used in \textsc{Checo}.
-$t_{u, i}$ represents a TX block on $u$'s chain with a sequence number of $i$.
-$c_{v, j}$ represents a CP block on $v$'s chain with a sequence number of $j$.
+$t_{u, i}$ represents a TX block on $u$'s chain with a sequence number $i$.
+$c_{v, j}$ represents a CP block on $v$'s chain with a sequence number $j$.
 The blocks at the ends of the dotted lines are pairs of each other.
-Blocks of sequence number 0 (e.g. $t_{b, 0}$) are genesis blocks.}
+Blocks of sequence number 0 (e.g., $t_{c, 0}$) are genesis blocks.}
 \label{fig:trustchain-good-cp}
 \end{figure}
 
-\textsc{Checo} consist of three protocols---consensus protocol, transaction protocol and validation protocol---all interacting with the data distributed hash chain structure described above.
+\textsc{Checo} consists of three protocols---consensus protocol, transaction protocol and validation protocol---all interacting with the distributed hash chain data structure described above.
 The primary protocol is the consensus protocol,
 which can be seen as a technique of running infinitely many times of an existing Byzantine consensus algorithm (in this work we use asynchronous common subset from HoneyBadgerBFT~\cite{miller2016honey}),
 starting a new execution immediately after the previous one is completed.
@@ -34,7 +34,7 @@ or CP blocks in our case.
 The communication complexity of Byzantine consensus algorithms typically grows polynomially w.r.t the number of nodes,
 which prohibits us from running it on a large network.
 Thus, at the beginning of every Byzantine consensus algorithm execution,
-we randomly elect a set of nodes---called facilitators---to collect CP blocks from every other node and use those blocks as the input to the Byzantine consensus algorithm, and then run it.
+we randomly elect a set of nodes---called facilitators---to collect CP blocks from every other node and use those blocks as the input to the Byzantine consensus algorithm.
 After the algorithm completes,
 the facilitators output a set of CP blocks which we call the consensus result,
 which is then propagated to the network.
@@ -48,18 +48,21 @@ Thus, as we mentioned before, one transaction should result in two TX blocks.
 The consensus and transaction protocol by themselves do not provide a mechanism to detect malicious behaviour such as tampering.
 Thus, we need a validation protocol to counteract such behaviour.
 When a node wishes to validate one of its transactions, it asks the counterparty for the \emph{agreed fragment} of the transaction.
-Which is a fragment of the counterparty's chain beginning and ending with CP blocks but contains the TX block belonging to that transaction,
-and the CP blocks must be in consensus.
+Which is a section of the counterparty's chain beginning and ending with CP blocks but contains the TX block belonging to that transaction,
+where the CP blocks must be in consensus.
 Upon the counterparty's response,
-the node checks whether the CP blocks are in some consensus result and among other conditions.
+the node checks whether the CP blocks are, in fact, in some consensus result and among other conditions.
 The transaction is valid if these conditions are satisfied.
 % Intuitively, this works because it is hard (because a cryptographically secure hash function is collision resistant)
 % to create a different chain that begins and ends with the same two CP blocks.
 Since the transaction and validation protocols only make point-to-point communication,
 we achieve horizontal scalability.
 
+For brevity, we left out issues such as selecting facilitators in a fair way and the exact validity condition.
+The following sections give the formal description and will answer these issues.
+
 \subsection{\textsc{Checo} data structure}
-Each node $u$ has a public and private key pair---$pk_u$ and $sk_u$, and a chain $B_u$.
+Each node $u$ has a public and private key pair---$pk_u$ and $sk_u$, and a hash chain $B_u$.
 The chain consist of blocks $B_u = \{ b_{u, i} : i \in \{ 0, \dots, h - 1 \} \}$,
 where $b_{u, i}$ is the $i$th block of $u$,
 and $h$ is the height of the block (i.e. $h = |B_u|$).
@@ -100,6 +103,7 @@ Thus, given a TX block, these properties allow us to identify its pair.
 
 \begin{definition}
 \textbf{\emph{Checkpoint block and genesis block}}
+
 The CP block is a five-tuple, i.e. 
 $$c_{u, i} = \langle \textsf{H}(b_{u, i-1}), seq_u, \textsf{H}(\C_r), r, sig_u \rangle,$$
 where $\C_r$ is the consensus result (which we describe next in \Cref{sec:consensus-result}) in round $r$,
@@ -114,6 +118,7 @@ The genesis block is unique because every node has a unique public and private k
 \begin{definition}
 \label{sec:consensus-result}
 \textbf{\emph{Consensus result}}
+
 Our consensus protocol runs in rounds,
 where the first round is defined to be 1 and it is incremented after every execution of the consensus protocol.
 The consensus result, output of the consensus protocol, is a tuple, i.e. 
@@ -121,11 +126,12 @@ $$\C_r = \langle r, C \rangle,$$
 where $C$ is a set of CP blocks agreed by the facilitators of round $r$.
 \end{definition}
 
-Here we define an important property which results from the interleaving nature of CP and TX blocks.
+Here we define a property which results from the interleaving nature of CP and TX blocks.
 It is used in our validation protocol (discussed in~\Cref{sec:vd-protocol}).
 
 \begin{definition}
 \textbf{\emph{Enclosure and agreed enclosure}}
+
 If there exist a tuple $\langle c_{u,a}, c_{u, b} \rangle$ for a TX block $t_{u, i}$, where
 \begin{itemize}
 \item $c_{u, a}$ is the closest CP block to $t_{u, i}$ with a lower sequence number and
@@ -140,13 +146,13 @@ Agreed enclosure is the same as enclosure with an extra constraint where the CP 
 \textbf{\emph{Fragment and agreed fragment}}
 
 If the enclosure of some TX block $t_{u, i}$ is $\langle c_{u,a}, c_{u, b} \rangle$,
-then its \emph{fragment} $F_{u, i}$ is defined as $\{ b_{u, i} : a \le i \le b \}$.
-Similarly, \emph{agreed fragment} has the same definition as fragment but using agreed enclosure.
-For convenience, the function $\textsf{agreed\_fragment}(\cdot)$ represents the agreed fragment of some TX block if it exists, otherwise $\bot$.
+then its fragment $F_{u, i}$ is defined as $\{ b_{u, i} : a \le i \le b \}$.
+Similarly, agreed fragment has the same definition as fragment but using agreed enclosure.
+For convenience, the function $\textsf{agreed\_fragment}(t_{u, i})$ outputs the agreed fragment of $t_{u, i}$ if it exists, otherwise $\bot$.
 \end{definition}
 
 \subsection{Consensus Protocol}
-Our scalable consensus protocol $\Pi_c$ uses an unmodified asynchronous subset consensus (ACS) algorithm as the key building block.
+Our scalable consensus protocol $\Pi_c$ uses an unmodified asynchronous common subset (ACS) algorithm as the key building block.
 The objectives of the protocol are to
 allow honest nodes always make progress (in the form of creating new CP blocks),
 compute correct consensus result in every round
@@ -185,47 +191,51 @@ For any future rounds, the consensus phase is used.
 
 \subsubsection{Consensus Phase}
 \label{sec:consensus-phase}
-The consensus phase begins when $\F_r$ is available to all the nodes.
+
+For any node $u$,
+the consensus phase begins when $\F_r$ is available and the latest block is $c_{u, h-1}$.
 Note that $\F_r$ indicates the facilitators that were elected using results of round $r$ and are responsible for driving the ACS algorithm in round $r + 1$.
 The goal is to reach agreement on a set of new facilitators $\F_{r + 1}$ that satisfies the four properties in \Cref{def:consensus}.
 
 There are two scenarios in the consensus phase.
-First, if node $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, h} \rangle$ to all the facilitators.
-Second, if the node is a facilitator, it waits until $N - t$ messages of type \texttt{cp\_msg} are received.
+First, if $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, h-1} \rangle$ to all the facilitators.
+Second, if $u$ is a facilitator, it waits until $N - t$ messages of type \texttt{cp\_msg} are received.
 % Second if the node is a facilitator, it waits for some duration $D$ and collect messages of type \texttt{cp\_msg}, where $D \gg \Delta$.
 Invalid messages are removed.
 That is blocks with invalid signatures and blocks signed by the same key.
 With the sufficient number of \texttt{cp\_msg} messages,
 it begins the ACS algorithm and some $\C'_{r + 1}$ should be agreed upon by the end of it.
 Duplicates and blocks with invalid signatures are again removed from $\C'_{r+1}$ and we call the final result $\C_{r+1}$.
-We have to remove invalid blocks a second time (after ACS) because the adversary may send different CP blocks to different facilitators,
+We have to remove invalid blocks a second time because the adversary may send different CP blocks to different facilitators,
 which results in invalid blocks in the ACS output, but not in any of the inputs.
 
-The core of the consensus phase is the ACS protocol,
-it is based on the construction described in HoneyBadgerBFT~\cite{miller2016honey}.
+The core of the consensus phase is the ACS algorithm,
+which is derived from HoneyBadgerBFT~\cite{miller2016honey}.
 We do not use the full HoneyBadgerBFT due to the following.
 First, the transactions in HoneyBadgerBFT are first queued in a buffer and the main consensus algorithm starts only when the buffer reaches an optimal size.
 We do not have an infinite stream of CP blocks, thus buffering is unsuitable.
 Second, HoneyBadgerBFT uses threshold encryption to hide the content of the transactions.
-But we do not reach consensus on transactions, only CP blocks, so hiding CP blocks is meaningless for us as it contains no transaction information.
+But we do not reach consensus on transactions, only CP blocks, so hiding CP blocks is meaningless for us.
 
-Continuing, when $\F_{r}$ reaches agreement on $\C_{r+1}$,
-they immediately broadcast\footnote{An alternative to using broadcasting is to use an epidemic protocol~\cite{eugster2004epidemic}, 
-as long as it can guarantee delivery.} two messages to all the nodes---
-first the consensus message $\langle \texttt{cons\_msg}, \C_{r+1} \rangle$,
+Continuing, when $\F_{r}$ finish the ACS execution and reach agreement on $\C_{r+1}$,
+they immediately broadcast two messages to all the nodes---first the consensus message $\langle \texttt{cons\_msg}, \C_{r+1} \rangle$,
 and second the signature message $\langle \texttt{cons\_sig}, r, sig \rangle$.
 The reason for sending \texttt{cons\_sig} is the following.
-Recall that channels are not authenticated, 
+The channels are not authenticated, 
 and there are no signatures in $\C_{r + 1}$.
 If a non-facilitator sees some $\C_{r + 1}$, it cannot immediately trust it because it may have been forged.
-Thus, To guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_{r + 1}$.
+Thus, to guarantee authenticity, every facilitator sends an additional message that is the signature of $\C_{r + 1}$.
 
-Upon receiving $\C_{r + 1}$ and at least $n - f$ valid signatures by some node $u$, $u$ performs two tasks.
+Upon receiving $\C_{r + 1}$ and at least $n - t$ valid signatures, $u$ performs two tasks.
 First, it creates a new CP block using $\textsf{new\_cp}(\C_{r + 1})$ (\Cref{alg:new-cp}).
 Second, it computes the new facilitators using $\textsf{get\_facilitator}(\C_{r + 1}, n)$ (\Cref{alg:facilitator}),
 and updates its facilitator set to the result.
 This concludes the consensus phase and brings us back to the state at the beginning of the consensus phase,
 so a new round can be started.
+
+Our protocol has some similarities with synchronizers~\cite[Chapter 10]{podc} because it is effectively a technique to introduce synchrony in an asynchronous environment.
+If we consider the facilitators as a collective authority, then it can be seen as a synchronizer that sends pulse messages (in the form of \texttt{cons\_msg} and \texttt{cons\_sig}) to indicate the start of a new clock pulse.
+Every node then sends a completion messages (in the form of \texttt{cp\_msg}) to the new collective authority to indicate that they are ready for the next pulse.
 
 \begin{algorithm}
 \caption{Function $\textsf{new\_cp}(\C_r)$ runs in the context of the caller $u$.
@@ -249,19 +259,17 @@ then sorts the CP blocks $C$ by the luck value (the $\lambda$-expression), and o
 \end{algorithmic}
 \end{algorithm}
 
-
 \subsection{Transaction Protocol}
 \label{sec:tx-protocol}
 
-The TX protocol $\Pi_t$ is shown in \Cref{alg:tx-proto}.
+The TX protocol $\Pi_t$, shown in \Cref{alg:tx-proto}, is run by all nodes.
 Nodes that wish to initiate a transaction calls $\textsf{new\_tx}(pk_v, m, txid)$ (\Cref{alg:new-tx}) with the intended counterparty $v$ identified by $pk_v$ and message $m$.
 $txid$ should be a uniformly distributed random value, i.e. $txid \in_R \{0, 1\}^{256}$.
 Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 
 \begin{algorithm}
     \caption{Function $\textsf{new\_tx}(pk_v, m, txid)$ generates a new TX block and appends it to the caller $u$'s chain.
-    It is executed in the private context of $u$, i.e. it has access to the $sk_u$ and $B_u$.
-    The necessary arguments are the public key of the counterparty $pk_v$, the transaction message $m$ and the transaction identifier $txid$.}
+    It is executed in the private context of $u$, i.e. it has access to the $sk_u$ and $B_u$.}
     \label{alg:new-tx}
 
     \begin{algorithmic}
@@ -272,7 +280,7 @@ Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
 \end{algorithm}
 
 \begin{algorithm}
-    \caption{The TX protocol which runs in the context of node $u$.}
+    \caption{$\Pi_t$ runs in the context of node $u$.}
     \label{alg:tx-proto}
 
     \begin{algorithmic}
@@ -288,9 +296,9 @@ Then the initiator sends $\langle \texttt{tx\_req}, t_{u, h}\rangle$ to $v$.
     \end{algorithmic}
 \end{algorithm}
 
-A key feature of the TX protocol is that it is non-blocking.
+A key feature of $\Pi_t$ is that it is non-blocking.
 At no time in \Cref{alg:new-tx} or \Cref{alg:tx-proto} do we need to hold the chain state and wait for some message to be delivered before committing a new block to the chain.
-This allows for a high level of concurrency where we can call $\textsf{new\_tx}(\cdot)$ multiple times without waiting for the corresponding \texttt{tx\_resp} messages.
+This allows for a high level of concurrency where we can call $\textsf{new\_tx}(\cdot)$ and send \texttt{tx\_req} messages multiple times without waiting for the corresponding \texttt{tx\_resp} messages.
 
 \subsection{Validation Protocol}
 \label{sec:vd-protocol}
@@ -317,7 +325,7 @@ If the caller is not $u$, it can always query for the agreed fragment that conta
 % This is likely to be the case for new transactions because the result of $\textsf{agreed\_fragment}(\cdot)$ would be $\bot$.
 % The next two conditions check for tampering or missing blocks, if any of these misconducts are detected, then the TX is invalid.
 
-We stress that the \emph{unknown} state means that the verifier does not have enough information to continue with the validation protocol.
+We stress that the \emph{unknown} state means that the verifier does not have enough information to make progress in $\Pi_v$.
 If enough information is available at a later time, then the verifier will output either \emph{valid} or \emph{invalid}.
 
 Note that the validity is on a transaction, i.e. two TX blocks that form a pair.
@@ -361,11 +369,11 @@ $F_{v, j}$ is the corresponding fragment received from $v$.}
 \end{algorithm}
 
 \subsubsection{Validation Protocol}
-Our validation protocol,
+Our validation protocol $\Pi_v$,
 shown in~\Cref{alg:vd-proto},
 is designed to classify transactions according to the aforementioned validity definition.
 If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends $\langle \texttt{vd\_req}, txid \rangle$ to $v$.
-The desired properties of the validation protocol are as follows.
+The desired properties are as follows.
 \begin{definition}
 \label{def:validation}
 \textbf{\emph{\textsc{Checo} validation protocol}}
@@ -374,7 +382,7 @@ A \textsc{Checo} validation protocol is correct if the following properties hold
 \begin{enumerate}
     \item \emph{Agreement}:
         If any correct node decides on the validity of a transaction, except when it is \emph{unknown},
-        then all other correct nodes are able to reach the same conclusion or output \emph{unknown}.
+        then all other correct nodes are able to reach the same conclusion or decide \emph{unknown}.
     \item \emph{Validity}:
         The validation protocol outputs the correct result
         according to the validity definition above.
@@ -387,7 +395,7 @@ A \textsc{Checo} validation protocol is correct if the following properties hold
 \end{definition}
 
 \begin{algorithm}
-\caption{Validation protocol which runs in the context of $u$}
+\caption{$\Pi_v$ which runs in the context of $u$}
 \label{alg:vd-proto}
 
 \begin{algorithmic}
@@ -405,7 +413,7 @@ A \textsc{Checo} validation protocol is correct if the following properties hold
 \end{algorithm}
 
 We make two remarks.
-First, just like the TX protocol, we do not block any part of the protocol.
+First, just like $\Pi_t$, we do not block any part of the protocol.
 Second, suppose some $F_{v, j}$ validates $t_{u, i}$, then that does not imply that $t_{u, i}$ only has one pair $t_{v, j}$.
 Our validity requirement only requires that there is only one $t_{v, j}$ in the correct consensus round.
 The counterparty may create any number of fake pairs in later consensus rounds.
@@ -436,10 +444,10 @@ Otherwise, the $n \ge 3t + 1$ condition may be violated.
 
 \subsection{Optimising Validation Protocol Using Cached Agreed Fragments}
 \label{sec:caching}
-One more way to improve the efficiency of the validation protocol is to use a single agreed fragment to validate multiple transactions.
+One more way to improve the efficiency of $\Pi_v$ is to use a single agreed fragment to validate multiple transactions.
 Concretely, for node $A$, upon receiving an agreed fragment from node $B$,
 rather than validating a single transaction,
-$A$ attempts to validate all transactions performed with $B$ in the unknown state, in that fragment.
+$A$ attempts to validate all transactions performed with $B$, which are in the unknown state but also in that fragment.
 
 The benefit of this technique is maximised when a node only transacts with one other node.
 In this case, the communication of one fragment is sufficient to validate all transactions in that fragment.
@@ -448,27 +456,27 @@ then the caching mechanism would have no effect.
 
 \subsection{Total Fork Detection}
 \label{sec:fork}
-The validation algorithm guarantees that there are no forks within a single agreed fragment.
-This is sufficient for some applications such as proving the existence of some information.
+The validation algorithm guarantees that there are no forks within a single agreed fragment,
+which is sufficient for some applications such as proving the existence of some information.
 However, for applications such as digital cash where every block depends on one or more previous blocks,
 our scheme is not suitable.
 For such applications, we need to guarantee that there are no forks from the genesis block leading up to the TX block of interest.
 
 We offer two approaches to do total fork detection.
-First and the easiest solution is to simply ask for the complete chain of the counterparty.
-The verifier can be sure that there are no forks if the following holds.
+First and the easiest solution is to ask for the complete hash chain of the counterparty.
+The verifier can be sure that there are no forks if the following conditions hold.
 \begin{enumerate}
     \item The hash pointers are correct.
     \item All the CP blocks are in consensus.
     \item The TX of interest is in the chain.
 \end{enumerate}
 We use this approach in our prior work on Implicit Consensus~\cite{implicitconsensus}.
-Nodes employ caching to minimise communication costs, we call this effect spontaneous sharding.
+Nodes employ caching to minimise communication costs, and we call this effect spontaneous sharding.
 
 The second approach is probabilistic but with only a constant communication overhead over our current design.
 For a node, observe that if all of its agreed fragments has a transaction with an honest node,
 then the complete chain is effectively validated in a distributed manner.
-The only way for an attacker to make a fork is to make sure that the agreed fragment containing the fork has no transactions with honest nodes.
+The only way for an attacker to make a fork is to ensure that the agreed fragment containing the fork has no transactions with honest nodes.
 Such malicious behaviour is prevented probabilistically using a challenge-response protocol as follows.
 Suppose node $A$ wish to make a transaction with node $B$.
 $A$ first sends a challenge to $B$ asking it to prove that it holds a valid agreed fragment between some consensus round specified by $A$.
