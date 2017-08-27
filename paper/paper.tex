@@ -337,7 +337,7 @@
 
 
 % correct bad hyphenation here
-\hyphenation{op-tical net-works semi-conduc-tor}
+\hyphenation{op-tical net-works semi-conduc-tor block-chain}
 
 
 \begin{document}
@@ -348,25 +348,22 @@
 % not capitalized unless they are the first or last word of the title.
 % Linebreaks \\ can be used within to get better formatting as desired.
 % Do not put math or special symbols in the title.
-\title{Blockchain Consensus Protocol with\\Horizontal Scalability}
+\title{A Blockchain Consensus Protocol With\\Horizontal Scalability}
 
 
 % author names and affiliations
 % use a multiple column layout for up to three different
 % affiliations
 \author{\IEEEauthorblockN{Kelong Cong}
-\IEEEauthorblockA{Distributed Systems Group\\Dept. of Software Technology\\
-Delft University of Technology\\
+\IEEEauthorblockA{Delft University of Technology\\
 Email: k.cong@student.tudelft.nl}
 \and
 \IEEEauthorblockN{Zhijie Ren}
-\IEEEauthorblockA{Cyber Security Group\\Dept. of Intelligent Systems\\
-Delft University of Technology\\
+\IEEEauthorblockA{Delft University of Technology\\
 Email: z.ren@tudelft.nl}
 \and
 \IEEEauthorblockN{Johan Pouwelse}
-\IEEEauthorblockA{Distributed Systems Group\\Dept. of Software Technology\\
-Delft University of Technology\\
+\IEEEauthorblockA{Delft University of Technology\\
 Email: peer2peer@gmail.com}
 }
 
@@ -407,26 +404,24 @@ Email: peer2peer@gmail.com}
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
-% what's the problem?
 Blockchain systems have the potential to decentralise many traditionally centralised systems.
 However, scalability remains a key challenge.
-Without a horizontally scalable solution, blockchain systems remain unsuitable for ubiquitous use.
+Without a horizontally scalable solution,
+where performance increases by adding more nodes to the system,
+blockchain systems remain unsuitable for ubiquitous use.
 % what's the solution?
 We design a novel blockchain system called \textsc{Checo}.
-Each node in our system maintains individual hash chains,
+Each node in our system maintains a personal hash chain,
 which only stores transactions that the node is involved in.
 A consensus is reached on special blocks called checkpoint blocks rather than on all the transactions.
-Checkpoint blocks are effectively a hash pointer to the individual hash chains,
-thus a single checkpoint block may represent a large set of transaction blocks.
-The consensus protocol does not imply transaction validity.
-Hence we include a validation protocol which allows nodes to verify that transactions are correctly recorded,
-which indirectly achieves consensus on transactions.
+Checkpoint blocks are effectively a hash pointer to the personal hash chains;
+thus a single checkpoint block may represent an arbitrarily large set of transactions.
+We introduce a validation protocol so that any node can check the validity of any transaction.
+Since it is a point-to-point protocol, we achieve horizontal scalability.
 % how good is the solution?
-We implement a prototype and evaluate it experimentally.
-Our results show a strong indication of horizontal scalability even in the worst case,
-where every transaction is made with a randomly selected node.
-For 1200 nodes, we were able to perform almost 5000 transactions per second,
-orders of magnitude higher than the 7 transactions per second limit of Bitcoin.
+We analytically evaluate our system and show a number of highly desirable correctness properties such as implicit consensus.
+Further, we give a free and open-source implementation of \textsc{Checo} and evaluate it experimentally.
+Our results show a strong indication of horizontal scalability.
 \end{abstract}
 
 % no keywords

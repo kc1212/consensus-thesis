@@ -15,7 +15,7 @@ putting miners that do not have a fast network at a disadvantage~\cite{croman201
 Furthermore, due to the bandwidth and latency in today's network,
 it is not possible to achieve more than 27 TPS from simply adjusting the block size~\cite{croman2016scaling}.
 
-% related work
+\textbf{Related work.\quad}
 Many approaches exist for improving the scalability of early blockchains.
 Off-chain transactions make use of the fact that if nodes make frequent transactions,
 then it is not necessary to store every transaction on the blockchain,
@@ -58,20 +58,23 @@ A large shard size would make the system less scalable because the Byzantine con
 A small shard size would result in a large number of inter-shard transactions which also hinders scalability.
 % The authors of OmniLedger noted that inter-shard transactions have significantly higher latency compared to the consensus protocol~\cite{kokoris2017omniledger}.
 
-% research question
+\textbf{Research question.\quad}
 Thus far, there are no systems that achieve horizontal scalability in the general case,
 which leads to the goal of this work.
 Concretely, we attempt to answer the following research question.
 \begin{displayquote}
-\emph{Is it possible to design a blockchain consensus protocol that is fault-tolerant and horizontally scalable?}
-\end{displayquote}
+    \emph{How can we design a blockchain consensus protocol that is fault-tolerant,
+    horizontally scalable,
+    and able to reach global consensus?}
+    \end{displayquote}
+We remark the different aspects of our research question.
 A blockchain consensus protocol should be application neutral,
 for example, PoW without the transaction logic.
 The protocol should be Byzantine fault tolerant up to some threshold.
 The threshold may be made adjustable by trading off performance.
 Finally, we are interested in horizontal scalability in the general case, as it enables ubiquitous use.
 
-% contribution
+\textbf{Contribution.\quad}
 The key insight is to \emph{not} reach consensus using an existing consensus algorithm (a modified HoneyBadgerBFT~\cite{miller2016honey}) on transactions themselves,
 but on special blocks called checkpoint blocks,
 such that transactions are nevertheless verifiable at a later stage by any node in the network.
@@ -85,7 +88,7 @@ Our main contributions are the following.
         our results show strong evidence of horizontal scalability.
 \end{itemize}
 
-% organisation
+\textbf{Roadmap.\quad}
 In~\Cref{sec:description},
 we give the problem description and our system model.
 \Cref{sec:system} gives the formal system architecture.

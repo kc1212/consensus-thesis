@@ -38,7 +38,7 @@
 
 % \setbeameroption{show notes}
 
-\title{Blockchain Consensus Protocol with\\Horizontal Scalability}
+\title{A Blockchain Consensus Protocol With\\Horizontal Scalability}
 % \subtitle{Optional Subtitle}
 
 \author{K.~Cong}
@@ -101,7 +101,7 @@
     \item Facebook can predict your opinions and desires better than your spouse~\cite{youyou2015computer}
     \item With intimate knowledge of the individuals,
       Facebook creates ``psychographic'' profiles in political campaigns~\cite{psychographic}
-    \item Baidu's promoted search result on experimental medical care caused death of a student~\cite{weizexi}
+    \item Baidu's promoted search result on medical care caused death of a student~\cite{weizexi}
   \end{itemize}
   \note{
     \begin{itemize}
@@ -149,7 +149,7 @@
     \item Bitcoin (PoW) is limited to 7 transactions per second
     \item 100,000 transaction backlog in May 2017
     \item We require horizontal scalability for ubiquitous use
-    \item More nodes = better performance and throughput
+    \item More nodes = better transaction throughput
   \end{itemize}
 \end{frame}
 
@@ -171,20 +171,20 @@
 \end{table}
 \end{frame}
 
-\begin{frame}{Related work}
-  State-of-the-art: Sharding
-  \begin{itemize}
-  \item Split state into multiple shards
-  \item Shards run consensus algorithm in parallel
-  \item Difficult to perform atomic inter-shard transactions
-    \begin{itemize}
-      \item Elastico: not possible
-      \item OmniLedger: via Atomic Commit protocol
-    \end{itemize}
-  \item Additional complexity
-  \item Diminishing return
-  \end{itemize}
-\end{frame}
+% \begin{frame}{Related work}
+%   State-of-the-art: Sharding
+%   \begin{itemize}
+%   \item Split state into multiple shards
+%   \item Shards run consensus algorithm in parallel
+%   \item Difficult to perform atomic inter-shard transactions
+%     \begin{itemize}
+%       \item Elastico: not possible
+%       \item OmniLedger: via Atomic Commit protocol
+%     \end{itemize}
+%   \item Additional complexity
+%   \item Diminishing return
+%   \end{itemize}
+% \end{frame}
 
 \subsection{Research question}
 \begin{frame}{\subsecname}

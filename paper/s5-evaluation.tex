@@ -1,7 +1,7 @@
 \section{Implementation and Evaluation}
 \label{sec:implementation}
 
-\begin{figure*}[t]
+\begin{figure*}[ht]
   \centering
   \makebox[\linewidth][c]{%
   \begin{subfigure}[b]{0.5\linewidth}
@@ -20,15 +20,11 @@
   \label{fig:global-throughput}
 \end{figure*}
 
-The prototype implementation can be found on GitHub.
-\begin{displayquote}
-\url{https://github.com/kc1212/checo}
-\end{displayquote}
+A free and open source implementation can be found on GitHub: \url{https://github.com/kc1212/checo}.
 It implements the three protocols and the Extended TrustChain.
 We also implement the caching optimisation discussed in \Cref{sec:caching}.
-It is written in the Python programming language\footnote{\url{https://www.python.org/}}.
+It is written in the Python programming language.
 The cryptography primitives we use are SHA256 for hash functions and Ed25519 for digital signatures.
-Both of which are provided by libnacl~\footnote{\url{https://pypi.python.org/pypi/libnacl}}.
 
 We run the experiment on the DAS-5\footnote{\url{https://www.cs.vu.nl/das5/}} with up to 1200 nodes.
 Every node makes transactions at 2 per second.
@@ -54,10 +50,14 @@ Transactions are between two parties, hence if every node makes two transactions
 every node also expects to receive two transactions per second.
 Hence, for every node, the TX blocks are created at 4 per second.
 Validation requests are sent at the same rate, which explains the magnitude.
-
 Overall, the throughput has a linear relationship with the population size.
 This result is a strong indication of the horizontal scalability which we aimed to achieve.
-For more experimental results refer to~\cite[Chapter 5]{checo}???.
+
+The communication complexity of the consensus protocol grows polynomially as the number of facilitators grows linearly.
+Hence, the consensus protocol will take longer to complete and larger fragments must be sent for transaction verification.
+The result is that transactions verification will take longer.
+On the other hand, it does not significantly impact the throughput.
+We refer the reader to~\cite[Chapter 5]{checo} for additional analysis of the effect of the number of facilitators as well as other experimental results.
 
 % The difference in magnitude between \Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random} is caused by the caching mechanism mentioned earlier.
 % If a new agreed fragment needs to be transmitted to validate every transaction then it puts a toll on the network infrastructure.
