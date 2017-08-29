@@ -91,14 +91,14 @@
   \begin{itemize}
     \item Technological advancements give us convenience
     \item But it puts central authorities in control
-    \item Many are motivated by profit
+    \item Most are motivated exclusively by profit
     \item Not always in the interest of the ``users''\footnote{Typically users of some free service X are, in fact, used by X.}
   \end{itemize}
 \end{frame}
 
 \begin{frame}{The dangers of centralisation:~Examples}
   \begin{itemize}
-    \item Facebook can predict your opinions and desires better than your spouse~\cite{youyou2015computer}
+    \item Facebook can predict your opinions and desires better than your spouse from your ``liked'' posts~\cite{youyou2015computer}
     \item With intimate knowledge of the individuals,
       Facebook creates ``psychographic'' profiles in political campaigns~\cite{psychographic}
     \item Baidu's promoted search result on medical care caused death of a student~\cite{weizexi}
@@ -125,14 +125,14 @@
 
 \begin{frame}{Blockchain:~a new hope?}
   \begin{itemize}
-    \item Blockchains are distributed ledgers
-    \item They enable large scale consensus
+    \item Blockchains are distributed (replicated) ledgers
+    \item They enable internet-scale consensus
     \item An alternative to central authorities for the first time
-    \item Some applications include:
+    \item Some initial applications include:
     \begin{itemize}
       \item Digital cash (e.g., Bitcoin)
       \item Domain name system (e.g., Namecoin)
-      \item File sharing (e.g., Filecoin)
+      \item Bandwidth rental (e.g., Filecoin)
       \item General purpose (e.g., Ethereum)
     \end{itemize}
   \end{itemize}
@@ -149,7 +149,7 @@
     \item Bitcoin (PoW) is limited to 7 transactions per second
     \item 100,000 transaction backlog in May 2017
     \item We require horizontal scalability for ubiquitous use
-    \item More nodes = better transaction throughput
+    \item More users = more transactions per second globally
   \end{itemize}
 \end{frame}
 
@@ -157,8 +157,7 @@
 \begin{frame}{Related work}
   \begin{table}[htb]
     \centering
-    \caption{Summary of the scalability properties of many blockchain systems.
-    Scalability gets better from left to right.}
+    \caption{Summary of the scalability properties of many blockchain systems.}
     \label{tab:scalability}
     \begin{tabular}{|l|l|l|l|}
     \hline
@@ -169,6 +168,11 @@
     \hline
     \end{tabular}
 \end{table}
+\begin{center}
+\Large{
+$\xrightarrow{\qquad\text{scalability}\qquad}$
+}
+\end{center}
 \end{frame}
 
 % \begin{frame}{Related work}
@@ -194,41 +198,30 @@
     \emph{horizontally scalable}, and able to reach \emph{global consensus?}
     }
   \end{block}
-    \note{
-      \begin{itemize}
-      \item Blockchain consensus protocol---independent of the application, like PoW (not PoS)
-      \item Byzantine fault tolerance---if some number of nodes are malicious then the system should continue to function
-      \item Horizontal scalability---if every node make transactions at the same rate, then the global throughput should increase
-      \item Global consensus---all node should agree on a global state, useful for some applications, e.g. digital cash
-      \end{itemize}
-    }
+  \begin{itemize}
+    \item Blockchain consensus protocol---application neutral, e.g., PoW
+    \item Fault-tolerant---tolerate up to some number of malicious nodes
+    \item Horizontal scalability---more nodes in the network leads to higher transaction throughput
+    \item Global consensus---all node should agree on a global state
+  \end{itemize}
 \end{frame}
 
 \section{System architecture}
-\begin{frame}{Intuition}
+\begin{frame}{Intuition and idea explored in this thesis}
   \begin{itemize}
-    \item Traditionally: to reach consensus and check the validity of all transactions is expensive
+    \item It is expensive to reach consensus on all transactions
     \item Our idea: we decouple consensus and validation
-    \item Use a single digest to represent an arbitrarily large number of transactions
+    \item A single digest represents an arbitrarily large number of transactions
     \item Reach consensus on the small digest
     \item Nodes then independently check the validity of the transactions of interest
   \end{itemize}
+  \begin{figure}[h]
+  \includegraphics[width=0.7\textwidth]{idea}
+  \centering
+  \end{figure}
 \end{frame}
 
 \subsection{System model}
-\begin{frame}{\subsecname}
-  \begin{itemize}
-    \item $N$ is the population size
-    \item Purely asynchronous channels with eventual delivery
-    \item $n$ nodes are facilitators
-    \item $t$ nodes are malicious, i.e. Byzantine
-    \item $n \ge 3t + 1$
-    \item $N \ge n + t$
-  \end{itemize}
-  \note{At this point, explain facilitators are nodes that have some extra task to do, temporarily.
-  Explain that $N$ is typically a lot larger than $n$ instead of explaining $N \ge n + t$.}
-\end{frame}
-
 \subsection{Architecture overview}
 \begin{frame}{\subsecname}
   \begin{center}
@@ -258,6 +251,7 @@
   \note{
     \begin{itemize}
       \item In this example there are three nodes
+      \item Each node maintains their personal hash chain and genesis block
       \item Squares are TX blocks and circles are CP blocks
       \item Explain the block content in caption
       \item The dotted line represent pairs of TX blocks
@@ -266,27 +260,28 @@
   }
 \end{frame}
 
-\begin{frame}{\subsecname:~TX block}
-  \begin{enumerate}
-    \item Hash pointer to the previous block
-    \item Sequence number
-    \item Transaction ID
-    \item Public key of the counterparty
-    \item Transaction message $m$
-    \item Signature the five items above
-  \end{enumerate}
-  \vfill
-  A transaction is represented by a \emph{pair} of TX blocks
+\begin{frame}{\subsecname:~Transaction (TX) block}
+\begin{itemize}
+  \item Goal: record transactions
+  \item A transaction is represented by a pair of TX blocks,
+  i.e. a contract signed by both parties
+\end{itemize}
+\begin{figure}[h]
+  \includegraphics[trim={7cm 8.2cm 2cm 2.55cm},clip,width=0.7\textwidth]{trustchain-good-cp}
+  \centering
+\end{figure}
 \end{frame}
 
-\begin{frame}{\subsecname:~CP block}
-  \begin{enumerate}
-    \item Hash pointer to the previous block
-    \item Sequence number
-    \item Digest of consensus result, i.e.~a set of CP blocks
-    \item Round number $r$
-    \item Signature on the four items above
-  \end{enumerate}
+\begin{frame}{\subsecname:~Checkpoint (CP) block}
+  \begin{itemize}
+    \item Goal: represent the state of the chain using a single digest
+    \item A collection of CP blocks from all the nodes represent the state of the system
+    \item Nodes agree on the system state using our consensus protocol
+  \end{itemize}
+\begin{figure}[h]
+  \includegraphics[trim={7cm 2.505cm 2cm 8.55cm},clip,width=0.7\textwidth]{trustchain-good-cp}
+  \centering
+\end{figure}
 \end{frame}
 
 \begin{frame}{\subsecname:~Fragment of a TX block}
@@ -298,70 +293,24 @@
 
 \subsection{Consensus protocol}
 
-\begin{frame}{\subsecname---Background on ACS}
+\begin{frame}{\subsecname}
   \begin{itemize}
-    \item Asynchronous common subset
-    \item A simplification of HoneyBadgerBFT~\cite{miller2016honey}
-    \item $n$ nodes
-    \item $t$ nodes may be malicious
-    \item Input: every node proposes a set of values, e.g., $\{A, B\}, \{B, C\}, \dots$
-    \item Output: set union of the majority, e.g., $\{A, B, C, \dots \}$
+    \item Goal: reach consensus on a collection of CP blocks amongst all the nodes
+    \item Uses an existing fault-tolerant consensus algorithm (HoneyBadgerBFT~\cite{miller2016honey}) as the building block
+    \item But it cannot be used in a large network due to high communication complexity
+    \item We overcome this limitation by selecting a small number of \emph{facilitators} to run HoneyBadgerBFT
   \end{itemize}
 \end{frame}
 
 \begin{frame}{\subsecname}
-  \begin{figure}[h]
-  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-1}
-  \centering
+  \begin{figure}
+    \includegraphics[width=0.65\textwidth]{consensus-overview}
+    \centering
   \end{figure}
-  \note{Suppose we are in a state where $\C_{r - 1}$ has just been agreed by some facilitators but not yet propagated.}
-\end{frame}
-
-\begin{frame}{\subsecname}
-  \begin{figure}[h]
-  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-2}
-  \centering
-  \end{figure}
-  \note{Nodes receive consensus result $\C_{r - 1}$,
-    first $n$ nodes ordered by $\textsf{H}(\C_{r-1} || pk)$ become $\F_{r-1}$,
-    send the new CP blocks to $\F_{r-1}$.}
-\end{frame}
-
-\begin{frame}{\subsecname}
-  \begin{figure}[h]
-  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-3}
-  \centering
-  \end{figure}
-\end{frame}
-
-\begin{frame}{\subsecname}
-  \begin{figure}[h]
-  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-4}
-  \centering
-  \end{figure}
-\end{frame}
-
-\begin{frame}{\subsecname}
-  \begin{figure}[h]
-  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-5}
-  \centering
-  \end{figure}
-  \note{Transactions carry on as usual in round $r$,
-  while facilitators are trying to reach consensus on the new CP blocks concurrently.}
-\end{frame}
-
-\begin{frame}{\subsecname}
-  \begin{figure}[h]
-  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-6}
-  \centering
-  \end{figure}
-  \note{$\F_{r-1}$ agree and disseminate $\C_r$,
-  CP blocks at round $r-1$ ($c_{a, 6}, c_{b, 4}, c_{c,8}$) should be in $\C_r$.}
 \end{frame}
 
 \begin{frame}{\subsecname:~properties}
 \label{def:consensus}
-The consensus protocol has the following properties in every round $r$.
 \begin{itemize}
     \item \emph{Agreement}:
         Every correct outputs the same set of facilitators.
@@ -381,9 +330,8 @@ The consensus protocol has the following properties in every round $r$.
   \centering
   \end{figure}
 \begin{itemize}
-\item Request and response protocol
-\item Two TX blocks containing the same $txid$ are generated
-\item Non-blocking
+\item Two TX blocks are generated on the chains of Alice and Bob
+\item No guarantee that nodes follow this protocol
 \end{itemize}
 \end{frame}
 
@@ -394,17 +342,20 @@ The consensus protocol has the following properties in every round $r$.
   \centering
   \end{figure}
 \begin{itemize}
-\item Alice needs the two fragments that belong to the transaction
+\item To check that the transaction protocol is correctly followed
+\item Alice needs the fragments of the TX on Bob's hash chain 
 \item Validation function checks whether the fragments are OK and contain the transaction
-\item Non-blocking
 \end{itemize}
 \end{frame}
 
 \begin{frame}{\subsecname:~properties}
 \begin{itemize}
+  \item Every node may run the validation protocol on a transaction
+  \item We reach consensus on transactions via CP blocks
   \item CP blocks of the fragments are ``anchored'' due to the consensus protocol
   \item It is difficult to modify the fragment once ``anchored''
-  \item Implicit consensus on transactions via CP blocks
+  \item Since transaction protocol and validation protocol only use point-to-point communication,
+  we achieve horizontal scalability.
 \end{itemize}
 \end{frame}
 
@@ -442,11 +393,114 @@ The consensus protocol has the following properties in every round $r$.
 
 \section{Conclusion}
 \begin{frame}{\secname}
-  Out work answers the research question.
+  Our work answers the research question.
   \begin{block}{}
-    How can we design a \emph{blockchain consensus protocol} that is \emph{fault tolerant},
+    How can we design a \emph{blockchain consensus protocol} that is \emph{fault-tolerant},
     \emph{horizontally-scalable}, and able to reach \emph{global consensus?}
   \end{block}
+  \begin{itemize}
+    \item Fault-tolerance is achieved using HoneyBadgerBFT
+    \item Horizontal-scalability is achieved by untangling consensus and validation
+    \item Global-consensus on transactions is achieved via consensus on CP blocks
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Bibliography}
+\printbibliography
+\end{frame}
+
+\begin{frame}{Thank you}
+  \begin{center}
+    \Large{
+  Any questions?
+    }
+  \end{center}
+\end{frame}
+
+\section*{Extras}
+\begin{frame}{TX block}
+  \begin{enumerate}
+    \item Hash pointer to the previous block
+    \item Sequence number
+    \item Transaction ID
+    \item Public key of the counterparty
+    \item Transaction message $m$
+    \item Signature the five items above
+  \end{enumerate}
+  \vfill
+  A transaction is represented by a \emph{pair} of TX blocks
+\end{frame}
+
+\begin{frame}{CP block}
+  \begin{enumerate}
+    \item Hash pointer to the previous block
+    \item Sequence number
+    \item Digest of consensus result, i.e.~a set of CP blocks
+    \item Round number $r$
+    \item Signature on the four items above
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Background on ACS}
+  \begin{itemize}
+    \item Asynchronous common subset
+    \item A simplification of HoneyBadgerBFT~\cite{miller2016honey}
+    \item $n$ nodes
+    \item $t$ nodes may be malicious
+    \item Input: every node proposes a set of values, e.g., $\{A, B\}, \{B, C\}, \dots$
+    \item Output: set union of the majority, e.g., $\{A, B, C, \dots \}$
+  \end{itemize}
+\end{frame}
+
+\subsection*{Consensus protocol}
+\begin{frame}{\subsecname:~part 1}
+  \begin{figure}[h]
+  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-1}
+  \centering
+  \end{figure}
+  \note{Suppose we are in a state where $\C_{r - 1}$ has just been agreed by some facilitators but not yet propagated.}
+\end{frame}
+
+\begin{frame}{\subsecname:~part 2}
+  \begin{figure}[h]
+  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-2}
+  \centering
+  \end{figure}
+  \note{Nodes receive consensus result $\C_{r - 1}$,
+    first $n$ nodes ordered by $\textsf{H}(\C_{r-1} || pk)$ become $\F_{r-1}$,
+    send the new CP blocks to $\F_{r-1}$.}
+\end{frame}
+
+\begin{frame}{\subsecname:~part 3}
+  \begin{figure}[h]
+  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-3}
+  \centering
+  \end{figure}
+\end{frame}
+
+\begin{frame}{\subsecname:~part 4}
+  \begin{figure}[h]
+  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-4}
+  \centering
+  \end{figure}
+\end{frame}
+
+\begin{frame}{\subsecname:~part 5}
+  \begin{figure}[h]
+  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-5}
+  \centering
+  \end{figure}
+  \note{Transactions carry on as usual in round $r$,
+  while facilitators are trying to reach consensus on the new CP blocks concurrently.}
+\end{frame}
+
+\begin{frame}{\subsecname:~part 6}
+  \begin{figure}[h]
+  \includegraphics[trim={2cm 1.5cm 2cm 1.5cm},clip,width=0.75\textwidth]{trustchain-6}
+  \centering
+  \end{figure}
+  \note{$\F_{r-1}$ agree and disseminate $\C_r$,
+  CP blocks at round $r-1$ ($c_{a, 6}, c_{b, 4}, c_{c,8}$) should be in $\C_r$.}
 \end{frame}
 
 \begin{frame}{Future work}
@@ -457,11 +511,6 @@ The consensus protocol has the following properties in every round $r$.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Bibliography}
-\printbibliography
-\end{frame}
-
-\section*{Extras}
 \end{document}
 
 
