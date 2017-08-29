@@ -98,14 +98,12 @@
 
 \begin{frame}{The dangers of centralisation:~Examples}
   \begin{itemize}
-    \item Facebook can predict your opinions and desires better than your spouse from your ``liked'' posts~\cite{youyou2015computer}
-    \item With intimate knowledge of the individuals,
-      Facebook creates ``psychographic'' profiles in political campaigns~\cite{psychographic}
+    \item Facebook can predict your opinions and desires from your ``likes''~\cite{youyou2015computer},
+      and then create a ``psychographic'' profile for use in political campaigns~\cite{psychographic}
     \item Baidu's promoted search result on medical care caused death of a student~\cite{weizexi}
   \end{itemize}
   \note{
     \begin{itemize}
-      \item The student had cancer---(synovial sarcoma)
       \item The treatment was phased out at clinical stage in the US because the success rate is too low
       \item ``The study was conducted on 86,220 volunteers who have a Facebook account and who
       completed a hundred-item personality questionnaire. The Facebook algorithm predicted the volunteers'
@@ -116,6 +114,7 @@
       outperform friends, 150 Likes to outperform family members and 300 Likes to outperform spouses. In other
       words, if you happen to have clicked 300 Likes on your Facebook account, the Facebook algorithm can
       predict your opinions and desires better than your husband or wife!'' -Harari, \emph{Homo Deus}
+      \item The student had cancer---(synovial sarcoma)
       \item Summary: we live in an age where companies and governments are able to control our thoughts,
       where is the freedom and liberty in that?
     \end{itemize}
@@ -125,14 +124,13 @@
 
 \begin{frame}{Blockchain:~a new hope?}
   \begin{itemize}
-    \item Blockchains are distributed (replicated) ledgers
-    \item They enable internet-scale consensus
-    \item An alternative to central authorities for the first time
+    \item Blockchains are distributed (replicated) ledgers with no central control\footnote{In practice, some central control exist.}
+    \item They enable internet-scale consensus for the first time
     \item Some initial applications include:
     \begin{itemize}
       \item Digital cash (e.g., Bitcoin)
       \item Domain name system (e.g., Namecoin)
-      \item Bandwidth rental (e.g., Filecoin)
+      \item Storage rental (e.g., Filecoin)
       \item General purpose (e.g., Ethereum)
     \end{itemize}
   \end{itemize}
@@ -145,8 +143,9 @@
 
 \begin{frame}{Blockchain:~not there yet}
   \begin{itemize}
-    \item Consensus algorithm of early blockchain systems do not scale
-    \item Bitcoin (PoW) is limited to 7 transactions per second
+    \item All blockchain systems have a consensus algorithm
+    \item Early consensus algorithms (PoW) do not scale
+    \item Bitcoin is limited to 7 transactions per second
     \item 100,000 transaction backlog in May 2017
     \item We require horizontal scalability for ubiquitous use
     \item More users = more transactions per second globally
@@ -163,8 +162,7 @@
     \hline
     \textbf{\thead{Not\\scalable}} & \textbf{\thead{Somewhat\\scalable}} & \textbf{\thead{Limited horizontal\\scalability}} & \textbf{\thead{True horizontal\\scalability}} \\ \hline
     Bitcoin  & Hyperledger & Elastico          & \textsc{Checo} (this work) \\
-    Ethereum & ByzCoin     & OmniLedger        &                \\
-    etc.     & Solidius    & Lightning Network &                \\
+    Litecoin & ByzCoin     & OmniLedger        &                \\
     \hline
     \end{tabular}
 \end{table}
@@ -295,16 +293,17 @@ $\xrightarrow{\qquad\text{scalability}\qquad}$
 
 \begin{frame}{\subsecname}
   \begin{itemize}
-    \item Goal: reach consensus on a collection of CP blocks amongst all the nodes
+    \item Goal 1: reach consensus on a collection of CP blocks amongst all the nodes
+    \item Goal 2: create CP blocks at the end of the protocol
     \item Uses an existing fault-tolerant consensus algorithm (HoneyBadgerBFT~\cite{miller2016honey}) as the building block
     \item But it cannot be used in a large network due to high communication complexity
-    \item We overcome this limitation by selecting a small number of \emph{facilitators} to run HoneyBadgerBFT
+    \item We overcome this limitation by selecting a small number of \emph{facilitators} from the network to run HoneyBadgerBFT
   \end{itemize}
 \end{frame}
 
 \begin{frame}{\subsecname}
   \begin{figure}
-    \includegraphics[width=0.65\textwidth]{consensus-overview}
+    \includegraphics[width=1.0\textwidth]{consensus-overview}
     \centering
   \end{figure}
 \end{frame}
@@ -343,18 +342,18 @@ $\xrightarrow{\qquad\text{scalability}\qquad}$
   \end{figure}
 \begin{itemize}
 \item To check that the transaction protocol is correctly followed
-\item Alice needs the fragments of the TX on Bob's hash chain 
-\item Validation function checks whether the fragments are OK and contain the transaction
+\item Alice needs the fragment of the TX on Bob's hash chain 
+\item Validation function checks whether the fragment is OK and contain the transaction
+\item Can be generalised---any node may run the validation protocol on any transaction (does not need to be their own)
 \end{itemize}
 \end{frame}
 
 \begin{frame}{\subsecname:~properties}
 \begin{itemize}
-  \item Every node may run the validation protocol on a transaction
-  \item We reach consensus on transactions via CP blocks
+  \item Result: we reach consensus on transactions via CP blocks
   \item CP blocks of the fragments are ``anchored'' due to the consensus protocol
   \item It is difficult to modify the fragment once ``anchored''
-  \item Since transaction protocol and validation protocol only use point-to-point communication,
+  \item Since the transaction protocol and the validation protocol only use point-to-point communication,
   we achieve horizontal scalability.
 \end{itemize}
 \end{frame}
@@ -366,17 +365,18 @@ $\xrightarrow{\qquad\text{scalability}\qquad}$
       \url{https://github.com/kc1212/checo}
     \item SHA256 for hash functions and Ed25519 for digital signature
     \item Experiment on the DAS-5\footnote{\url{http://www.cs.vu.nl/das5/}}
+    \item Up to 1500 nodes
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Throughput vs population size (random neighbour)}
+\begin{frame}{Validated transaction throughput (random neighbour)}
   \begin{figure}[h]
   \includegraphics[width=0.9\textwidth]{neighbour-random/throughput-vs-population}
   \centering
   \end{figure}
 \end{frame}
 
-\begin{frame}{Throughput vs population size (fixed neighbour)}
+\begin{frame}{Validated transaction throughput (fixed neighbour)}
   \begin{figure}[h]
   \includegraphics[width=0.9\textwidth]{neighbour-fixed/throughput-vs-population}
   \centering
@@ -384,7 +384,7 @@ $\xrightarrow{\qquad\text{scalability}\qquad}$
 \note{No need to request for fragment every time a TX needs to be validated. Upon receiving a fragment, validate as many TX as possible.}
 \end{frame}
 
-\begin{frame}{Throughput vs population size (fixed neighbour)}
+\begin{frame}{Stress test (fixed neighbour)}
   \begin{figure}[h]
   \includegraphics[width=0.9\textwidth]{throughput-vs-population-large}
   \centering
