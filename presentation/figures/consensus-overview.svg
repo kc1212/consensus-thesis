@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="308.99222mm"
+   width="308.93851mm"
    height="198.44298mm"
-   viewBox="0 0 308.99222 198.44298"
+   viewBox="0 0 308.93851 198.44298"
    version="1.1"
    id="svg9956"
    inkscape:version="0.92+devel unknown"
@@ -379,11 +379,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="654.90725"
-     inkscape:cy="210.23415"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="263.37325"
+     inkscape:cy="315.84855"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer7"
+     inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
      showgrid="false"
      fit-margin-top="0"
@@ -819,22 +819,26 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:8.46666622px;line-height:6.61458302px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="223.01917"
-       y="100.95742"
+       style="font-style:normal;font-weight:normal;font-size:8.46666622px;line-height:8.60999966px;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="220.90253"
+       y="96.65242"
        id="text5829"><tspan
          sodipodi:role="line"
-         x="223.01917"
-         y="100.95742"
-         style="font-size:8.46666622px;stroke-width:0.26458332px"
-         id="tspan5831">create new CP block</tspan></text>
+         x="220.90253"
+         y="96.65242"
+         style="font-size:8.46666622px;line-height:8.60999966px;stroke-width:0.26458332px"
+         id="tspan5831">create new CP block</tspan><tspan
+         sodipodi:role="line"
+         x="220.90253"
+         y="105.26242"
+         style="font-size:8.46666622px;line-height:8.60999966px;stroke-width:0.26458332px"
+         id="tspan4534">elect new facilitators</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="cp2">
     <g
-       style=""
        id="g6676">
       <g
          transform="translate(-14.203314,78.231975)"
