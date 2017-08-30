@@ -127,10 +127,14 @@
 \algnewcommand\Send{\item[\algorithmicsend]}
 
 \DeclareMathOperator*{\argmin}{arg\,min}
+
+\theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
 \newtheorem{corollary}{Corollary}
 \newtheorem{lemma}{Lemma}
 \newtheorem{claim}{Claim}
+
+\theoremstyle{definition}
 \newtheorem{definition}{Definition}
 
 \newcommand{\A}{\mathcal{A}}
@@ -337,7 +341,7 @@
 
 
 % correct bad hyphenation here
-\hyphenation{op-tical net-works semi-conduc-tor block-chain}
+\hyphenation{op-tical net-works semi-conduc-tor block-chain crypto-currency}
 
 
 \begin{document}
@@ -400,26 +404,28 @@ Email: peer2peer@gmail.com}
 
 % make the title area
 \maketitle
+\thispagestyle{plain}
+\pagestyle{plain}
 
 % As a general rule, do not put math, special symbols or citations
 % in the abstract
 \begin{abstract}
 Blockchain systems have the potential to decentralise many traditionally centralised systems.
 However, scalability remains a key challenge.
-Without a horizontally scalable solution,
+A horizontally scalable solution,
 where performance increases by adding more nodes to the system,
-blockchain systems remain unsuitable for ubiquitous use.
+would move blockchain systems one step closer to ubiquitous use.
 % what's the solution?
 We design a novel blockchain system called \textsc{Checo}.
 Each node in our system maintains a personal hash chain,
 which only stores transactions that the node is involved in.
-A consensus is reached on special blocks called checkpoint blocks rather than on all the transactions.
+A consensus is reached on special blocks called checkpoint blocks rather than on all transactions.
 Checkpoint blocks are effectively a hash pointer to the personal hash chains;
 thus a single checkpoint block may represent an arbitrarily large set of transactions.
 We introduce a validation protocol so that any node can check the validity of any transaction.
 Since it is a point-to-point protocol, we achieve horizontal scalability.
 % how good is the solution?
-We analytically evaluate our system and show a number of highly desirable correctness properties such as implicit consensus on the validity of transactions.
+We analytically evaluate our system and show a number of highly desirable correctness properties such as consensus on the validity of transactions.
 Further, we give a free and open-source implementation of \textsc{Checo} and evaluate it experimentally.
 Our results show a strong indication of horizontal scalability.
 \end{abstract}

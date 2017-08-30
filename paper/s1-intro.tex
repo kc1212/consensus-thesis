@@ -1,11 +1,12 @@
 \section{Introduction}
 
 % problem description
-Bitcoin is almost ten years old, and its market capitalisation is over \$60 billion USD and growing~\cite{bitcoinmarketcap}.
-We can be reasonably sure that cryptocurrencies,
+The first blockchain system---Bitcoin---is almost ten years old. 
+Its market capitalisation is over \$60 billion USD and growing~\cite{bitcoinmarketcap}.
+We can be reasonably sure that such systems,
 even if their application is still somewhat limited,
 are here to stay in the foreseeable future.
-Driven by the success of Bitcoin, we see a renaissance of consensus research~\cite{miller2016honey, kogias2016enhancing, kokoris2017omniledger},
+Driven by the success of Bitcoin, we see a renaissance of consensus research~\cite{luu2016elastico, kogias2016enhancing, kokoris2017omniledger},
 where the primary focus is to improve the scalability of blockchain systems,
 which is due to the inefficiencies of the consensus mechanism---proof-of-work (PoW).
 For example, Bitcoin can only do 7 transactions per second (TPS) at most~\cite{vukolic2015quest}.
@@ -28,6 +29,7 @@ A high deposit locks the user from using much of her Bitcoins outside the channe
 In addition, the user must proactively check whether the counterparty has broadcasted an old channel state so that the user does not lose Bitcoins.
 Moreover, creating channels with sufficient balance and also keeping it online to act as a router is expensive.
 A casual user is not capable of such tasks, leading to centralisation.
+% TODO other side-chain schemes? polkadot? perum? dfinity?
 
 Another way to improve transaction rate is to use traditional Byzantine consensus algorithms such as PBFT~\cite{castro1999practical} in a permissioned ledger such as Hyperledger Fabric~\cite{cachin2016architecture}.
 In essence, such systems contain a fixed set of nodes (sometimes called validating peer) that run a Byzantine consensus algorithm to decide on new blocks.
@@ -52,9 +54,8 @@ The number of shards grows linearly with respect to the total computational powe
 hence the transaction rate also grows linearly.
 The limitation of sharding is that it is only optimal if transactions stay in the same shard.
 In fact, Elastico cannot atomically process inter-shard transactions.
-OmniLedger has an inter-shard transaction protocol but choosing a good shard size is difficult.
-A large shard size would degrade the transaction throughput because the Byzantine consensus algorithm must be run by a large number of nodes.
-A small shard size would result in a large number of inter-shard transactions which hinders scalability.
+OmniLedger has an inter-shard transaction protocol but choosing a shard size that matches the transaction characteristics of the network is difficult.
+An inadequate shard size would result in a large number of inter-shard transactions which would hinder scalability.
 % The authors of OmniLedger noted that inter-shard transactions have significantly higher latency compared to the consensus protocol~\cite{kokoris2017omniledger}.
 
 \textbf{Research question.\quad}

@@ -5,7 +5,7 @@ To describe \textsc{Checo}, we first give an informal overview and then move on 
 
 Early blockchain systems that use a global ledger are difficult to scale because every node must reach consensus on all the transactions that ever existed.
 Instead, we introduce an alternative architecture where every node has their own genesis block and hash chain.
-The nodes only store transactions (TX) that they are involved in on their hash chain.
+The nodes only store transactions (TX) that they are involved in on their hash chains.
 Transactions are stored in TX blocks, and every block only contains one transaction.
 A transaction between two nodes should, therefore, result in two TX blocks on their respective hash chains.
 We introduce a special block called checkpoint (CP) block,
@@ -73,7 +73,7 @@ then $T_u \cup C_u = B_u$ and $T_u \cap C_u = \varnothing$.
 The notation $b_{u, i}$ is generic over the block type.
 
 \begin{definition}
-\textbf{\emph{Transaction block}}
+\textbf{Transaction block}
 
 The TX block is a six-tuple, i.e
 $$t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), seq_u, txid, pk_v, m, sig_u \rangle.$$
@@ -92,7 +92,7 @@ We describe each item in turn.
 TX blocks come in pairs.
 In particular, for every block 
 $$t_{u, i} = \langle \textsf{H}(b_{u, i - 1}), seq_u, txid, pk_v, m, sig_u \rangle$$
-there exist one and only one \emph{pair} 
+there exists one and only one \emph{pair} 
 $$t_{v, j} = \langle \textsf{H}(b_{v, j - 1}), seq_v, txid, pk_u, m, sig_v \rangle,$$
 if the nodes follow the transaction protocol (described in~\Cref{sec:tx-protocol}).
 Note that the $txid$ and $m$ are the same, and the public keys refer to each other.
@@ -102,7 +102,7 @@ Thus, given a TX block, these properties allow us to identify its pair.
 % TODO Node $v$ may cheat and create more than one pair for $t_{u, i}. we discuss later
 
 \begin{definition}
-\textbf{\emph{Checkpoint block and genesis block}}
+\textbf{Checkpoint block and genesis block}
 
 The CP block is a five-tuple, i.e. 
 $$c_{u, i} = \langle \textsf{H}(b_{u, i-1}), seq_u, \textsf{H}(\C_r), r, sig_u \rangle,$$
@@ -110,14 +110,14 @@ where $\C_r$ is the consensus result (which we describe next in \Cref{sec:consen
 the other items are the same as the TX block definition.
 
 The genesis block in the chain must be a CP block in the form of
-$$c_{u, 0} = \langle \textsf{H}(\bot), 0,  \textsf{H}(\bot), 0, sig_u \rangle,$$
-where $\textsf{H}(\bot)$ can be interpreted as applying the hash function on an empty string.
+$$c_{u, 0} = \langle \textsf{H}(\epsilon), 0,  \textsf{H}(\epsilon), 0, sig_u \rangle,$$
+where $\epsilon$ is the empty string.
 The genesis block is unique because every node has a unique public and private key pair.
 \end{definition}
 
 \begin{definition}
 \label{sec:consensus-result}
-\textbf{\emph{Consensus result}}
+\textbf{Consensus result}
 
 Our consensus protocol runs in rounds,
 where the first round is defined to be 1 and it is incremented after every execution of the consensus protocol.
@@ -126,13 +126,13 @@ $$\C_r = \langle r, C \rangle,$$
 where $C$ is a set of CP blocks agreed by the facilitators of round $r$.
 \end{definition}
 
-Here we define a property which results from the interleaving nature of CP and TX blocks.
+Next we define a property which results from the interleaving nature of CP and TX blocks.
 It is used in our validation protocol (discussed in~\Cref{sec:vd-protocol}).
 
 \begin{definition}
-\textbf{\emph{Enclosure and agreed enclosure}}
+\textbf{Enclosure and agreed enclosure}
 
-If there exist a tuple $\langle c_{u,a}, c_{u, b} \rangle$ for a TX block $t_{u, i}$, where
+If there exists a tuple $\langle c_{u,a}, c_{u, b} \rangle$ for a TX block $t_{u, i}$, where
 \begin{itemize}
 \item $c_{u, a}$ is the closest CP block to $t_{u, i}$ with a lower sequence number and
 \item $c_{u, b}$ is the closest CP block to $t_{u, i}$ with a higher sequence number,
@@ -143,7 +143,7 @@ Agreed enclosure is the same as enclosure with an extra constraint where the CP 
 \end{definition}
 
 \begin{definition}
-\textbf{\emph{Fragment and agreed fragment}}
+\textbf{Fragment and agreed fragment}
 
 If the enclosure of some TX block $t_{u, i}$ is $\langle c_{u,a}, c_{u, b} \rangle$,
 then its fragment $F_{u, i}$ is defined as $\{ b_{u, i} : a \le i \le b \}$.
@@ -160,7 +160,7 @@ and have an unbiased election of facilitators.
 We formally define the desired properties below.
 \begin{definition}
 \label{def:consensus}
-\textbf{\emph{\textsc{Checo} consensus protocol}}
+\textbf{\textsc{Checo} consensus protocol}
 
 A \textsc{Checo} consensus protocol is correct if the following holds for every round $r$.
 \begin{enumerate}
@@ -202,7 +202,7 @@ First, if $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, 
 Second, if $u$ is a facilitator, it waits until $N - t$ messages of type \texttt{cp\_msg} are received.
 % Second if the node is a facilitator, it waits for some duration $D$ and collect messages of type \texttt{cp\_msg}, where $D \gg \Delta$.
 Invalid messages are removed.
-That is blocks with invalid signatures and blocks signed by the same key.
+Those are blocks with invalid signatures and blocks signed by the same key.
 With the sufficient number of \texttt{cp\_msg} messages,
 it begins the ACS algorithm and some $\C'_{r + 1}$ should be agreed upon by the end of it.
 Duplicates and blocks with invalid signatures are again removed from $\C'_{r+1}$ and we call the final result $\C_{r+1}$.
@@ -376,7 +376,7 @@ If $u$ wishes to validate some TX with ID $txid$ and counterparty $v$, it sends 
 The desired properties are as follows.
 \begin{definition}
 \label{def:validation}
-\textbf{\emph{\textsc{Checo} validation protocol}}
+\textbf{\textsc{Checo} validation protocol}
 
 A \textsc{Checo} validation protocol is correct if the following properties hold.
 \begin{enumerate}
@@ -425,11 +425,13 @@ In this section,
 we explore a few design variations, some of them require a relaxed version of our original model.
 They enable better performance and allow us to apply our design in the fully permissionless setting.
 
-\subsection{Using Timing Assumption in the Permissionless Setting}
+\subsection{Open membership using timing assumption}
 \label{sec:permissionless}
 At the start of our consensus phase (\Cref{sec:consensus-phase}), facilitators must wait for $N-f$ \texttt{cp\_msg} messages.
-The use of $N$ makes our system unsuitable for the permissionless setting.
-To introduce timing, instead of waiting for $N-f$ messages, we wait for some time $D$,
+The use of $N$ makes our system unsuitable for the open membership setting,
+where nodes may join and leave at will (churn).
+We over come this problem by introducing a timing assumption.
+Concretely, instead of waiting for $N-f$ messages, we wait for some time $D$,
 such that $D$ is sufficiently long for honest nodes to send their CP blocks to the facilitators.
 Consequently, this removes the need for a PKI because the collected CP blocks may be from nodes that nobody has seen in the past.
 
@@ -458,7 +460,7 @@ then the caching mechanism would have no effect.
 \label{sec:fork}
 The validation algorithm guarantees that there are no forks within a single agreed fragment,
 which is sufficient for some applications such as proving the existence of some information.
-However, for applications such as digital cash where every block depends on one or more previous blocks,
+However, for applications such as cryptocurrency where every block depends on one or more previous blocks,
 our scheme is not suitable.
 For such applications, we need to guarantee that there are no forks from the genesis block leading up to the TX block of interest.
 

@@ -13,6 +13,7 @@ which enables the desirable horizontal scalability property.
 
 We achieve the properties described in~\Cref{sec:description}.
 Namely, our protocol achieves agreement on transactions as we argued in~\Cref{sec:correctness-of-validity}.
+Validity is achieved because honest nodes run the $\textsf{get\_validity}(\cdot)$ function, which, in fact, is the validity definition.
 Further, the horizontal scalability is demonstrated in~\Cref{sec:implementation},
 in the ideal case as well as the worst case.
 In the future, we hope to apply our system to a concrete application and evaluate its performance.

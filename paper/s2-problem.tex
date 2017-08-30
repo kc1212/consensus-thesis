@@ -11,6 +11,8 @@ We seek a protocol that satisfies the following properties.
     \item \emph{Agreement}:
         If any correct node decides on the validity of a transaction, except when it is \emph{unknown},
         then all other correct nodes are able to reach the same conclusion or decide \emph{unknown}.
+    \item \emph{Validity}:
+        If a transaction is valid, then it must have been created by two honest nodes.
     \item \emph{Scalability}:
         If every node makes transactions at the same rate,
         then as $N$ increases,
@@ -21,7 +23,7 @@ Note that the agreement property is similar, but a relaxed version of what is of
 Namely, the property only holds if honest nodes do not output \emph{unknown}.
 For example, for a transaction, it is OK if two honest nodes output \emph{valid} and \emph{unknown}, but it is not OK to output \emph{valid} and \emph{invalid}.
 Our problem does not have a termination property, also known as liveness.
-Instead, nodes are incentivised to complete the protocol execution;
+Instead, nodes are incentivised to complete the protocol execution otherwise they risk economical loss;
 we describe this phenomenon in~\Cref{sec:correctness-of-validity}.
 
 The problem is purposefully made to be application neutral,
@@ -30,6 +32,8 @@ This formulation is so that the protocol can act as a building block to many app
 Due to this fact, we also do not consider global fork prevention or detection,
 as some application may not need such strong guarantees such as the accounting of internet traffic in Tribler~\cite{pimotte, pouwelse2008tribler}.
 On the other hand, we give two alternative constructions that do have fork detection in~\Cref{sec:fork}.
+% TODO our transactions are rather different from a typical cryptocurrency transaction,
+% should we still call it transactions or something else?
 
 \textbf{System model.\quad}
 We assume purely asynchronous channels with eventual delivery.
