@@ -9,12 +9,14 @@ To make transactions, nodes use the simple and non-blocking transaction protocol
 Finally, we introduce a validation protocol which ensures that if an agreed fragment for some transaction exists,
 then nodes reach agreement on the validity of that transaction.
 The novelty of \textsc{Checo} is that it decouples consensus and transaction validation,
-which enables the desirable horizontal scalability property.
+which enables the desirable horizontal scalability property, without employing sharding.
 
 We achieve the properties described in~\Cref{sec:description}.
 Namely, our protocol achieves agreement on transactions as we argued in~\Cref{sec:correctness-of-validity}.
 Validity is achieved because honest nodes run the $\textsf{get\_validity}(\cdot)$ function, which, in fact, is the validity definition.
 Further, the horizontal scalability is demonstrated in~\Cref{sec:implementation},
 in the ideal case as well as the worst case.
+
 In the future, we hope to apply our system to a concrete application and evaluate its performance.
+Furthermore, we plan to explore a few useful design alternatives such as open membership, total fork detection and fair facilitator election.
 

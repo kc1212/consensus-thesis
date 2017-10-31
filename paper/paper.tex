@@ -133,8 +133,6 @@
 \newtheorem{corollary}{Corollary}
 \newtheorem{lemma}{Lemma}
 \newtheorem{claim}{Claim}
-
-\theoremstyle{definition}
 \newtheorem{definition}{Definition}
 
 \newcommand{\A}{\mathcal{A}}
@@ -423,7 +421,7 @@ A consensus is reached on special blocks called checkpoint blocks rather than on
 Checkpoint blocks are effectively a hash pointer to the personal hash chains;
 thus a single checkpoint block may represent an arbitrarily large set of transactions.
 We introduce a validation protocol so that any node can check the validity of any transaction.
-Since it is a point-to-point protocol, we achieve horizontal scalability.
+Since transaction and validation protocols are point-to-point, we achieve horizontal scalability.
 % how good is the solution?
 We analytically evaluate our system and show a number of highly desirable correctness properties such as consensus on the validity of transactions.
 Further, we give a free and open-source implementation of \textsc{Checo} and evaluate it experimentally.
