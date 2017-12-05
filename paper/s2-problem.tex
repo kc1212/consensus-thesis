@@ -21,7 +21,7 @@ We seek a protocol that satisfies the following properties.
 
 Note that the agreement property is similar, but a relaxed version of what is often seen in a Byzantine consensus problem.
 Namely, the property only holds if honest nodes do not output \emph{unknown}.
-For example, for a transaction, it is fine if two honest nodes output \emph{valid} and \emph{unknown}, but it is not fine to output \emph{valid} and \emph{invalid}.
+For example, for a transaction, it is fine if two honest nodes output \emph{valid} and \emph{unknown}, but they should never output \emph{valid} and \emph{invalid}.
 Our problem does not have a termination property.
 Instead, nodes are incentivised to complete the protocol execution otherwise they risk economical loss;
 we describe this phenomenon in~\Cref{sec:correctness-of-validity}.
@@ -29,7 +29,7 @@ we describe this phenomenon in~\Cref{sec:correctness-of-validity}.
 The problem is purposefully made to be application neutral,
 i.e. there are no constraints on the semantics of transactions.
 This formulation is so that the protocol can act as a building block to many applications.
-Due to this fact, we also do not consider global fork prevention or detection,
+Thus, we do not consider global fork prevention or detection,
 as some application may not need such strong guarantees such as the accounting of internet traffic in Tribler~\cite{pimotte, pouwelse2008tribler}.
 On the other hand, we give two alternative constructions that do perform fork detection in~\Cref{sec:fork}.
 % TODO our transactions are rather different from a typical cryptocurrency transaction,

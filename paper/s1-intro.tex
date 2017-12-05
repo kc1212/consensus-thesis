@@ -2,7 +2,7 @@
 
 % problem description
 The first blockchain system---Bitcoin---is almost ten years old. 
-Its market capitalisation is over \$60 billion USD and growing~\cite{bitcoinmarketcap}.
+Its market capitalisation is nearly \$200 billion USD at the time of writing~\cite{bitcoinmarketcap}.
 We can be reasonably sure that such systems,
 even if their application is still somewhat limited,
 are here to stay in the foreseeable future.
@@ -33,7 +33,7 @@ A casual user is not capable of such tasks, leading to centralisation.
 
 Another way to improve transaction rate is to use traditional Byzantine consensus algorithms such as PBFT~\cite{castro1999practical} in a permissioned ledger such as Hyperledger Fabric~\cite{cachin2016architecture}.
 In essence, such systems contain a fixed set of nodes (sometimes called validating peer) that run a Byzantine consensus algorithm to decide on new blocks.
-Such systems can achieve much higher transaction rates, e.g., 10,000 TPS if the number of validating peer is under 16 for PBFT~\cite[Section 5.2]{miller2016honey}.
+They can achieve much higher transaction rates, e.g., 10,000 TPS if the number of validating peer is under 16 for PBFT~\cite[Section 5.2]{miller2016honey}.
 However, these systems do not scale, e.g., the transaction rate drops to under 5000 TPS when the number of validating peer is 64~\cite[Section 5.2]{miller2016honey}.
 Moreover, the validating peers are predetermined which makes the system unsuitable for the open internet.
 
@@ -72,12 +72,12 @@ Further, we are interested in horizontal scalability in the general case as it e
 That is, adding more nodes to the network should result in higher transaction throughput.
 
 \textbf{Contribution.\quad}
-The key insight is not to reach consensus using an existing consensus algorithm (a modified HoneyBadgerBFT~\cite{miller2016honey}) on transactions themselves,
+The key insight is not to reach consensus using an existing consensus algorithm on transactions themselves,
 but on special blocks called checkpoint blocks,
 such that transactions are nevertheless verifiable at a later stage by any node in the network.
 Our main contributions are the following.
 \begin{itemize}
-    \item We formally introduce a blockchain system---\textsc{Checo}\footnote{Derived from ``\emph{Che}ckpoint \emph{co}nsensus''.}.
+    \item We formally introduce a blockchain system---\textsc{Checo}\footnote{Derived from ``\textsc{Che}ckpoint \textsc{co}nsensus''.}.
         It uses individual hash chains and checkpoints on every node to achieve
         horizontal scalability in the general case for the first time.
     \item We analyse \textsc{Checo} to ensure correctness according to our definition.
