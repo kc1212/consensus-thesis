@@ -169,7 +169,10 @@ A \textsc{Checo} consensus protocol is correct if the following holds for every 
 \label{sec:bootstrap}
 To bootstrap, imagine that there is some bootstrap oracle that initiates the correct program on every node,
 meaning that it satisfied the properties in \Cref{def:consensus}.
-In practice, the bootstrap oracle is most likely the software developer that sets up the system and assigns the facilitators of round 1.
+In practice, the bootstrap oracle is most likely a group of software developers
+(representing different organisations)
+that agreed to work together to set up the system and assign the facilitators of round 1.
+The number of facilitators is $n$, we discuss the trade-offs for different values of $n$ in~\Cref{sec:implementation}.
 This concludes the bootstrap phase.
 For any future rounds, the consensus phase is used.
 
@@ -183,18 +186,18 @@ The goal is to reach agreement on a set of new facilitators $\F_{r + 1}$ that sa
 
 There are two scenarios in the consensus phase.
 First, if $u$ is not the facilitator, it sends $\langle \texttt{cp\_msg}, c_{u, h-1} \rangle$ to all the facilitators.
-Second, if $u$ is a facilitator, it waits until $N - t$ messages of type \texttt{cp\_msg} are received.
+Second, if $u$ is a facilitator, it waits for $N - t$ messages of type \texttt{cp\_msg}.
 % Second if the node is a facilitator, it waits for some duration $D$ and collect messages of type \texttt{cp\_msg}, where $D \gg \Delta$.
-Invalid messages are removed.
-Those are blocks with invalid signatures and blocks signed by the same key.
-With the sufficient number of \texttt{cp\_msg} messages,
+Invalid messages are removed,
+which are blocks with invalid signatures and blocks signed by the same key.
+With a sufficient number of \texttt{cp\_msg} messages,
 it begins the ACS algorithm and some $\C'_{r + 1}$ should be agreed upon by the end of it.
 Duplicates and blocks with invalid signatures are again removed from $\C'_{r+1}$ and we call the final result $\C_{r+1}$.
 We have to remove invalid blocks a second time because the adversary may send different CP blocks to different facilitators,
 which results in invalid blocks in the ACS output, but not in any of the inputs.
 
 The core of the consensus phase is the ACS algorithm,
-which is derived from HoneyBadgerBFT~\cite{miller2016honey}.
+which is described in HoneyBadgerBFT~\cite{miller2016honey}.
 We do not use the full HoneyBadgerBFT due to the following.
 First, the transactions in HoneyBadgerBFT are first queued in a buffer and the main consensus algorithm starts only when the buffer reaches an optimal size.
 We do not have an infinite stream of CP blocks, thus buffering is unsuitable.
@@ -202,7 +205,7 @@ Second, HoneyBadgerBFT uses threshold encryption to hide the content of the tran
 But we do not reach consensus on transactions, only CP blocks;
 the content of the CP blocks are not sensitive so there is no need to hide it.
 
-Continuing, when $\F_{r}$ finish the ACS execution and reach agreement on $\C_{r+1}$,
+When $\F_{r}$ finish the ACS execution and reach agreement on $\C_{r+1}$,
 they immediately broadcast two messages to all the nodes---first the consensus message $\langle \texttt{cons\_msg}, \C_{r+1} \rangle$,
 and second the signature message $\langle \texttt{cons\_sig}, r, sig \rangle$.
 The reason for sending \texttt{cons\_sig} is the following.
@@ -291,7 +294,7 @@ This allows for a high level of concurrency where we can call many $\textsf{new\
 Up to this point, we do not provide a mechanism to detect tampering.
 The validation protocol $\Pi_v$ aims to solve this issue.
 The protocol is also a request-response protocol.
-But before explaining the protocol itself, we first define what it means for a transaction to be valid.
+Before explaining the protocol itself, we first define what it means for a transaction to be valid.
 
 \subsubsection{Validity Definition}
 A transaction can be in one of three states in terms of validity---\emph{valid}, \emph{invalid} and \emph{unknown}.
@@ -467,10 +470,10 @@ $A$ first sends a challenge to $B$ asking it to prove that it holds a valid agre
 If $B$ provides a correct and timely response, then they run the transaction protocol as usual.
 Otherwise, $A$ would refuse to make the transaction.
 
-\subsection{Fair Facilitator Election}
-Our consensus protocol does not guarantee fair facilitator election when dedicated attackers are present.
+\subsection{Unbiased Facilitator Election}
+Our consensus protocol does not guarantee unbiased facilitator election when dedicated attackers are present.
 If a malicious facilitator is elected, it can delay, eavesdrop and collect all CP block messages before sending its own.
-Effectively, it can predict the consensus result before the facilitators start the consensus protocol, and generate a CP block such that the malicious node has an unfair advantage of being elected as a facilitator in the next round.
+Effectively, it can generate a CP block such that it has an unfair advantage of being elected as a facilitator in the next round.
 
 To address the issue above,
 the facilitators run an extra protocol after the consensus protocol to produce some unbiased randomness.

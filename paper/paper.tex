@@ -45,7 +45,7 @@
 % *** Authors should verify (and, if needed, correct) their LaTeX system  ***
 % *** with the testflow diagnostic prior to trusting their LaTeX platform ***
 % *** with production work. The IEEE's font choices and paper sizes can   ***
-% *** trigger bugs that do not appear when using other class files.       ***                          ***
+% *** trigger bugs that do not appear when using other class files.       ***
 % The testflow support page is at:
 % http://www.michaelshell.org/tex/testflow/
 
@@ -341,6 +341,12 @@
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor block-chain crypto-currency}
 
+\IEEEoverridecommandlockouts
+\IEEEpubid{%
+   \makebox[\columnwidth]{ISBN 978-3-903176-08-9~\copyright~2018 IFIP \hfill}%
+   \hspace{\columnsep}% 
+   \makebox[\columnwidth]{ }% 
+}
 
 \begin{document}
 %
@@ -357,8 +363,8 @@
 % use a multiple column layout for up to three different
 % affiliations
 \author{\IEEEauthorblockN{Kelong Cong}
-\IEEEauthorblockA{Delft University of Technology\\
-Email: k.cong@student.tudelft.nl}
+\IEEEauthorblockA{\'{E}cole Polytechnique F\'{e}d\'{e}rale de Lausanne\\
+Email: kelong.cong@epfl.ch}
 \and
 \IEEEauthorblockN{Zhijie Ren}
 \IEEEauthorblockA{Delft University of Technology\\
@@ -398,12 +404,13 @@ Email: peer2peer@gmail.com}
 %\IEEEspecialpapernotice{(Invited Paper)}
 
 
-
-
 % make the title area
 \maketitle
-\thispagestyle{plain}
+%\thispagestyle{plain}
 \pagestyle{plain}
+
+% switch off page numbers
+\pagenumbering{gobble}
 
 % As a general rule, do not put math, special symbols or citations
 % in the abstract

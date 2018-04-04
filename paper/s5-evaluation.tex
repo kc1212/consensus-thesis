@@ -17,13 +17,19 @@
   \label{fig:global-throughput}
 \end{figure*}
 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{neighbour-random/round-duration-vs-facilitators}
+    \caption{The consensus duration increases polynomially with respect to the number of facilitators.}
+    \label{fig:round-duration-vs-facilitators}
+\end{figure}
+
 \section{Implementation and Evaluation}
 \label{sec:implementation}
 
 A free and open source implementation can be found on GitHub: \url{https://github.com/kc1212/checo}.
 It implements the three protocols and the Extended TrustChain.
 We also implement the caching optimisation discussed in \Cref{sec:caching}.
-It is written in the Python programming language.
 The cryptography primitives we use are SHA256 for hash functions and Ed25519 for digital signatures.
 
 We run the experiment on the DAS-5\footnote{\url{https://www.cs.vu.nl/das5/}} with up to 1200 nodes.
@@ -53,10 +59,11 @@ Validation requests are sent at the same rate, which explains the magnitude.
 Overall, the throughput has a linear relationship with the population size.
 This result is a strong indication of the horizontal scalability which we aimed to achieve.
 
-The downside of our design is that the communication complexity of the consensus protocol grows polynomially as the number of facilitators grows linearly.
+The downside of our design is that the communication complexity of the consensus protocol grows polynomially with respect to the number of facilitators.
 Hence, the consensus protocol will take longer to complete, and larger fragments must be sent for transaction verification.
 On the other hand, it does not significantly impact the throughput;
 only the transaction verification delay is affected.
+The experimental results in \Cref{fig:round-duration-vs-facilitators} demonstrates this issue, it uses the same experimental-setup as before.
 We refer the reader to~\cite[Chapter 5]{checo} for additional analysis of the effect of the number of facilitators as well as other experimental results.
 
 % The difference in magnitude between \Cref{fig:global-throughput-fixed} and \Cref{fig:global-throughput-random} is caused by the caching mechanism mentioned earlier.

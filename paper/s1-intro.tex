@@ -32,8 +32,8 @@ A casual user is not capable of such tasks, leading to centralisation.
 % TODO other side-chain schemes? polkadot? perum? dfinity?
 
 Another way to improve transaction rate is to use traditional Byzantine consensus algorithms such as PBFT~\cite{castro1999practical} in a permissioned ledger such as Hyperledger Fabric~\cite{cachin2016architecture}.
-In essence, such systems contain a fixed set of nodes (sometimes called validating peer) that run a Byzantine consensus algorithm to decide on new blocks.
-They can achieve much higher transaction rates, e.g., 10,000 TPS if the number of validating peer is under 16 for PBFT~\cite[Section 5.2]{miller2016honey}.
+In essence, such systems contain a fixed set of nodes, called validating peers, that run a Byzantine consensus algorithm to decide on new blocks.
+They can achieve much higher transaction rates, e.g., 10,000 TPS if the number of validating peers is under 16 for PBFT~\cite[Section 5.2]{miller2016honey}.
 However, these systems do not scale, e.g., the transaction rate drops to under 5000 TPS when the number of validating peer is 64~\cite[Section 5.2]{miller2016honey}.
 Moreover, the validating peers are predetermined which makes the system unsuitable for the open internet.
 
@@ -61,7 +61,7 @@ An inadequate shard size would result in a large number of inter-shard transacti
 \textbf{Research question.\quad}
 Thus far, there are no systems that achieve horizontal scalability in the general case,
 which leads to the goal of this work.
-Hence the research question which we wish to answer is as follows.
+Hence, the research question which we wish to answer is as follows.
 \begin{displayquote}
     \emph{How can we design a horizontally scalable blockchain consensus protocol?}
     \end{displayquote}

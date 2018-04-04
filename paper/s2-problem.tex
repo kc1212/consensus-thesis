@@ -37,7 +37,7 @@ On the other hand, we give two alternative constructions that do perform fork de
 
 \textbf{System model.\quad}
 We assume purely asynchronous channels with eventual delivery.
-Thus in no stage of the protocol are we allowed to make timing assumptions.
+Thus, in no stage of the protocol are we allowed to make timing assumptions.
 The adversary has full control of the delivery schedule and the message ordering of all messages.
 
 \textbf{Security assumptions.\quad}
@@ -46,6 +46,7 @@ meaning that there are no restrictions on the type of failure.
 We use a static, round-adaptive corruption model.
 That is, if a round has started, the corrupted nodes cannot change until the next round.
 We assume there exists a Public Key Infrastructure (PKI), and nodes are identified by their unique and permanent public key.
+This assumption implies that we work in the permissioned model.
 Finally, we use the random oracle (RO) model, i.e. calls to the random oracle are denoted by $\textsf{H}: \{0, 1\}^* \rightarrow \{0, 1\}^\lambda$,
 where $\{0, 1\}^*$ denotes the space of finite binary strings and $\lambda$ is the security parameter.
 Under the RO model, the probability of successfully computing the inverse of the hash function is negligible with respect to $\lambda$~\cite{bellare1993random}.
