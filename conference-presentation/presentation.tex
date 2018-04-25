@@ -38,7 +38,7 @@
 
 % \setbeameroption{show notes}
 
-\title{A Blockchain Consensus Protocol With\\Horizontal Scalability}
+\title{A Blockchain Consensus Protocol with\\Horizontal Scalability}
 % \subtitle{Optional Subtitle}
 
 % \author{Kelong Cong \inst{1} \and Zhijie Ren \inst{2} \and Johan~Pouwelse \inst{2}}
@@ -62,11 +62,11 @@
       Johan~Pouwelse \\ \small peer2peer@gmail.com \\ TU Delft
     \end{columns}
  }
- {Author 1, Author 2, Author 3}
+ {Kelong~Cong, Zhijie~Ren, Johan~Pouwelse}
 }
 
 % \date{Conference Name, 2013}
-\date{IFIP Networking, 2018}
+\date{IFIP Networking, Zurich 2018}
 
 \AtBeginSubsection[] % Do nothing for \subsection*
 {
@@ -131,7 +131,7 @@
 \begin{frame}{Blockchain:~not there yet}
   \begin{itemize}
     \item All blockchain systems have a consensus algorithm
-    \item Early consensus algorithms (PoW) do not scale
+    \item Early consensus algorithms do not scale
     \item Bitcoin is limited to 7 transactions per second
     \item 100,000 transaction backlog in May 2017
     \item We require horizontal scalability for ubiquitous use
@@ -146,6 +146,7 @@
             \begin{itemize}
                 \item Lightning Network\footnote{\url{https://lightning.network/}}
                 \item Perun\footnote{\url{https://perun.network}}
+                \item Easy to deploy but application specific
             \end{itemize}
         \item On-chain solution
             \begin{itemize}
@@ -179,7 +180,7 @@
     }
   \end{block}
   \begin{itemize}
-    \item Blockchain consensus protocol---application neutral, e.g., PoW
+    \item Blockchain consensus protocol---application neutral
     \item Fault-tolerant---tolerate a number of malicious nodes
     \item Horizontal scalability---more nodes in the network leads to higher transaction throughput
     \item Global consensus---all node should agree on a global state
