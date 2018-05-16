@@ -190,7 +190,7 @@
 \end{frame}
 
 \section{System architecture}
-\begin{frame}{Intuition and idea explored in this thesis}
+\begin{frame}{Intuition}
   \begin{itemize}
     \item It is expensive to verify and reach consensus on all transactions
     \item Our idea: we decouple consensus and validation
@@ -204,7 +204,6 @@
   \end{figure}
 \end{frame}
 
-\subsection{System model}
 \subsection{Architecture overview}
 \begin{frame}{\subsecname}
   \begin{center}
@@ -301,8 +300,8 @@
   \end{figure}
 \begin{itemize}
 \item Two TX blocks are generated on the chains of Alice and Bob
-\item No guarantee that nodes follow this protocol
 \item Contrary to early blockchain systems, we do not broadcast transactions
+\item No guarantee that nodes follow this protocol
 \end{itemize}
 \end{frame}
 
@@ -325,7 +324,7 @@
 \bigskip
 \begin{itemize}
   \item CP blocks of the fragments are ``anchored'' due to the consensus protocol
-  \item It is difficult to modify the fragment once ``anchored''
+  \item It is not possible to modify the fragment once ``anchored''
   \item Since the transaction protocol and the validation protocol only use point-to-point communication,
   we achieve horizontal scalability.
 \end{itemize}
@@ -363,13 +362,13 @@
     Our contribution:
   \begin{itemize}
       \item We design a blockchain consensus protocol---\textsc{Checo} with horizontal scalability
-      \item We formally analyse CHECO to ensure correctness
+      \item We formally analyse \textsc{Checo} to ensure correctness
       \item Our experimental evaluation show strong evidence of our claim.
   \end{itemize}
       Future perspective:
   \begin{itemize}
       \item Improve fault-tolerance using ByzCoinX from OmniLedger
-      \item Design and evaluate UTXO-style transactions (new paper to appear in Crypto Valley Conference)
+      \item Design and evaluate UTXO-style transactions (new paper to appear in the Crypto Valley Conference)
       \item Assume a permissionless model
   \end{itemize}
 \end{frame}
